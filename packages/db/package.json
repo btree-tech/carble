@@ -1,0 +1,29 @@
+{
+  "name": "@carble/db",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm migrate && pnpm studio",
+    "generate": "drizzle-kit generate:sqlite",
+    "migrate": "drizzle-kit push:sqlite",
+    "studio": "drizzle-kit studio --host 0.0.0.0"
+  },
+  "files": [
+    "lib",
+    "migrations"
+  ],
+  "main": "./lib/index.ts",
+  "exports": {
+    ".": "./lib/index.ts",
+    "./schema": "./lib/schema.ts"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "drizzle-kit": "^0.20.14",
+    "prisma": "^5.11.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "drizzle-orm": "^0.30.5"
+  }
+}

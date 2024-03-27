@@ -1,0 +1,42 @@
+{
+	"name": "carble",
+	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
+	"postStartCommand": "pnpm install",
+	"mounts": [
+		{
+			"type": "volume",
+			"source": "node-modules",
+			"target": "${containerWorkspaceFolder}/node_modules"
+		}
+	],
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {}
+	},
+	"forwardPorts": [
+		3000,
+		4983
+	],
+	"remoteUser": "root",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"editorconfig.editorconfig",
+				"dbaeumer.vscode-eslint",
+				"Vue.volar",
+				"Nuxtr.nuxtr-vscode",
+				"antfu.goto-alias",
+				"bradlc.vscode-tailwindcss",
+				"csstools.postcss",
+				"vitest.explorer"
+			],
+			"settings": {
+				"files.associations": {
+					"*.css": "tailwindcss"
+				},
+				"editor.quickSuggestions": {
+					"strings": true
+				}
+			}
+		}
+	}
+}
