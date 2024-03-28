@@ -9,9 +9,11 @@ const {
     method: 'post',
   })
   const { data: cards } = useCardsData()
-  cards.value.push({
-    ...cardsSchema.element.parse(data),
-  })
+  cards.value.push(cardsSchema.element.parse({
+    ...data,
+    images: [],
+    contents: [],
+  }))
 }, {
   immediate: false,
 })
