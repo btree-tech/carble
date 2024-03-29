@@ -16,16 +16,33 @@ const {
 
 const { data: card } = useCardData()
 
-const content = ref(card.value.contents.find((c) => c.fieldId === props.fieldId)?.body || '')
-
-const debounced = refDebounced(content, 200)
+const body = computed({
+  get: () => card.value.contents.find((content) => content.fieldId === props.fieldId)?.body || '',
+  set: (value: string) => {
+    const index = card.value.contents.findIndex((content) => content.fieldId === props.fieldId)
+    if (index >= 0) {
+      card.value.contents.splice(index, 1, {
+        ...card.value.contents[index],
+        body: value,
+      })
+    } else {
+      card.value.contents.push({
+        cardId: card.value.id,
+        fieldId: props.fieldId,
+        body: value,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    }
+  },
+})
 
 const {
   status,
 } = useFetch(`/api/projects/${projectId}/cards/${cardId}/fields/${props.fieldId}`, {
   method: 'put',
   body: {
-    content: debounced,
+    body: debouncedRef(body, 200),
   },
   immediate: false,
 })
@@ -37,7 +54,7 @@ watch(status, (status) => {
 
 <template>
   <UTextarea
-    v-model="content"
+    v-model="body"
     autoresize
   />
 </template>
