@@ -25,11 +25,11 @@
   "dependencies": {
     "@carble/db": "workspace:^",
     "@iconify-json/material-symbols-light": "^1.1.16",
-    "@nuxt/ui": "^2.14.2",
+    "@nuxt/ui": "^2.15.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@vueuse/integrations": "^10.9.0",
     "barcode-detector": "^2.2.4",
-    "drizzle-orm": "^0.30.5",
+    "drizzle-orm": "^0.30.6",
     "drizzle-zod": "^0.5.1",
     "mime-types": "^2.1.35",
     "qrcode": "^1.5.3",
