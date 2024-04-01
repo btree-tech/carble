@@ -22,6 +22,7 @@ const items = [[
   <UDropdown :items="items">
     <UButton
       icon="i-material-symbols-light-more-horiz"
+      color="gray"
     />
   </UDropdown>
 </template>

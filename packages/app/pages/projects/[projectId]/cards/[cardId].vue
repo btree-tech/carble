@@ -22,9 +22,10 @@ const {
     <div class="flex items-center justify-end gap-4">
       <StatusIcon :status="status" />
       <UButton
+        label="テーブルビュー"
+        icon="i-material-symbols-light-table-view"
         :to="`/projects/${projectId}`"
-        label="閉じる"
-        color="gray"
+        variant="soft"
       />
     </div>
     <div

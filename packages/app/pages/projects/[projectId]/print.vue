@@ -20,24 +20,27 @@ const print = () => {
   <div
     v-if="project"
     class="
-      grid gap-x-8 gap-y-4 max-h-svh
-      landscape:grid-cols-[min(75%,210mm),1fr] landscape:grid-rows-[auto,1fr] landscape:px-4
+      grid gap-x-8 gap-y-4 max-h-dvh
+      landscape:grid-cols-[min(75%,210mm),1fr] landscape:grid-rows-[auto,auto,1fr] landscape:px-4
       portrait:grid-cols-1 portrait:grid-rows-[auto,1fr,auto]
       print:hidden
     "
   >
+    <div class="landscape:col-span-2">
+      <UButton
+        label="プロジェクト一覧に戻る"
+        icon="i-material-symbols-light-door-open"
+        to="/"
+        variant="link"
+      />
+    </div>
     <div
       class="
-        flex items-center gap-4
+        flex items-center
         landscape:col-span-2
         portrait:px-4
       "
     >
-      <UButton
-        label="ホーム"
-        icon="i-material-symbols-light-home"
-        to="/"
-      />
       <div class="grow">
         {{ project.name }}
       </div>
@@ -45,6 +48,7 @@ const print = () => {
         label="テーブルビュー"
         icon="i-material-symbols-light-table-view"
         :to="`/projects/${project.id}`"
+        variant="soft"
       />
     </div>
     <div

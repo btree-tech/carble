@@ -26,6 +26,7 @@ const {
   <UButton
     label="削除"
     icon="i-material-symbols-light-delete"
+    color="gray"
     :loading="status === 'pending'"
     @click="execute"
   />

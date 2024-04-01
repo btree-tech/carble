@@ -20,13 +20,15 @@ const {
     v-if="project"
     class="grid row-auto gap-y-4 px-4"
   >
-    <div class="flex items-center gap-4">
+    <div>
       <UButton
-        icon="i-material-symbols-light-home"
+        label="プロジェクト一覧に戻る"
+        icon="i-material-symbols-light-door-open"
         to="/"
-      >
-        <span class="hidden md:inline">ホーム</span>
-      </UButton>
+        variant="link"
+      />
+    </div>
+    <div class="flex items-center gap-4">
       <TableViewProjectName
         class="grow"
         @update:status="statuses.set('name', $event)"
@@ -35,6 +37,7 @@ const {
       <UButton
         icon="i-material-symbols-light-print"
         :to="`/projects/${project.id}/print`"
+        variant="soft"
       >
         <span class="hidden md:inline">印刷ビュー</span>
       </UButton>
