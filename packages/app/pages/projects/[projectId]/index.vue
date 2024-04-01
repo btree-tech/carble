@@ -26,6 +26,7 @@ const {
         icon="i-material-symbols-light-door-open"
         to="/"
         variant="link"
+        :padded="false"
       />
     </div>
     <div class="flex items-center gap-4">

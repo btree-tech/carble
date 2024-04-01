@@ -26,30 +26,37 @@ const print = () => {
       print:hidden
     "
   >
-    <div class="landscape:col-span-2">
+    <div
+      class="
+        landscape:col-span-2
+        portrait:px-4
+      "
+    >
       <UButton
         label="プロジェクト一覧に戻る"
         icon="i-material-symbols-light-door-open"
         to="/"
         variant="link"
+        :padded="false"
       />
     </div>
     <div
       class="
-        flex items-center
+        flex items-center gap-x-4
         landscape:col-span-2
         portrait:px-4
       "
     >
-      <div class="grow">
+      <div class="grow truncate">
         {{ project.name }}
       </div>
       <UButton
-        label="テーブルビュー"
         icon="i-material-symbols-light-table-view"
         :to="`/projects/${project.id}`"
         variant="soft"
-      />
+      >
+        <span class="hidden md:inline">テーブルビュー</span>
+      </UButton>
     </div>
     <div
       ref="preview"
