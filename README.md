@@ -21,9 +21,6 @@ $ docker-compose up
 # pnpmがインストールされていない場合のみ
 $ npm install -g pnpm
 
-# 初回のみ
-$ cp .env.example .env
-
 $ pnpm install
 $ pnpm dev
 ```
