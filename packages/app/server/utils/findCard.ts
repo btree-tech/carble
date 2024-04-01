@@ -1,10 +1,9 @@
-import { connect } from '@carble/db'
 
 export default async function() {
   const projectId = getRouterParam(useEvent(), 'projectId')
   const cardId = getRouterParam(useEvent(), 'cardId')
 
-  const card = await connect().query.cards.findFirst({
+  const card = await useDatabase().query.cards.findFirst({
     where: (t, { eq, and }) => and(
       eq(t.id, Number(cardId)),
       eq(t.projectId, Number(projectId)),

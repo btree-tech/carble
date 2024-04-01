@@ -1,4 +1,3 @@
-import { connect } from '@carble/db'
 import { contents } from '@carble/db/schema'
 import { z } from 'zod'
 
@@ -12,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const data = await validate(updateContentSchema, await readBody(event))
 
-  const [content] = await connect().insert(contents)
+  const [content] = await useDatabase().insert(contents)
     .values({
       cardId: Number(cardId),
       fieldId: Number(fieldId),

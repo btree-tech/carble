@@ -1,8 +1,7 @@
-import { connect } from '@carble/db'
 import { fields, projects } from '@carble/db/schema'
 
 export default defineEventHandler(async () => {
-  return await connect().transaction(async (tx) => {
+  return await useDatabase().transaction(async (tx) => {
     const [project] = await tx.insert(projects)
       .values({
         name: '無題のプロジェクト',

@@ -1,4 +1,3 @@
-import { connect } from '@carble/db'
 import { images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import { extension } from 'mime-types'
@@ -12,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const filename = `${createId()}.${extension(file.type!)}`
 
-  return await connect().transaction(async (tx) => {
+  return await useDatabase().transaction(async (tx) => {
     const [image] = await tx.insert(images)
       .values({
         projectId: Number(projectId),

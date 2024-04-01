@@ -1,4 +1,3 @@
-import { connect } from '@carble/db'
 import { cards, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import { eq, max } from 'drizzle-orm'
@@ -10,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const body = await readMultipartFormData(event)
   const file = body?.find((data) => data.name === 'image')
 
-  return connect().transaction(async (tx) => {
+  return useDatabase().transaction(async (tx) => {
     const [result] = await tx
       .select({ max: max(cards.number) })
       .from(cards)

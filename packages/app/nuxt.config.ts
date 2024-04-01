@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url'
 
+const rootDirURL = new URL('../../', import.meta.url)
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -9,11 +11,15 @@ export default defineNuxtConfig({
     '@nuxt/ui',
   ],
 
+  runtimeConfig: {
+    dbPath: fileURLToPath(new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL)),
+  },
+
   nitro: {
     storage: {
       uploads: {
         driver: 'fs',
-        base: '/storage/uploads',
+        base: '/carble/storage/uploads',
       },
     },
     devStorage: {
@@ -24,6 +30,14 @@ export default defineNuxtConfig({
     },
     experimental: {
       asyncContext: true,
+    },
+  },
+
+  vite: {
+    server: {
+      hmr: {
+        port: Number(process.env.APP_HMR_PORT) || 24678,
+      },
     },
   },
 

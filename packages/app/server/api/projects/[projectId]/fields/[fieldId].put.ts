@@ -1,4 +1,3 @@
-import { connect } from '@carble/db'
 import { fields } from '@carble/db/schema'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
@@ -16,7 +15,7 @@ export default defineEventHandler(async (event) => {
   const field = await findField()
   const data = await validate(updateFieldSchema, await readBody(event))
 
-  return await connect().update(fields)
+  return await useDatabase().update(fields)
     .set({
       ...data,
       updatedAt: new Date(),

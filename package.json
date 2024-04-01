@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @carble/* --parallel dev",
-    "build": "pnpm --filter @carble/db generate && pnpm --filter @carble/app build"
+    "build": "pnpm --filter @carble/app build"
   }
 }

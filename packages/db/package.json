@@ -10,7 +10,8 @@
   },
   "files": [
     "lib",
-    "migrations"
+    "migrations",
+    "drizzle.config.ts"
   ],
   "main": "./lib/index.ts",
   "exports": {
@@ -19,8 +20,7 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.9",
-    "drizzle-kit": "^0.20.14",
-    "prisma": "^5.11.0"
+    "drizzle-kit": "^0.20.14"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.3",

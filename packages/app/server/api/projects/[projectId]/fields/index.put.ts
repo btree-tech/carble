@@ -1,4 +1,3 @@
-import { connect } from '@carble/db'
 import { fields } from '@carble/db/schema'
 import { count, eq } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-zod'
@@ -9,7 +8,7 @@ const updateFieldsSchema = z.array(createSelectSchema(fields).pick({
   order: true,
 }))
 .superRefine(async (value, context) => {
-  const [result] = await connect()
+  const [result] = await useDatabase()
     .select({ count: count(fields.id) })
     .from(fields)
     .where(eq(fields.projectId, Number(getRouterParam(useEvent(), 'projectId'))))
@@ -34,7 +33,7 @@ const updateFieldsSchema = z.array(createSelectSchema(fields).pick({
 export default defineEventHandler(async (event) => {
   const data = await validate(updateFieldsSchema, await readBody(event))
 
-  return await connect().transaction(async (tx) => {
+  return await useDatabase().transaction(async (tx) => {
     for await (const d of data) {
       await tx.update(fields)
         .set({

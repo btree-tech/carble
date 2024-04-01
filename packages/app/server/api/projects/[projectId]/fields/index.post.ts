@@ -1,4 +1,3 @@
-import { connect } from '@carble/db'
 import { fields } from '@carble/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
@@ -12,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const data = await validate(createFieldSchema, await readBody(event))
 
-  const db = connect()
+  const db = useDatabase()
 
   const maxOrder = db.$with('max_order').as(
     db

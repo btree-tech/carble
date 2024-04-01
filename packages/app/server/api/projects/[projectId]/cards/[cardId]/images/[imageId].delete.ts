@@ -1,11 +1,10 @@
-import { connect } from '@carble/db'
 import { images } from '@carble/db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const imageId = getRouterParam(event, 'imageId')
 
-  return await connect().transaction(async (tx) => {
+  return await useDatabase().transaction(async (tx) => {
     const image = await tx.query.images.findFirst({
       where: ({ id }, { eq }) => eq(id, Number(imageId))
     })
