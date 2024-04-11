@@ -4,7 +4,7 @@ import { extension } from 'mime-types'
 
 export default defineEventHandler(async (event) => {
   const body = await readMultipartFormData(event)
-  const file = body?.find((data) => data.name === 'image')!
+  const file = body!.find((data) => data.name === 'image')!
 
   const projectId = getRouterParam(event, 'projectId')
   const cardId = getRouterParam(event, 'cardId')

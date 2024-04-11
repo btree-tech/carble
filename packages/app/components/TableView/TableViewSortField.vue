@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useSortable } from '@vueuse/integrations/useSortable'
-import { fields as fieldsTable } from '@carble/db/schema'
+import type { useSortable } from '@vueuse/integrations/useSortable'
+import type { fields as fieldsTable } from '@carble/db/schema'
 
 defineSlots<{
   default(props: { field: typeof fieldsTable.$inferSelect }): any

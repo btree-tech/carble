@@ -35,7 +35,8 @@
 				},
 				"editor.quickSuggestions": {
 					"strings": true
-				}
+				},
+				"eslint.experimental.useFlatConfig": true
 			}
 		}
 	}
