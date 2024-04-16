@@ -9,8 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "storage:link": "ln -fs ../../../storage/uploads/public/ ./public/uploads"
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.3.6",
