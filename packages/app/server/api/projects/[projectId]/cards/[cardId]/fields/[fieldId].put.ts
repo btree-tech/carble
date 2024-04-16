@@ -6,6 +6,7 @@ const updateContentSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  const projectId = getRouterParam(event, 'projectId')
   const cardId = getRouterParam(event, 'cardId')
   const fieldId = getRouterParam(event, 'fieldId')
 
@@ -13,12 +14,13 @@ export default defineEventHandler(async (event) => {
 
   const [content] = await useDatabase().insert(contents)
     .values({
+      projectId: Number(projectId),
       cardId: Number(cardId),
       fieldId: Number(fieldId),
       body: data.body,
     })
     .onConflictDoUpdate({
-      target: [contents.cardId, contents.fieldId],
+      target: [contents.projectId, contents.cardId, contents.fieldId],
       set: {
         body: data.body,
         updatedAt: new Date(),

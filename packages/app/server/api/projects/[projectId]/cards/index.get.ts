@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 
   return await useDatabase().query.cards.findMany({
     where: (t, { eq }) => eq(t.projectId, Number(projectId)),
-    orderBy: ({ number }, { asc }) => asc(number),
+    orderBy: ({ id }, { asc }) => asc(id),
     with: {
       contents: true,
       images: {

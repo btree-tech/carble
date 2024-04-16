@@ -94,7 +94,7 @@ const {
               </UButton>
             </td>
             <td class="text-right">
-              {{ card.number }}
+              {{ card.id }}
             </td>
             <td
               v-for="field in fields"

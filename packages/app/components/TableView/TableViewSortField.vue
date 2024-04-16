@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { useSortable } from '@vueuse/integrations/useSortable'
+import { useSortable } from '@vueuse/integrations/useSortable'
 import type { fields as fieldsTable } from '@carble/db/schema'
 
 defineSlots<{

@@ -23,7 +23,7 @@ const qrcode = useQRCode(() => JSON.stringify({
       <div class="font-bold">
         ID
       </div>
-      <div>{{ card.number }}</div>
+      <div>{{ card.id }}</div>
       <template
         v-for="field in project.fields"
         :key="field.id"

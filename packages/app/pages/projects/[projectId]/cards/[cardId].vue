@@ -41,7 +41,7 @@ const {
           class="col-span-2 grid grid-cols-subgrid space-y-0"
         >
           <div class="text-sm ml-2">
-            {{ card.number }}
+            {{ card.id }}
           </div>
         </UFormGroup>
         <template

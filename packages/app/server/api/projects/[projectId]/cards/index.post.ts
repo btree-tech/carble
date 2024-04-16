@@ -11,14 +11,14 @@ export default defineEventHandler(async (event) => {
 
   return useDatabase().transaction(async (tx) => {
     const [result] = await tx
-      .select({ max: max(cards.number) })
+      .select({ max: max(cards.id) })
       .from(cards)
       .where(eq(cards.projectId, project.id))
 
     const [card] = await tx.insert(cards)
       .values({
         projectId: project.id,
-        number: (result.max || 0) + 1,
+        id: (result.max || 0) + 1,
       })
       .returning()
 
