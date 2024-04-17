@@ -38,8 +38,11 @@ export default defineEventHandler(async (event) => {
       await tx.update(fields)
         .set({
           order: d.order,
+          updatedAt: new Date(),
         })
         .where(eq(fields.id, d.id))
     }
+
+    await touchProjectUpdatedAt()
   })
 })

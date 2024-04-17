@@ -4,6 +4,10 @@ import { eq } from 'drizzle-orm'
 export default defineEventHandler(async (event) => {
   const cardId = getRouterParam(event, 'cardId')
 
-  return await useDatabase().delete(cards)
-    .where(eq(cards.id, Number(cardId)))
+  return await useDatabase().transaction(async (tx) => {
+    await tx.delete(cards)
+      .where(eq(cards.id, Number(cardId)))
+
+    await touchProjectUpdatedAt()
+  })
 })

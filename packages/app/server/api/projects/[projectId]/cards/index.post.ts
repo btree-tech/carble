@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const body = await readMultipartFormData(event)
   const file = body?.find((data) => data.name === 'image')
 
-  return useDatabase().transaction(async (tx) => {
+  return await useDatabase().transaction(async (tx) => {
     const [result] = await tx
       .select({ max: max(cards.id) })
       .from(cards)
@@ -33,6 +33,8 @@ export default defineEventHandler(async (event) => {
 
       await useStorage('uploads/public/images').setItemRaw(filename, file.data)
     }
+
+    await touchProjectUpdatedAt()
 
     return card
   })

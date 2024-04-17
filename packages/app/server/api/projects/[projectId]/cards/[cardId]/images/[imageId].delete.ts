@@ -13,6 +13,8 @@ export default defineEventHandler(async (event) => {
     await tx.delete(images)
       .where(eq(images.id, Number(imageId)))
 
+    await touchProjectUpdatedAt()
+
     await useStorage('uploads/public/images').removeItem(image.filename)
   })
 })

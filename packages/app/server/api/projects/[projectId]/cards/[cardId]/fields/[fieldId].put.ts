@@ -12,21 +12,25 @@ export default defineEventHandler(async (event) => {
 
   const data = await validate(updateContentSchema, await readBody(event))
 
-  const [content] = await useDatabase().insert(contents)
-    .values({
-      projectId: Number(projectId),
-      cardId: Number(cardId),
-      fieldId: Number(fieldId),
-      body: data.body,
-    })
-    .onConflictDoUpdate({
-      target: [contents.projectId, contents.cardId, contents.fieldId],
-      set: {
+  return await useDatabase().transaction(async (tx) => {
+    const [content] = await tx.insert(contents)
+      .values({
+        projectId: Number(projectId),
+        cardId: Number(cardId),
+        fieldId: Number(fieldId),
         body: data.body,
-        updatedAt: new Date(),
-      },
-    })
-    .returning()
+      })
+      .onConflictDoUpdate({
+        target: [contents.projectId, contents.cardId, contents.fieldId],
+        set: {
+          body: data.body,
+          updatedAt: new Date(),
+        },
+      })
+      .returning()
 
-  return content
+    await touchProjectUpdatedAt()
+
+    return content
+  })
 })

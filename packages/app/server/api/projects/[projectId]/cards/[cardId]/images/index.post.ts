@@ -20,6 +20,8 @@ export default defineEventHandler(async (event) => {
       })
       .returning()
 
+    await touchProjectUpdatedAt()
+
     await useStorage('uploads/public/images').setItemRaw(filename, file.data)
 
     return image
