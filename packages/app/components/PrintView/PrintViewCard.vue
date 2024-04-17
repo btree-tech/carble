@@ -15,6 +15,15 @@ const qrcode = useQRCode(() => JSON.stringify({
   projectId: card.value.projectId,
   cardId: card.value.id,
 }))
+
+const contents = computed(() => {
+  return Object.fromEntries(
+    project.value.fields.map(({ id: fieldId }) => [
+      fieldId,
+      (card.value.contents.find((c) => c.fieldId === fieldId)?.body || '').split(/\r\n|\r|\n/)
+    ])
+  )
+})
 </script>
 
 <template>
@@ -31,7 +40,15 @@ const qrcode = useQRCode(() => JSON.stringify({
         <div class="font-bold">
           {{ field.name }}
         </div>
-        <div>{{ card.contents.find((c) => c.fieldId === field.id)?.body || '' }}</div>
+        <div>
+          <template
+            v-for="(line, i) in  contents[field.id]"
+            :key="line"
+          >
+            <br v-if="i > 0">
+            {{ line }}
+          </template>
+        </div>
       </template>
     </div>
     <div class="flex flex-col gap-4">
