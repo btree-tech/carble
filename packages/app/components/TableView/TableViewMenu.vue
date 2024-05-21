@@ -11,7 +11,9 @@ const items = [[
   {
     label: 'インポート',
     icon: 'i-material-symbols-light-upload',
-    click: () => {},
+    click: () => {
+      importModalIsOpen.value = true
+    },
   },
   {
     label: 'エクスポート',
@@ -28,6 +30,8 @@ const items = [[
     click: () => {},
   }
 ]]
+
+const importModalIsOpen = ref(false)
 </script>
 
 <template>
@@ -38,6 +42,8 @@ const items = [[
         color="gray"
       />
     </UDropdown>
+
+    <TableViewImport v-model="importModalIsOpen" />
 
     <a
       ref="exportLink"

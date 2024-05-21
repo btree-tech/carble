@@ -16,10 +16,7 @@ const {
 </script>
 
 <template>
-  <div
-    v-if="project"
-    class="grid row-auto gap-y-4 px-4"
-  >
+  <div class="grid row-auto gap-y-4 px-4">
     <div>
       <UButton
         label="プロジェクト一覧に戻る"
@@ -37,7 +34,7 @@ const {
       <StatusIcon :status="status" />
       <UButton
         icon="i-material-symbols-light-print"
-        :to="`/projects/${project.id}/print`"
+        :to="`/projects/${project?.id}/print`"
         variant="soft"
       >
         <span class="hidden md:inline">印刷ビュー</span>
@@ -45,7 +42,10 @@ const {
       <TableViewMenu />
     </div>
     <TableViewScan class="justify-self-end" />
-    <div class="overflow-x-auto -mx-4 p-4 xl:mx-0 xl:p-0">
+    <div
+      v-if="project"
+      class="overflow-x-auto -mx-4 p-4 xl:mx-0 xl:p-0"
+    >
       <table class="table-auto border-separate border-spacing-2 whitespace-nowrap">
         <thead>
           <tr class="text-left">

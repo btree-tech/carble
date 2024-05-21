@@ -32,6 +32,9 @@ export default defineNuxtConfig({
     experimental: {
       asyncContext: true,
     },
+    alias: {
+      'file-type': fileURLToPath(new URL('node_modules/file-type/index.js', import.meta.url)),
+    },
   },
 
   vite: {

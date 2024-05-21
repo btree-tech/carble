@@ -32,6 +32,7 @@
     "barcode-detector": "^2.2.5",
     "drizzle-orm": "^0.30.8",
     "drizzle-zod": "^0.5.1",
+    "file-type": "^19.0.0",
     "mime-types": "^2.1.35",
     "qrcode": "^1.5.3",
     "sortablejs": "^1.15.2",
