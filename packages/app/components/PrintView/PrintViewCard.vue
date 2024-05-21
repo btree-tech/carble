@@ -3,11 +3,14 @@ import { useQRCode } from '@vueuse/integrations/useQRCode'
 
 const props = defineProps<{
   cardId: number
+  fieldVisibilities: Record<number, boolean>
 }>()
 
 const { data: project } = useProjectData()
 
 const { data: cards } = useCardsData()
+
+const fields = computed(() => (project.value?.fields || []).filter((field) => props.fieldVisibilities[field.id]))
 
 const card = computed(() => cards.value.find((card) => card.id === props.cardId)!)
 
@@ -34,7 +37,7 @@ const contents = computed(() => {
       </div>
       <div>{{ card.id }}</div>
       <template
-        v-for="field in project.fields"
+        v-for="field in fields"
         :key="field.id"
       >
         <div class="font-bold">

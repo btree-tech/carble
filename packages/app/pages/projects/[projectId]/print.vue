@@ -14,6 +14,16 @@ const scale = computed(() => previewWidth.value / actualWidth.value)
 const print = () => {
   window.print()
 }
+
+const fieldVisibilities = ref<Record<number, boolean>>({})
+watch(project, (project) => {
+  fieldVisibilities.value = {}
+  if (!project?.fields.length) return
+
+  project.fields.forEach((field) => {
+    fieldVisibilities.value[field.id] = field.isVisible
+  })
+}, { immediate: true })
 </script>
 
 <template>
@@ -63,6 +73,7 @@ const print = () => {
       class="overflow-x-hidden overflow-y-auto text-black bg-white"
     >
       <PrintViewRenderer
+        :field-visibilities="fieldVisibilities"
         class="text-black bg-white origin-top-left"
         :style="{
           scale,
@@ -70,13 +81,25 @@ const print = () => {
         }"
       />
     </div>
-    <div class="portrait:px-4">
+    <div class="portrait:px-4 space-y-4">
       <UButton
         label="印刷"
         size="xl"
         block
         @click="print"
       />
+      <div class="space-y-2">
+        <div>項目の表示</div>
+        <div
+          v-for="field in project.fields"
+          :key="field.id"
+        >
+          <UCheckbox
+            v-model="fieldVisibilities[field.id]"
+            :label="field.name || ''"
+          />
+        </div>
+      </div>
     </div>
 
     <div
@@ -85,7 +108,10 @@ const print = () => {
     />
 
     <Teleport to="body">
-      <PrintViewRenderer class="text-black hidden print:block" />
+      <PrintViewRenderer
+        :field-visibilities="fieldVisibilities"
+        class="text-black hidden print:block"
+      />
     </Teleport>
   </div>
 </template>

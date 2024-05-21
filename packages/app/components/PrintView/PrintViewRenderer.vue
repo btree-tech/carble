@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { type z } from 'zod'
 
+defineProps<{
+  fieldVisibilities: Record<number, boolean>
+}>()
+
 const { data: cards } = useCardsData()
 
 const chunked = computed(() => cards.value.reduce((prev, _, i) => {
@@ -19,6 +23,7 @@ const chunked = computed(() => cards.value.reduce((prev, _, i) => {
         v-for="card in c"
         :key="card.id"
         :card-id="card.id"
+        :field-visibilities="fieldVisibilities"
         class="
           w-[210mm] h-[148.5mm] a-spect-[1.414] p-8 border border-gray-500
           print:a-spect-[revert] print:w-full print:h-[50svh]
