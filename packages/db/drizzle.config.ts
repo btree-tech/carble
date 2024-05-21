@@ -6,7 +6,7 @@ const rootDirURL = new URL('../../', import.meta.url)
 export default {
   schema: fileURLToPath(new URL('./lib/schema.ts', import.meta.url)),
   out: './migrations',
-  driver: 'better-sqlite',
+  dialect: 'sqlite',
   dbCredentials: {
     url: fileURLToPath(new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL)),
   },
