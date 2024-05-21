@@ -85,7 +85,11 @@ const {
             v-for="card in cards"
             :key="card.id"
           >
-            <td>
+            <td class="flex items-center gap-x-2">
+              <UIcon
+                name="i-material-symbols-light-image"
+                :class="['w-6 h-6', { invisible: !card.images.length }]"
+              />
               <UButton
                 icon="i-material-symbols-light-list-alt"
                 :to="`/projects/${card.projectId}/cards/${card.id}`"
