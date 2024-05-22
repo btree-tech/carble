@@ -2,7 +2,7 @@ import { cards, contents, fields, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import AdmZip from 'adm-zip'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
-import { SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
+import { type SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
 import { fileTypeFromBuffer } from 'file-type'
 import * as fs from 'node:fs'
 import { existsSync, renameSync, rmSync } from 'node:fs'
@@ -39,7 +39,6 @@ async function toWorkbook() {
   if (xlsxFiles.length > 1) return Promise.reject('zip内にエクセル/CSVファイルが複数含まれています')
 
   const dirPath = resolveStoragePath('uploads', 'imports', createId())
-  // フォルダごと圧縮した場合に対応する
   zip.extractAllTo(dirPath)
 
   return {
