@@ -105,9 +105,7 @@ export default defineEventHandler(async () => {
   // save
   await useDatabase().transaction(async (tx) => {
     const project = await findProject({
-      fields: {
-        where: ({ name }, { inArray }) => inArray(name, fieldNames),
-      },
+      fields: true,
     })
     const [{ value: currentMaxCardId }] = await tx
       .select({
@@ -116,13 +114,13 @@ export default defineEventHandler(async () => {
       .from(cards)
       .where(eq(cards.projectId, project.id))
 
-    const maxOrder = Math.max(0, ...project.fields.map((f) => f.order))
+    let maxOrder = Math.max(0, ...project.fields.map((f) => f.order))
     const insertFieldValues = fieldNames
       .filter((name) => project.fields.every((f) => f.name !== name))
-      .map((name, i) => ({
+      .map((name) => ({
         name,
         projectId: project.id,
-        order: maxOrder + i + 1,
+        order: ++maxOrder,
       }))
     if (insertFieldValues.length) {
       project.fields = [
