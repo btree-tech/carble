@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm migrate && pnpm studio",
-    "generate": "drizzle-kit generate:sqlite",
-    "migrate": "drizzle-kit push:sqlite",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit push",
     "studio": "drizzle-kit studio --host 0.0.0.0"
   },
   "files": [
