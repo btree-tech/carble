@@ -88,7 +88,7 @@ export default defineEventHandler(async () => {
       errors.push(`${i + 1}行目: IDは数字で入力してください`)
     }
 
-    if (hasImageField) {
+    if (hasImageField && raw[ImageFieldName]) {
       raw[ImageFieldName].split(/\s/).forEach((p) => {
         const imagePath = resolve(basePath, p)
         if (!existsSync(imagePath)) {
@@ -156,7 +156,7 @@ export default defineEventHandler(async () => {
           })
       })
 
-      if (hasImageField) {
+      if (hasImageField && raw[ImageFieldName]) {
         raw[ImageFieldName].split(/\s/).forEach((image) => {
           const path = resolve(basePath, image)
           const filename = `${createId()}.${extname(path)}`
