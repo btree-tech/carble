@@ -31,7 +31,7 @@ async function toWorkbook() {
   const zip = new AdmZip(file.data)
   const xlsxFiles: string[] = []
   zip.forEach(({ entryName }) => {
-    if (entryName.endsWith('.xlsx') || entryName.endsWith('.csv')) {
+    if (!entryName.match('__MACOSX') && (entryName.endsWith('.xlsx') || entryName.endsWith('.csv'))) {
       xlsxFiles.push(entryName)
     }
   })
