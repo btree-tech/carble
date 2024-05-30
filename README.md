@@ -26,6 +26,7 @@ $ pnpm dev
 ```
 
 URL: http://localhost:3000
+DBデータ確認: https://local.drizzle.studio
 
 ## デプロイ
 1. AWS ECRにイメージをプッシュする
