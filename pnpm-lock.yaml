@@ -40,9 +40,6 @@ importers:
       file-type:
         specifier: ^19.0.0
         version: 19.0.0
-      mime-types:
-        specifier: ^2.1.35
-        version: 2.1.35
       qrcode:
         specifier: ^1.5.3
         version: 1.5.3
@@ -62,9 +59,6 @@ importers:
       '@types/adm-zip':
         specifier: ^0.5.5
         version: 0.5.5
-      '@types/mime-types':
-        specifier: ^2.1.4
-        version: 2.1.4
       '@vueuse/core':
         specifier: ^10.9.0
         version: 10.9.0(vue@3.4.27(typescript@5.4.5))
@@ -1461,9 +1455,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/mime-types@2.1.4':
-    resolution: {integrity: sha512-lfU4b34HOri+kAY5UheuFMWPDOI+OPceBSHZKp69gEyTL/mmJ4cnU6Y/rlme3UL3GyOn6Y42hyIEw0/q8sWx5w==}
 
   '@types/node@20.12.12':
     resolution: {integrity: sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==}
@@ -6848,8 +6839,6 @@ snapshots:
       '@types/node': 20.12.12
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/mime-types@2.1.4': {}
 
   '@types/node@20.12.12':
     dependencies:

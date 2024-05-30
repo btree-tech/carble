@@ -1,15 +1,18 @@
 import { images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
-import { extension } from 'mime-types'
+import { z } from 'zod'
+
+const createImageSchema = formDataSchema.pipe(z.object({
+  image: imageFileSchema,
+}))
 
 export default defineEventHandler(async (event) => {
-  const body = await readMultipartFormData(event)
-  const file = body!.find((data) => data.name === 'image')!
+  const data = await validate(createImageSchema, await readFormData(event))
 
   const projectId = getRouterParam(event, 'projectId')
   const cardId = getRouterParam(event, 'cardId')
 
-  const filename = `${createId()}.${extension(file.type!)}`
+  const filename = `${createId()}.${data.image.ext}`
 
   return await useDatabase().transaction(async (tx) => {
     const [image] = await tx.insert(images)
@@ -22,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
     await touchProjectUpdatedAt()
 
-    await useStorage('uploads/public/images').setItemRaw(filename, file.data)
+    await useStorage('uploads/public/images').setItemRaw(filename, data.image.data)
 
     return image
   })

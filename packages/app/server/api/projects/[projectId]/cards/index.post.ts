@@ -1,13 +1,24 @@
 import { cards, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import { eq, max } from 'drizzle-orm'
-import { extension } from 'mime-types'
+import { z } from 'zod'
+import { H3Error } from 'h3'
+
+const createCardSchema = formDataSchema
+  .pipe(z.object({
+    image: imageFileSchema.optional(),
+  }))
+  .optional()
 
 export default defineEventHandler(async (event) => {
   const project = await findProject()
 
-  const body = await readMultipartFormData(event)
-  const file = body?.find((data) => data.name === 'image')
+  let data: z.infer<typeof createCardSchema>
+  try {
+    data = await validate(createCardSchema, await readFormData(event))
+  } catch (err) {
+    if (err instanceof H3Error) throw err
+  }
 
   return await useDatabase().transaction(async (tx) => {
     const [result] = await tx
@@ -22,8 +33,8 @@ export default defineEventHandler(async (event) => {
       })
       .returning()
 
-    if (file) {
-      const filename = `${createId()}.${extension(file.type!)}`
+    if (data?.image) {
+      const filename = `${createId()}.${data.image.ext}`
 
       await tx.insert(images).values({
         projectId: project.id,
@@ -31,7 +42,7 @@ export default defineEventHandler(async (event) => {
         filename,
       })
 
-      await useStorage('uploads/public/images').setItemRaw(filename, file.data)
+      await useStorage('uploads/public/images').setItemRaw(filename, data.image.data)
     }
 
     await touchProjectUpdatedAt()
