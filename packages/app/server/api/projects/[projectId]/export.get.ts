@@ -1,4 +1,5 @@
 import AdmZip from 'adm-zip'
+import { existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import * as XLSX from 'xlsx'
 
@@ -38,8 +39,10 @@ export default defineEventHandler(async () => {
 
   cards.forEach((card) => {
     card.images.forEach((image) => {
+      const path = resolveStoragePath('uploads', 'public/images', image.filename)
+      if (!existsSync(path)) return
       zip.addLocalFile(
-        resolveStoragePath('uploads', 'public/images', image.filename),
+        path,
         '',
         `${card.id}-${image.id}${extname(image.filename)}`
       )
