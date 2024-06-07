@@ -14,6 +14,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     dbPath: fileURLToPath(new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL)),
+    basicAuth: {
+      user: '',
+      password: '',
+    },
   },
 
   nitro: {

@@ -5,7 +5,7 @@
 NODE_ENV=productionで動作する
 
 ```sh
-# ポート番号を変更したい場合のみ
+# ポート番号を変更したい or basic認証を利用したい場合のみ
 $ cp .env.example .env
 
 $ docker-compose up
