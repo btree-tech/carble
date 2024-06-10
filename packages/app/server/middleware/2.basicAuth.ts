@@ -1,4 +1,8 @@
 export default defineEventHandler((event) => {
+  if (event.path?.startsWith('/api/health')) {
+    return
+  }
+
   const authData = useRuntimeConfig().basicAuth
   if (!authData.user || !authData.password) {
     return
