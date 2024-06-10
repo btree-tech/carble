@@ -1,12 +1,12 @@
-import AdmZip from 'adm-zip'
-import { existsSync } from 'node:fs'
+import archiver from 'archiver'
+import { createReadStream, existsSync } from 'node:fs'
 import { extname } from 'node:path'
 import * as XLSX from 'xlsx'
 
 const IdFieldName = 'ID' as const
 const ImageFieldName = '画像ファイル' as const
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
   const project = await findProject({
     fields: {
       orderBy: ({ order }, { asc }) => asc(order),
@@ -24,8 +24,6 @@ export default defineEventHandler(async () => {
     },
   })
 
-  const zip = new AdmZip()
-
   const data = [
     [IdFieldName, ...project.fields.map((field) => field.name), ImageFieldName],
     ...cards.map((card) => [
@@ -35,19 +33,25 @@ export default defineEventHandler(async () => {
     ]),
   ]
   const wb = XLSX.utils.book_new(XLSX.utils.aoa_to_sheet(data))
-  zip.addFile(`${project.name}.xlsx`, XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }))
+
+  const archive = archiver('zip')
+
+  archive.append(XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }), { name: `${project.name}.xlsx` })
 
   cards.forEach((card) => {
     card.images.forEach((image) => {
       const path = resolveStoragePath('uploads', 'public/images', image.filename)
       if (!existsSync(path)) return
-      zip.addLocalFile(
-        path,
-        '',
-        `${card.id}-${image.id}${extname(image.filename)}`
+      archive.append(
+        createReadStream(path),
+        { name: `${card.id}-${image.id}${extname(image.filename)}` }
       )
     })
   })
 
-  return zip.toBuffer()
+  const response = sendStream(event, archive)
+
+  archive.finalize()
+
+  return response
 })
