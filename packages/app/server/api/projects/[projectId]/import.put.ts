@@ -157,11 +157,12 @@ export default defineEventHandler(async () => {
   const json = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 })
   if (json.length < 1) throw createValidationError(['エクセル/CSVファイルに行が存在していません'], baseDir)
 
-  const fieldNames = json[0].filter((f) => f !== IdFieldName && f !== ImageFieldName)
+  const header = json[0]
+  const fieldNames = header.filter((f) => f !== IdFieldName && f !== ImageFieldName)
   const importData = json.slice(1)
 
-  const idIndex = fieldNames.findIndex((value) => value === IdFieldName)
-  const imageIndex = fieldNames.findIndex((value) => value === ImageFieldName)
+  const idIndex = header.findIndex((value) => value === IdFieldName)
+  const imageIndex = header.findIndex((value) => value === ImageFieldName)
   const hasImageField = isZip && imageIndex >= 0
 
   // validation
@@ -224,7 +225,9 @@ export default defineEventHandler(async () => {
         projectId: project.id,
       })
 
-      fieldNames.forEach((fieldName, i) => {
+      header.forEach((fieldName, i) => {
+        if (i === idIndex || i === imageIndex) return
+
         project.fields
           .filter((field) => field.name === fieldName)
           .forEach((field) => {
@@ -232,7 +235,7 @@ export default defineEventHandler(async () => {
               projectId: project.id,
               cardId,
               fieldId: field.id,
-              body: raw[i],
+              body: raw[i] || '',
             })
           })
       })
@@ -240,7 +243,7 @@ export default defineEventHandler(async () => {
       if (hasImageField && raw[imageIndex]) {
         raw[imageIndex].split(/\s/).forEach((image) => {
           const path = pathResolve(cwd, image)
-          const filename = `${createId()}.${extname(path)}`
+          const filename = `${createId()}${extname(path)}`
           insertImageValues.push({
             projectId: project.id,
             cardId,
