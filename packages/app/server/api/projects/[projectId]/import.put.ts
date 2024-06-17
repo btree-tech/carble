@@ -154,20 +154,25 @@ export default defineEventHandler(async () => {
     })
 
   const sheet = wb.Sheets[wb.SheetNames[0]]
-  const json = XLSX.utils.sheet_to_json<Record<string, string>>(sheet)
+  const json = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 })
   if (json.length < 1) throw createValidationError(['エクセル/CSVファイルに行が存在していません'], baseDir)
 
-  const hasImageField = isZip && (ImageFieldName in json[0])
+  const fieldNames = json[0].filter((f) => f !== IdFieldName && f !== ImageFieldName)
+  const importData = json.slice(1)
+
+  const idIndex = fieldNames.findIndex((value) => value === IdFieldName)
+  const imageIndex = fieldNames.findIndex((value) => value === ImageFieldName)
+  const hasImageField = isZip && imageIndex >= 0
 
   // validation
   const errors: string[] = []
-  json.forEach((raw, i) => {
-    if (raw[IdFieldName] && !/^[0-9]+$/.test(raw[IdFieldName])) {
+  importData.forEach((raw, i) => {
+    if (raw[idIndex] && !/^[0-9]+$/.test(raw[idIndex])) {
       errors.push(`${i + 1}行目: IDは数字で入力してください`)
     }
 
-    if (hasImageField && raw[ImageFieldName]) {
-      raw[ImageFieldName].split(/\s/).forEach((p) => {
+    if (hasImageField && raw[imageIndex]) {
+      raw[imageIndex].split(/\s/).forEach((p) => {
         const imagePath = pathResolve(cwd, p)
         if (!existsSync(imagePath)) {
           errors.push(`${i + 1}行目: 画像ファイル(${p})が存在していません`)
@@ -176,8 +181,6 @@ export default defineEventHandler(async () => {
     }
   })
   if (errors.length) throw createValidationError(errors, baseDir)
-
-  const fieldNames = Object.keys(json[0]).filter((f) => f !== IdFieldName && f !== ImageFieldName)
 
   // save
   await useDatabase().transaction(async (tx) => {
@@ -208,20 +211,20 @@ export default defineEventHandler(async () => {
       ]
     }
 
-    let maxCardId = Math.max(0, Number(currentMaxCardId), ...json.map((raw) => Number(raw[IdFieldName] || 0)))
+    let maxCardId = Math.max(0, Number(currentMaxCardId), ...importData.map((raw) => Number(raw[idIndex] || 0)))
     const insertCardValues: SQLiteInsertValue<typeof cards>[] = []
     const insertContentValues: SQLiteInsertValue<typeof contents>[] = []
     const insertImageValues: SQLiteInsertValue<typeof images>[] = []
     const imagePaths: { from: string, to: string }[] = []
-    json.forEach((raw) => {
-      const cardId = raw[IdFieldName] ? Number(raw[IdFieldName]) : ++maxCardId
+    importData.forEach((raw) => {
+      const cardId = raw[idIndex] ? Number(raw[idIndex]) : ++maxCardId
 
       insertCardValues.push({
         id: cardId,
         projectId: project.id,
       })
 
-      fieldNames.forEach((fieldName) => {
+      fieldNames.forEach((fieldName, i) => {
         project.fields
           .filter((field) => field.name === fieldName)
           .forEach((field) => {
@@ -229,13 +232,13 @@ export default defineEventHandler(async () => {
               projectId: project.id,
               cardId,
               fieldId: field.id,
-              body: raw[fieldName],
+              body: raw[i],
             })
           })
       })
 
-      if (hasImageField && raw[ImageFieldName]) {
-        raw[ImageFieldName].split(/\s/).forEach((image) => {
+      if (hasImageField && raw[imageIndex]) {
+        raw[imageIndex].split(/\s/).forEach((image) => {
           const path = pathResolve(cwd, image)
           const filename = `${createId()}.${extname(path)}`
           insertImageValues.push({
