@@ -1,12 +1,14 @@
 import { cards, contents, fields, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
-import AdmZip from 'adm-zip'
+import busboy from 'busboy'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
 import { type SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
-import { fileTypeFromBuffer } from 'file-type'
+import { AsyncUnzipInflate, Unzip } from 'fflate/node'
+import { fileTypeStream } from 'file-type/core'
 import * as fs from 'node:fs'
-import { existsSync, renameSync, rmSync } from 'node:fs'
-import { extname, resolve } from 'node:path'
+import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
+import { extname, resolve as pathResolve } from 'node:path'
+import { Readable } from 'node:stream'
 import * as XLSX from 'xlsx'
 
 XLSX.set_fs(fs)
@@ -14,38 +16,112 @@ XLSX.set_fs(fs)
 const IdFieldName = 'ID' as const
 const ImageFieldName = '画像ファイル' as const
 
+async function getRequestFileStream() {
+  const { req } = useEvent().node
+  const bb = busboy({
+    headers: req.headers,
+    limits: {
+      files: 1,
+    },
+  })
+
+  return new Promise<Readable>((resolve, reject) => {
+    bb.on('file', async (name, file, info) => {
+      resolve(file)
+    })
+    bb.on('error', reject)
+
+    req.pipe(bb)
+  })
+}
+
+async function streamToBuffer(stream: Readable) {
+  const chunks: Buffer[] = []
+  return new Promise<Buffer>((resolve, reject) => {
+    stream
+      .on('data', (chunk) => {
+        chunks.push(Buffer.from(chunk))
+      })
+      .on('error', reject)
+      .on('close', () => {
+        resolve(Buffer.concat(chunks))
+      })
+  })
+}
+
+async function unzip(stream: Readable, to: string) {
+  return new Promise<{ files: string[] }>((resolve, reject) => {
+    const files: string[] = []
+    let writedCount = 0
+
+    const unzipper = new Unzip((file) => {
+      if (file.name.match('__MACOSX')) {
+        file.terminate()
+        return
+      }
+
+      const toPath = pathResolve(to, file.name)
+      files.push(toPath)
+      mkdirSync(pathResolve(toPath, '../'), { recursive: true })
+
+      const writeStream = createWriteStream(toPath)
+      writeStream.on('close', () => {
+        writedCount++
+        if (writedCount >= files.length) {
+          resolve({ files })
+        }
+      })
+
+      file.ondata = (err, data, final) => {
+        if (err) {
+          return reject(err)
+        }
+        if (final) {
+          writeStream.end(data)
+        } else {
+          writeStream.write(data)
+        }
+      }
+      file.start()
+    })
+    unzipper.register(AsyncUnzipInflate)
+
+    stream
+      .on('data', (chunk) => {
+        unzipper.push(Buffer.from(chunk))
+      })
+      .on('error', reject)
+  })
+}
+
 async function toWorkbook() {
-  const body = await readMultipartFormData(useEvent())
-  const file = body?.find((data) => data.name === 'file')
-  if (!file) return Promise.reject('ファイルを選択してください')
+  const fileStream = await getRequestFileStream()
+  const streamWithFileType = await fileTypeStream(fileStream)
+  const isZip = streamWithFileType.fileType?.ext === 'zip'
+  if (isZip) {
+    const baseDir = resolveStoragePath('uploads', 'imports', createId())
+    const { files } = await unzip(streamWithFileType, baseDir)
+      .catch((err) => {
+        console.error(err)
+        return Promise.reject('zipファイルの解凍に失敗しました')
+      })
 
-  const isZip = (await fileTypeFromBuffer(file.data))?.ext === 'zip'
+    const xlsxFiles = files.filter((file) => file.endsWith('.xlsx') || file.endsWith('.csv'))
+    if (xlsxFiles.length < 1) return Promise.reject('zip内にエクセル/CSVファイルが含まれていません')
+    if (xlsxFiles.length > 1) return Promise.reject('zip内にエクセル/CSVファイルが複数含まれています')
 
-  if (!isZip) {
     return {
       isZip,
-      wb: XLSX.read(file.data, { type: 'buffer' }),
+      wb: XLSX.readFile(xlsxFiles[0]),
+      baseDir,
+      cwd: pathResolve(xlsxFiles[0], '../'),
     }
-  }
-
-  const zip = new AdmZip(file.data)
-  const xlsxFiles: string[] = []
-  zip.forEach(({ entryName }) => {
-    if (!entryName.match('__MACOSX') && (entryName.endsWith('.xlsx') || entryName.endsWith('.csv'))) {
-      xlsxFiles.push(entryName)
+  } else {
+    const data = await streamToBuffer(streamWithFileType)
+    return {
+      isZip,
+      wb: XLSX.read(data, { type: 'buffer' }),
     }
-  })
-  if (xlsxFiles.length < 1) return Promise.reject('zip内にエクセル/CSVファイルが含まれていません')
-  if (xlsxFiles.length > 1) return Promise.reject('zip内にエクセル/CSVファイルが複数含まれています')
-
-  const dirPath = resolveStoragePath('uploads', 'imports', createId())
-  zip.extractAllTo(dirPath)
-
-  return {
-    isZip,
-    dirPath,
-    basePath: resolve(`${dirPath}/${xlsxFiles[0]}`, '../'),
-    wb: XLSX.readFile(`${dirPath}/${xlsxFiles[0]}`),
   }
 }
 
@@ -65,10 +141,12 @@ function createValidationError(errors: string[], dirPath?: string) {
 }
 
 export default defineEventHandler(async () => {
+  await findProject()
+
   const {
     isZip,
-    dirPath,
-    basePath,
+    baseDir,
+    cwd,
     wb,
   } = await toWorkbook()
     .catch((err: string) => {
@@ -77,7 +155,7 @@ export default defineEventHandler(async () => {
 
   const sheet = wb.Sheets[wb.SheetNames[0]]
   const json = XLSX.utils.sheet_to_json<Record<string, string>>(sheet)
-  if (json.length < 1) throw createValidationError(['エクセル/CSVファイルに行が存在していません'], dirPath)
+  if (json.length < 1) throw createValidationError(['エクセル/CSVファイルに行が存在していません'], baseDir)
 
   const hasImageField = isZip && (ImageFieldName in json[0])
 
@@ -90,14 +168,14 @@ export default defineEventHandler(async () => {
 
     if (hasImageField && raw[ImageFieldName]) {
       raw[ImageFieldName].split(/\s/).forEach((p) => {
-        const imagePath = resolve(basePath, p)
+        const imagePath = pathResolve(cwd, p)
         if (!existsSync(imagePath)) {
           errors.push(`${i + 1}行目: 画像ファイル(${p})が存在していません`)
         }
       })
     }
   })
-  if (errors.length) throw createValidationError(errors, dirPath)
+  if (errors.length) throw createValidationError(errors, baseDir)
 
   const fieldNames = Object.keys(json[0]).filter((f) => f !== IdFieldName && f !== ImageFieldName)
 
@@ -158,7 +236,7 @@ export default defineEventHandler(async () => {
 
       if (hasImageField && raw[ImageFieldName]) {
         raw[ImageFieldName].split(/\s/).forEach((image) => {
-          const path = resolve(basePath, image)
+          const path = pathResolve(cwd, image)
           const filename = `${createId()}.${extname(path)}`
           insertImageValues.push({
             projectId: project.id,
@@ -212,5 +290,5 @@ export default defineEventHandler(async () => {
     await touchProjectUpdatedAt()
   })
 
-  cleanup(dirPath)
+  cleanup(baseDir)
 })

@@ -34,12 +34,18 @@ importers:
       barcode-detector:
         specifier: ^2.2.6
         version: 2.2.6
+      busboy:
+        specifier: ^1.6.0
+        version: 1.6.0
       drizzle-orm:
         specifier: ^0.30.10
         version: 0.30.10(@opentelemetry/api@1.8.0)(@types/better-sqlite3@7.6.10)(better-sqlite3@10.0.0)
       drizzle-zod:
         specifier: ^0.5.1
         version: 0.5.1(drizzle-orm@0.30.10(@opentelemetry/api@1.8.0)(@types/better-sqlite3@7.6.10))(zod@3.23.8)
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.2
       file-type:
         specifier: ^19.0.0
         version: 19.0.0
@@ -65,6 +71,9 @@ importers:
       '@types/archiver':
         specifier: ^6.0.2
         version: 6.0.2
+      '@types/busboy':
+        specifier: ^1.5.4
+        version: 1.5.4
       '@vueuse/core':
         specifier: ^10.9.0
         version: 10.9.0(vue@3.4.27(typescript@5.4.5))
@@ -1447,6 +1456,9 @@ packages:
   '@types/better-sqlite3@7.6.10':
     resolution: {integrity: sha512-TZBjD+yOsyrUJGmcUj6OS3JADk3+UZcNv3NOBqGkM09bZdi28fNZw8ODqbMOLfKCu7RYCO62/ldq1iHbzxqoPw==}
 
+  '@types/busboy@1.5.4':
+    resolution: {integrity: sha512-kG7WrUuAKK0NoyxfQHsVE6j1m01s6kMma64E+OZenQABMQyTJop1DumUWcLwAQ2JzpefU7PDYoRDKl8uZosFjw==}
+
   '@types/dom-webcodecs@0.1.11':
     resolution: {integrity: sha512-yPEZ3z7EohrmOxbk/QTAa0yonMFkNkjnVXqbGb7D4rMr+F1dGQ8ZUFxXkyLLJuiICPejZ0AZE9Rrk9wUCczx4A==}
 
@@ -2023,6 +2035,10 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     peerDependencies:
       esbuild: '>=0.17'
+
+  busboy@1.6.0:
+    resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
+    engines: {node: '>=10.16.0'}
 
   c12@1.10.0:
     resolution: {integrity: sha512-0SsG7UDhoRWcuSvKWHaXmu5uNjDCDN3nkQLRL4Q42IlFy+ze58FcCoI3uPwINXinkz7ZinbhEgyzYFw9u9ZV8g==}
@@ -2825,6 +2841,9 @@ packages:
 
   fastq@1.17.1:
     resolution: {integrity: sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==}
+
+  fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
 
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
@@ -4639,6 +4658,10 @@ packages:
 
   std-env@3.7.0:
     resolution: {integrity: sha512-JPbdCEQLj1w5GilpiHAx3qJvFndqybBysA3qUOnznweH4QbNYUsW/ea8QzSrnh0vNsezMMw5bcVool8lM0gwzg==}
+
+  streamsearch@1.1.0:
+    resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
+    engines: {node: '>=10.0.0'}
 
   streamx@2.16.1:
     resolution: {integrity: sha512-m9QYj6WygWyWa3H1YY69amr4nVgy61xfjys7xO7kviL5rfIEc2naf+ewFiOA+aEJD7y0JO3h2GoiUv4TDwEGzQ==}
@@ -6839,6 +6862,10 @@ snapshots:
     dependencies:
       '@types/node': 20.12.12
 
+  '@types/busboy@1.5.4':
+    dependencies:
+      '@types/node': 20.12.12
+
   '@types/dom-webcodecs@0.1.11': {}
 
   '@types/emscripten@1.39.12': {}
@@ -7636,6 +7663,10 @@ snapshots:
     dependencies:
       esbuild: 0.20.2
       load-tsconfig: 0.2.5
+
+  busboy@1.6.0:
+    dependencies:
+      streamsearch: 1.1.0
 
   c12@1.10.0:
     dependencies:
@@ -8507,6 +8538,8 @@ snapshots:
   fastq@1.17.1:
     dependencies:
       reusify: 1.0.4
+
+  fflate@0.8.2: {}
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -10551,6 +10584,8 @@ snapshots:
   statuses@2.0.1: {}
 
   std-env@3.7.0: {}
+
+  streamsearch@1.1.0: {}
 
   streamx@2.16.1:
     dependencies:
