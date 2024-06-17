@@ -50,29 +50,26 @@ export default defineEventHandler(async () => {
       zip.add(xlsxFile)
       xlsxFile.push(XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }), true)
 
-      await Promise.all(
-        cards.map((card) => {
-          return card.images.map((image) => {
-            return new Promise<void>((resolve) => {
-              const path = resolveStoragePath('uploads', 'public/images', image.filename)
-              if (!existsSync(path)) return Promise.resolve()
+      for await (const card of cards) {
+        for await (const image of card.images) {
+          await new Promise<void>((resolve) => {
+            const path = resolveStoragePath('uploads', 'public/images', image.filename)
+            if (!existsSync(path)) return Promise.resolve()
 
-              const file = new AsyncZipDeflate(`${card.id}-${image.id}${extname(image.filename)}`)
-              zip.add(file)
+            const file = new AsyncZipDeflate(`${card.id}-${image.id}${extname(image.filename)}`)
+            zip.add(file)
 
-              createReadStream(path)
-                .on('data', (chunk) => {
-                  file.push(Buffer.from(chunk))
-                })
-                .on('close', () => {
-                  file.push(Buffer.from([]), true)
-                  resolve()
-                })
-            })
+            createReadStream(path)
+              .on('data', (chunk) => {
+                file.push(Buffer.from(chunk))
+              })
+              .on('close', () => {
+                file.push(Buffer.from([]), true)
+                resolve()
+              })
           })
-        })
-        .flat()
-      )
+        }
+      }
 
       zip.end()
     }
