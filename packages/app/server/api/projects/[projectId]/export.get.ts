@@ -1,12 +1,13 @@
-import archiver from 'archiver'
+import { AsyncZipDeflate, Zip } from 'fflate/node'
 import { createReadStream, existsSync } from 'node:fs'
 import { extname } from 'node:path'
+import { ReadableStream } from 'node:stream/web'
 import * as XLSX from 'xlsx'
 
 const IdFieldName = 'ID' as const
 const ImageFieldName = '画像ファイル' as const
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   const project = await findProject({
     fields: {
       orderBy: ({ order }, { asc }) => asc(order),
@@ -34,24 +35,48 @@ export default defineEventHandler(async (event) => {
   ]
   const wb = XLSX.utils.book_new(XLSX.utils.aoa_to_sheet(data))
 
-  const archive = archiver('zip')
+  const stream = new ReadableStream({
+    start: async (controller) => {
+      const zip = new Zip((err, data, final) => {
+        if (err) return controller.error(err)
 
-  archive.append(XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }), { name: `${project.name}.xlsx` })
+        controller.enqueue(data)
+        if (final) {
+          controller.close()
+        }
+      })
 
-  cards.forEach((card) => {
-    card.images.forEach((image) => {
-      const path = resolveStoragePath('uploads', 'public/images', image.filename)
-      if (!existsSync(path)) return
-      archive.append(
-        createReadStream(path),
-        { name: `${card.id}-${image.id}${extname(image.filename)}` }
+      const xlsxFile = new AsyncZipDeflate(`${project.name}.xlsx`)
+      zip.add(xlsxFile)
+      xlsxFile.push(XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }), true)
+
+      await Promise.all(
+        cards.map((card) => {
+          return card.images.map((image) => {
+            return new Promise<void>((resolve) => {
+              const path = resolveStoragePath('uploads', 'public/images', image.filename)
+              if (!existsSync(path)) return Promise.resolve()
+
+              const file = new AsyncZipDeflate(`${card.id}-${image.id}${extname(image.filename)}`)
+              zip.add(file)
+
+              createReadStream(path)
+                .on('data', (chunk) => {
+                  file.push(Buffer.from(chunk))
+                })
+                .on('close', () => {
+                  file.push(Buffer.from([]), true)
+                  resolve()
+                })
+            })
+          })
+        })
+        .flat()
       )
-    })
+
+      zip.end()
+    }
   })
 
-  const response = sendStream(event, archive)
-
-  archive.finalize()
-
-  return response
+  return stream
 })

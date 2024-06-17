@@ -13,8 +13,6 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.3.13",
-    "@types/adm-zip": "^0.5.5",
-    "@types/archiver": "^6.0.2",
     "@types/busboy": "^1.5.4",
     "@vueuse/core": "^10.9.0",
     "@vueuse/nuxt": "^10.9.0",
@@ -29,8 +27,6 @@
     "@nuxt/ui": "^2.16.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@vueuse/integrations": "^10.9.0",
-    "adm-zip": "^0.5.12",
-    "archiver": "^7.0.1",
     "barcode-detector": "^2.2.6",
     "busboy": "^1.6.0",
     "drizzle-orm": "^0.30.10",
