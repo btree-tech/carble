@@ -15,6 +15,8 @@ const {
   statuses,
   status,
 } = useMultiAsyncDataStatus<number>()
+
+const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
 </script>
 
 <template>
@@ -45,7 +47,7 @@ const {
           </div>
         </UFormGroup>
         <template
-          v-for="field in project.fields"
+          v-for="field in fields"
           :key="field.id"
         >
           <UFormGroup
