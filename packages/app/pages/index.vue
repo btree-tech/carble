@@ -30,6 +30,8 @@ const onClickCreateButton = async () => {
 
 const isDeleting = ref(new Map<number, boolean>())
 const onClickDeleteButton = async (id: number) => {
+  if (!window.confirm('削除してよろしいですか？')) return
+
   isDeleting.value.set(id, true)
   await $fetch(`/api/projects/${id}`, {
     method: 'delete',
