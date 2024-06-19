@@ -24,11 +24,6 @@ const items = [[
       }
     },
   },
-  {
-    label: 'プロジェクト削除',
-    icon: 'i-material-symbols-light-delete',
-    click: () => {},
-  }
 ]]
 
 const importModalIsOpen = ref(false)
