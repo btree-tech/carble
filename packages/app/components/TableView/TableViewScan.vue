@@ -22,7 +22,7 @@ const { files, open, reset, onChange } = useFileDialog({
   capture: 'environment',
 })
 
-const detect = async (file: File) => {
+const detect = async (file: Blob) => {
   // 普通にimportするとSSR時にエラーになる
   const { BarcodeDetector } = await import('barcode-detector')
 
@@ -44,9 +44,11 @@ const {
   if (!file) return
 
   const formData = new FormData()
-  formData.append('image', file)
 
-  const data = await detect(file)
+  const transformed = await OpenCV.transform(file)
+  formData.append('image', transformed)
+
+  const data = await detect(transformed)
   if (data) {
     await $fetch(`/api/projects/${data.projectId}/cards/${data.cardId}/images`, {
       method: 'post',

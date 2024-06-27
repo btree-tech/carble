@@ -20,6 +20,12 @@ export default defineNuxtConfig({
     },
   },
 
+  app: {
+    head: {
+      script: [{ src: '/opencv.js' }],
+    },
+  },
+
   nitro: {
     storage: {
       uploads: {
