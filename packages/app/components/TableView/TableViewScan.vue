@@ -23,10 +23,9 @@ const { files, open, reset, onChange } = useFileDialog({
 })
 
 const detect = async (file: Blob) => {
-  // 普通にimportするとSSR時にエラーになる
-  const { BarcodeDetector } = await import('barcode-detector')
+  const { $BarcodeDetector } = useNuxtApp()
 
-  const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] })
+  const barcodeDetector = new $BarcodeDetector({ formats: ['qr_code'] })
   const barcodes = await barcodeDetector.detect(file)
 
   try {
