@@ -10,8 +10,9 @@ services:
     volumes:
       - ./storage:/carble/storage
     environment:
-      NUXT_PORT: ${NUXT_PORT:-3000}
+      NITRO_PORT: ${NUXT_PORT:-3000}
       NUXT_BASIC_AUTH_USER: ${NUXT_BASIC_AUTH_USER}
       NUXT_BASIC_AUTH_PASSWORD: ${NUXT_BASIC_AUTH_PASSWORD}
     ports:
       - ${NUXT_PORT:-3000}:${NUXT_PORT:-3000}
+    restart: always
