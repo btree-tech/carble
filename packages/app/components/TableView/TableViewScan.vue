@@ -43,11 +43,9 @@ const {
   if (!file) return
 
   const formData = new FormData()
+  formData.append('image', file)
 
-  const transformed = await OpenCV.transform(file)
-  formData.append('image', transformed)
-
-  const data = await detect(transformed)
+  const data = await detect(file)
   if (data) {
     await $fetch(`/api/projects/${data.projectId}/cards/${data.cardId}/images`, {
       method: 'post',
