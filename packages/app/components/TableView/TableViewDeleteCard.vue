@@ -9,6 +9,8 @@ const {
   execute,
   status,
 } = useAsyncData(async () => {
+  if (!window.confirm('削除してよろしいですか？')) return
+
   await $fetch(`/api/projects/${projectId}/cards/${props.cardId}`, {
     method: 'delete',
   })

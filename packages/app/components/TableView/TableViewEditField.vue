@@ -47,6 +47,8 @@ const {
   execute: deleteField,
   status: deleteStatus,
 } = useAsyncData(async () => {
+  if (!window.confirm('削除してよろしいですか？')) return
+
   await $fetch(`/api/projects/${project.value.id}/fields/${props.fieldId}`, {
     method: 'delete',
   })
