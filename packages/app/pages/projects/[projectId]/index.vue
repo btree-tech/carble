@@ -41,7 +41,7 @@ const {
       </UButton>
       <TableViewMenu />
     </div>
-    <TableViewScan class="justify-self-end" />
+    <ScanButton class="justify-self-end" />
     <div
       v-if="project"
       class="overflow-x-auto -mx-4 p-4 xl:mx-0 xl:p-0"

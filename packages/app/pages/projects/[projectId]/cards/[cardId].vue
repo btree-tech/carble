@@ -28,7 +28,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
 <template>
   <div
     v-if="project && card"
-    class="px-4"
+    class="grid row-auto gap-y-4 px-4"
   >
     <div class="flex items-center justify-end gap-4">
       <StatusIcon :status="status" />
@@ -43,6 +43,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
         @submitted="onDuplicated"
       />
     </div>
+    <ScanButton class="justify-self-end" />
     <div
       class="
         grid grid-cols-2 items-start gap-8 my-8
