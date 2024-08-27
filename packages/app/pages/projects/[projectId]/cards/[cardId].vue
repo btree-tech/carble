@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { type z } from 'zod'
+
 const {
   projectId,
 } = useRoute().params
@@ -17,10 +19,17 @@ const {
 } = useMultiAsyncDataStatus<number>()
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
+
+const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
+  await navigateTo(`/projects/${projectId}/cards/${id}`)
+}
 </script>
 
 <template>
-  <div class="px-4">
+  <div
+    v-if="project && card"
+    class="px-4"
+  >
     <div class="flex items-center justify-end gap-4">
       <StatusIcon :status="status" />
       <UButton
@@ -29,9 +38,12 @@ const fields = computed(() => (project.value?.fields || []).filter((field) => fi
         :to="`/projects/${projectId}`"
         variant="soft"
       />
+      <DuplicateCard
+        :card-id="card.id"
+        @submitted="onDuplicated"
+      />
     </div>
     <div
-      v-if="project && card"
       class="
         grid grid-cols-2 items-start gap-8 my-8
         portrait:grid-cols-1
