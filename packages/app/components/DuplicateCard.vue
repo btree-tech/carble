@@ -11,6 +11,8 @@ const emit = defineEmits<{
 
 const { projectId } = useRoute().params
 
+const toast = useToast()
+
 const {
   execute,
   status,
@@ -22,6 +24,10 @@ const {
   const { data: cards } = useCardsData()
   cards.value.push(newCard)
   emit('submitted', newCard)
+  toast.add({
+    id: 'card-duplicate',
+    title: '複製しました',
+  })
 }, {
   immediate: false,
 })
