@@ -19,11 +19,11 @@
     "./schema": "./lib/schema.ts"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.10",
-    "drizzle-kit": "^0.21.2"
+    "@types/better-sqlite3": "^7.6.11",
+    "drizzle-kit": "^0.22.8"
   },
   "dependencies": {
-    "better-sqlite3": "^10.0.0",
-    "drizzle-orm": "^0.30.10"
+    "better-sqlite3": "^11.2.1",
+    "drizzle-orm": "^0.33.0"
   }
 }
