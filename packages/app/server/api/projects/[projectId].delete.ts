@@ -14,7 +14,11 @@ export default defineEventHandler(async () => {
       .where(eq(projects.id, project.id))
 
     await Promise.all(
-      images.map(({ filename }) => useStorage('uploads/public/images').removeItem(filename))
+      images.map(({ filename }) => [
+        useStorage('uploads/public/images').removeItem(filename),
+        useStorage('uploads/public/thumbs').removeItem(`${filename}.webp`),
+      ])
+      .flat()
     )
   })
 })

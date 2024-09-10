@@ -30,7 +30,7 @@ const {
 
 <template>
   <div class="relative inline-block group">
-    <img :src="`/uploads/images/${image.filename}`">
+    <img :src="`/uploads/thumbs/${image.filename}.webp`">
     <UButton
       icon="i-material-symbols-light-close"
       :loading="status === 'pending'"

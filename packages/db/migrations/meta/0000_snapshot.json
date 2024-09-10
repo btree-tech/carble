@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "b424d66f-2b3d-461b-8c38-7edaa99025fa",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "cards": {
       "name": "cards",
@@ -34,15 +32,15 @@
         "cards_projectId_projects_id_fk": {
           "name": "cards_projectId_projects_id_fk",
           "tableFrom": "cards",
-          "tableTo": "projects",
           "columnsFrom": [
             "projectId"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -107,30 +105,30 @@
         "contents_fieldId_fields_id_fk": {
           "name": "contents_fieldId_fields_id_fk",
           "tableFrom": "contents",
-          "tableTo": "fields",
           "columnsFrom": [
             "fieldId"
           ],
+          "tableTo": "fields",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "contents_projectId_cardId_cards_projectId_id_fk": {
           "name": "contents_projectId_cardId_cards_projectId_id_fk",
           "tableFrom": "contents",
-          "tableTo": "cards",
           "columnsFrom": [
             "projectId",
             "cardId"
           ],
+          "tableTo": "cards",
           "columnsTo": [
             "projectId",
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -213,15 +211,15 @@
         "fields_projectId_projects_id_fk": {
           "name": "fields_projectId_projects_id_fk",
           "tableFrom": "fields",
-          "tableTo": "projects",
           "columnsFrom": [
             "projectId"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -279,17 +277,17 @@
         "images_projectId_cardId_cards_projectId_id_fk": {
           "name": "images_projectId_cardId_cards_projectId_id_fk",
           "tableFrom": "images",
-          "tableTo": "cards",
           "columnsFrom": [
             "projectId",
             "cardId"
           ],
+          "tableTo": "cards",
           "columnsTo": [
             "projectId",
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -335,8 +333,9 @@
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "b424d66f-2b3d-461b-8c38-7edaa99025fa",
+  "prevId": "00000000-0000-0000-0000-000000000000"
 }

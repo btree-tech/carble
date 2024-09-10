@@ -1,13 +1,1 @@
-{
-  "version": "5",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1712891415609,
-      "tag": "0000_fast_blackheart",
-      "breakpoints": true
-    }
-  ]
-}
+{"version":"5","dialect":"sqlite","entries":[{"idx":0,"version":"5","when":1712891415609,"tag":"0000_fast_blackheart","breakpoints":true}]}

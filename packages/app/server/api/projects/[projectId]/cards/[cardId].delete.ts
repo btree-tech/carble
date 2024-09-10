@@ -16,7 +16,11 @@ export default defineEventHandler(async (event) => {
     await touchProjectUpdatedAt()
 
     await Promise.all(
-      images.map(({ filename }) => useStorage('uploads/public/images').removeItem(filename))
+      images.map(({ filename }) => [
+        useStorage('uploads/public/images').removeItem(filename),
+        useStorage('uploads/public/thumbs').removeItem(`${filename}.webp`),
+      ])
+      .flat()
     )
   })
 })

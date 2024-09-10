@@ -16,5 +16,6 @@ export default defineEventHandler(async (event) => {
     await touchProjectUpdatedAt()
 
     await useStorage('uploads/public/images').removeItem(image.filename)
+    await useStorage('uploads/public/thumbs').removeItem(`${image.filename}.webp`)
   })
 })
