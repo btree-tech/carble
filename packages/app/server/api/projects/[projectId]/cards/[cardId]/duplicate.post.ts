@@ -1,7 +1,7 @@
 import { cards, contents, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import { eq, max } from 'drizzle-orm'
-import { type SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
+import type { SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
 import { copyFile } from 'node:fs/promises'
 import { extname } from 'node:path'
 

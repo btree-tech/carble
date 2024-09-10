@@ -2,13 +2,14 @@ import { cards, contents, fields, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import busboy from 'busboy'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
-import { type SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
+import type { SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
 import { AsyncUnzipInflate, Unzip } from 'fflate/node'
-import { fileTypeStream } from 'file-type/core'
+import type { ReadableStreamWithFileType } from 'file-type'
+import { fileTypeStream } from 'file-type'
 import * as fs from 'node:fs'
 import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
 import { extname, resolve as pathResolve } from 'node:path'
-import { Readable } from 'node:stream'
+import type { Readable } from 'node:stream'
 import * as XLSX from 'xlsx'
 
 XLSX.set_fs(fs)
@@ -26,7 +27,7 @@ async function getRequestFileStream() {
   })
 
   return new Promise<Readable>((resolve, reject) => {
-    bb.on('file', async (name, file, info) => {
+    bb.on('file', async (name, file, _info) => {
       resolve(file)
     })
     bb.on('error', reject)
@@ -35,7 +36,7 @@ async function getRequestFileStream() {
   })
 }
 
-async function streamToBuffer(stream: Readable) {
+async function streamToBuffer(stream: ReadableStreamWithFileType) {
   const chunks: Buffer[] = []
   return new Promise<Buffer>((resolve, reject) => {
     stream
@@ -49,7 +50,7 @@ async function streamToBuffer(stream: Readable) {
   })
 }
 
-async function unzip(stream: Readable, to: string) {
+async function unzip(stream: ReadableStreamWithFileType, to: string) {
   return new Promise<{ files: string[] }>((resolve, reject) => {
     const files: string[] = []
     let writedCount = 0

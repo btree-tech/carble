@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type z } from 'zod'
+import type { z } from 'zod'
 
 const props = defineProps<{
   cardId: number

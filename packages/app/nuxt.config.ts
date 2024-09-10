@@ -45,8 +45,4 @@ export default defineNuxtConfig({
       },
     },
   },
-
-  ui: {
-    icons: ['material-symbols-light'],
-  },
 })

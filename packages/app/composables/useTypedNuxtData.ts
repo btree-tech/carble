@@ -1,4 +1,4 @@
-import { type z } from 'zod'
+import type { z } from 'zod'
 
 export default function<Schema extends z.ZodTypeAny>(key: string, nullable = false) {
   const result = useNuxtData<z.infer<Schema>>(key)

@@ -12,18 +12,18 @@
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^0.5.5",
+    "@nuxt/eslint": "^0.5.6",
     "@types/busboy": "^1.5.4",
     "@vueuse/core": "^11.0.3",
     "@vueuse/nuxt": "^11.0.3",
-    "eslint": "^9.9.1",
+    "eslint": "^9.10.0",
     "nuxt": "^3.13.1",
-    "vue": "^3.5.1",
+    "vue": "^3.5.3",
     "vue-router": "^4.4.3"
   },
   "dependencies": {
     "@carble/db": "workspace:^",
-    "@iconify-json/material-symbols-light": "^1.2.0",
+    "@iconify-json/material-symbols-light": "^1.2.1",
     "@nuxt/ui": "^2.18.4",
     "@paralleldrive/cuid2": "^2.2.2",
     "@vueuse/integrations": "^11.0.3",
@@ -32,7 +32,7 @@
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "fflate": "^0.8.2",
-    "file-type": "^19.4.1",
+    "file-type": "^19.5.0",
     "qrcode": "^1.5.4",
     "sharp": "^0.33.5",
     "sortablejs": "^1.15.3",

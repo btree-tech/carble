@@ -1,4 +1,4 @@
-import { type RelationalQueryBuilderConfig } from '@carble/db'
+import type { RelationalQueryBuilderConfig } from '@carble/db'
 
 export default async function(withInput: RelationalQueryBuilderConfig<'cards', 'findFirst'>['with'] = {}) {
   const projectId = getRouterParam(useEvent(), 'projectId')
