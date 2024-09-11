@@ -2,6 +2,7 @@ FROM node:20-slim AS base
 WORKDIR /carble
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN corepack enable
 ENV DB_PATH="/carble/storage/prod.db"
 
