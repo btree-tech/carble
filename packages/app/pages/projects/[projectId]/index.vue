@@ -13,6 +13,42 @@ const {
   statuses,
   status,
 } = useMultiAsyncDataStatus<string|number>()
+
+const sortId = ref(0)
+
+const sortDirection = ref<'asc'|'desc'>('asc')
+
+const sortedCards = computed(() => {
+  const result = sortId.value === 0
+    ? [...cards.value]
+    : [...cards.value].sort((a, b) => {
+      const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
+      const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
+      return contentA.localeCompare(contentB)
+    })
+
+  return sortDirection.value === 'asc'
+    ? result
+    : result.reverse()
+})
+
+const getSortIcon = (fieldId: number) => {
+  if (fieldId === sortId.value) {
+    return sortDirection.value === 'asc'
+      ? 'i-material-symbols-light-arrow-downward'
+      : 'i-material-symbols-light-arrow-upward'
+  }
+  return 'i-material-symbols-light-swap-vert'
+}
+
+const onClickSortButton = (fieldId: number) => {
+  if (sortId.value === fieldId) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortId.value = fieldId
+    sortDirection.value = 'asc'
+  }
+}
 </script>
 
 <template>
@@ -50,12 +86,28 @@ const {
         <thead>
           <tr class="text-left">
             <td />
-            <th>ID</th>
+            <th>
+              <UButton
+                label="ID"
+                :icon="getSortIcon(0)"
+                variant="ghost"
+                color="gray"
+                :trailing="true"
+                @click="onClickSortButton(0)"
+              />
+            </th>
             <th
               v-for="field in fields"
               :key="field.id"
             >
-              {{ field.name }}
+              <UButton
+                :label="field.name"
+                :icon="getSortIcon(field.id)"
+                variant="ghost"
+                color="gray"
+                :trailing="true"
+                @click="onClickSortButton(field.id)"
+              />
             </th>
             <td>
               <UPopover>
@@ -82,7 +134,7 @@ const {
         </thead>
         <tbody>
           <tr
-            v-for="card in cards"
+            v-for="card in sortedCards"
             :key="card.id"
           >
             <td class="flex items-center gap-x-2">
