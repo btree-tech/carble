@@ -35,8 +35,8 @@ const sortedCards = computed(() => {
 const getSortIcon = (fieldId: number) => {
   if (fieldId === sortId.value) {
     return sortDirection.value === 'asc'
-      ? 'i-material-symbols-light-arrow-downward'
-      : 'i-material-symbols-light-arrow-upward'
+      ? 'i-material-symbols-light-arrow-upward'
+      : 'i-material-symbols-light-arrow-downward'
   }
   return 'i-material-symbols-light-swap-vert'
 }
