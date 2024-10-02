@@ -18,19 +18,7 @@ const sortId = ref(0)
 
 const sortDirection = ref<'asc'|'desc'>('asc')
 
-const sortedCards = computed(() => {
-  const result = sortId.value === 0
-    ? [...cards.value]
-    : [...cards.value].sort((a, b) => {
-      const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
-      const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
-      return contentA.localeCompare(contentB)
-    })
-
-  return sortDirection.value === 'asc'
-    ? result
-    : result.reverse()
-})
+const sortedCards = ref([...cards.value])
 
 const getSortIcon = (fieldId: number) => {
   if (fieldId === sortId.value) {
@@ -47,6 +35,17 @@ const onClickSortButton = (fieldId: number) => {
   } else {
     sortId.value = fieldId
     sortDirection.value = 'asc'
+  }
+
+  sortedCards.value = sortId.value === 0
+    ? [...cards.value]
+    : [...cards.value].sort((a, b) => {
+      const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
+      const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
+      return contentA.localeCompare(contentB)
+    })
+  if (sortDirection.value === 'desc') {
+    sortedCards.value.reverse()
   }
 }
 </script>
