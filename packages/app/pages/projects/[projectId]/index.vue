@@ -18,19 +18,33 @@ const sortId = ref(0)
 
 const sortDirection = ref<'asc'|'desc'>('asc')
 
+const filterQuery = ref('')
+
 const cards = ref([...fetchedCards.value])
 
-watch([sortId, sortDirection], () => {
-  cards.value = sortId.value === 0
-    ? [...fetchedCards.value]
-    : [...fetchedCards.value].sort((a, b) => {
-      const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
-      const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
-      return contentA.localeCompare(contentB)
+const updateCards = () => {
+  cards.value = [...fetchedCards.value]
+  if (filterQuery.value.length) {
+    cards.value = cards.value.filter((card) => {
+      return card.contents.some((content) => (content.body || '').match(filterQuery.value))
     })
+  }
+
+  cards.value.sort((a, b) => {
+    if (sortId.value === 0) {
+      return a.id - b.id
+    }
+    const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
+    const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
+    return contentA.localeCompare(contentB)
+  })
   if (sortDirection.value === 'desc') {
     cards.value.reverse()
   }
+}
+
+watch([sortId, sortDirection], () => {
+  updateCards()
 })
 </script>
 
@@ -60,7 +74,13 @@ watch([sortId, sortDirection], () => {
       </UButton>
       <TableViewMenu />
     </div>
-    <ScanButton class="justify-self-end" />
+    <div class="flex items-center justify-between gap-4">
+      <TableViewFilter
+        v-model="filterQuery"
+        @update:model-value="updateCards"
+      />
+      <ScanButton class="justify-self-end" />
+    </div>
     <div
       v-if="project"
       class="overflow-x-auto -mx-4 p-4 xl:mx-0 xl:p-0"
