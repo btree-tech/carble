@@ -4,7 +4,7 @@ const {
 } = await useFetchProject()
 
 const {
-  data: cards,
+  data: fetchedCards,
 } = await useFetchCards()
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
@@ -18,36 +18,20 @@ const sortId = ref(0)
 
 const sortDirection = ref<'asc'|'desc'>('asc')
 
-const sortedCards = ref([...cards.value])
+const cards = ref([...fetchedCards.value])
 
-const getSortIcon = (fieldId: number) => {
-  if (fieldId === sortId.value) {
-    return sortDirection.value === 'asc'
-      ? 'i-material-symbols-light-arrow-upward'
-      : 'i-material-symbols-light-arrow-downward'
-  }
-  return 'i-material-symbols-light-swap-vert'
-}
-
-const onClickSortButton = (fieldId: number) => {
-  if (sortId.value === fieldId) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortId.value = fieldId
-    sortDirection.value = 'asc'
-  }
-
-  sortedCards.value = sortId.value === 0
-    ? [...cards.value]
-    : [...cards.value].sort((a, b) => {
+watch([sortId, sortDirection], () => {
+  cards.value = sortId.value === 0
+    ? [...fetchedCards.value]
+    : [...fetchedCards.value].sort((a, b) => {
       const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
       const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
       return contentA.localeCompare(contentB)
     })
   if (sortDirection.value === 'desc') {
-    sortedCards.value.reverse()
+    cards.value.reverse()
   }
-}
+})
 </script>
 
 <template>
@@ -86,26 +70,22 @@ const onClickSortButton = (fieldId: number) => {
           <tr class="text-left">
             <td />
             <th>
-              <UButton
-                label="ID"
-                :icon="getSortIcon(0)"
-                variant="ghost"
-                color="gray"
-                :trailing="true"
-                @click="onClickSortButton(0)"
+              <TableViewFieldName
+                v-model:id="sortId"
+                v-model:direction="sortDirection"
+                :field-id="0"
+                field-name="ID"
               />
             </th>
             <th
               v-for="field in fields"
               :key="field.id"
             >
-              <UButton
-                :label="field.name"
-                :icon="getSortIcon(field.id)"
-                variant="ghost"
-                color="gray"
-                :trailing="true"
-                @click="onClickSortButton(field.id)"
+              <TableViewFieldName
+                v-model:id="sortId"
+                v-model:direction="sortDirection"
+                :field-id="field.id"
+                :field-name="field.name"
               />
             </th>
             <td>
@@ -133,7 +113,7 @@ const onClickSortButton = (fieldId: number) => {
         </thead>
         <tbody>
           <tr
-            v-for="card in sortedCards"
+            v-for="card in cards"
             :key="card.id"
           >
             <td class="flex items-center gap-x-2">
