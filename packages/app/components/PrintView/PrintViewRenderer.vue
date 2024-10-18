@@ -25,8 +25,8 @@ const chunked = computed(() => cards.value.reduce((prev, _, i) => {
         :card-id="card.id"
         :field-visibilities="fieldVisibilities"
         class="
-          w-[210mm] h-[148.5mm] a-spect-[1.414] p-8 border border-gray-500
-          print:a-spect-[revert] print:w-full print:h-[50svh]
+          w-[210mm] h-[148.5mm] aspect-[1.414] p-2 border border-gray-500
+          print:a-spect-[revert] print:w-full print:h-[50svh] print:p-2
         "
       />
     </div>

@@ -30,8 +30,8 @@ const contents = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-2 items-start overflow-hidden">
-    <div class="grid grid-cols-[auto,1fr] gap-x-8 gap-y-4">
+  <div class="grid grid-cols-2 items-start gap-x-1 overflow-hidden">
+    <div class="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1">
       <div class="font-bold">
         ID
       </div>
@@ -43,9 +43,9 @@ const contents = computed(() => {
         <div class="font-bold">
           {{ field.name }}
         </div>
-        <div>
+        <div class="text-clip overflow-hidden">
           <template
-            v-for="(line, i) in  contents[field.id]"
+            v-for="(line, i) in contents[field.id]"
             :key="line"
           >
             <br v-if="i > 0">
@@ -54,10 +54,10 @@ const contents = computed(() => {
         </div>
       </template>
     </div>
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
       <img
         :src="qrcode"
-        class="self-end size-20 -m-4"
+        class="self-end size-20 -m-1"
       >
       <div
         v-for="image in card.images"
