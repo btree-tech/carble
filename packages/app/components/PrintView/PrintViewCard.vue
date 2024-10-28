@@ -43,7 +43,7 @@ const contents = computed(() => {
         <div class="font-bold">
           {{ field.name }}
         </div>
-        <div class="text-clip overflow-hidden">
+        <div class="break-all">
           <template
             v-for="(line, i) in contents[field.id]"
             :key="line"
