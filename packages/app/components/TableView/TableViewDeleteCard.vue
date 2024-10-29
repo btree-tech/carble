@@ -17,7 +17,7 @@ const {
   const { data: cards } = useCardsData()
   const index = cards.value.findIndex((c) => c.id === props.cardId)
   if (index >= 0) {
-    cards.value!.splice(index, 1)
+    cards.value.splice(index, 1)
   }
 }, {
   immediate: false,

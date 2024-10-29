@@ -4,7 +4,7 @@ const {
 } = await useFetchProject()
 
 const {
-  data: fetchedCards,
+  data: cards,
 } = await useFetchCards()
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
@@ -14,38 +14,11 @@ const {
   status,
 } = useMultiAsyncDataStatus<string|number>()
 
-const sortId = ref(0)
+const sortId = useCardsSortId()
 
-const sortDirection = ref<'asc'|'desc'>('asc')
+const sortDirection = useCardsSortDirection()
 
-const filterQuery = ref('')
-
-const cards = ref([...fetchedCards.value])
-
-const updateCards = () => {
-  cards.value = [...fetchedCards.value]
-  if (filterQuery.value.length) {
-    cards.value = cards.value.filter((card) => {
-      return card.contents.some((content) => (content.body || '').match(filterQuery.value))
-    })
-  }
-
-  cards.value.sort((a, b) => {
-    if (sortId.value === 0) {
-      return a.id - b.id
-    }
-    const contentA = a.contents.find((c) => c.fieldId === sortId.value)?.body || ''
-    const contentB = b.contents.find((c) => c.fieldId === sortId.value)?.body || ''
-    return contentA.localeCompare(contentB)
-  })
-  if (sortDirection.value === 'desc') {
-    cards.value.reverse()
-  }
-}
-
-watch([sortId, sortDirection], () => {
-  updateCards()
-})
+const query = useCardsQuery()
 </script>
 
 <template>
@@ -75,10 +48,7 @@ watch([sortId, sortDirection], () => {
       <TableViewMenu />
     </div>
     <div class="flex items-center justify-between gap-4">
-      <TableViewFilter
-        v-model="filterQuery"
-        @update:model-value="updateCards"
-      />
+      <TableViewFilter v-model="query" />
       <ScanButton class="justify-self-end" />
     </div>
     <div

@@ -16,6 +16,12 @@ export const cardsSchema = z.array(
   })
 )
 
+export const useCardsQuery = () => useState<string>('cardsQuery', () => '')
+
+export const useCardsSortId = () => useState('cardsSortId', () => 0)
+
+export const useCardsSortDirection = () => useState<'asc'|'desc'>('useCardsSortDirection', () => 'asc')
+
 export const FetchCardsKey = 'cards'
 
 export function useFetchCards() {
@@ -24,6 +30,11 @@ export function useFetchCards() {
   } = useRoute().params
 
   return useFetch(`/api/projects/${projectId}/cards`, {
+    query: {
+      q: useCardsQuery(),
+      sort: useCardsSortId(),
+      direction: useCardsSortDirection(),
+    },
     transform: (data) => cardsSchema.parse(data),
     default: () => cardsSchema.parse([]),
     key: FetchCardsKey,
