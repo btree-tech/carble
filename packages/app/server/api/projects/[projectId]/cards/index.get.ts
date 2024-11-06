@@ -55,7 +55,10 @@ export default defineEventHandler(async (event) => {
 
   const relations = await db.query.cards.findMany({
     columns: { id: true },
-    where: (t, { inArray }) => inArray(t.id, result.map((c) => c.id)),
+    where: (t, { eq, inArray, and }) => and(
+      eq(t.projectId, Number(projectId)),
+      inArray(t.id, result.map((c) => c.id)),
+    ),
     with: {
       contents: true,
       images: {
