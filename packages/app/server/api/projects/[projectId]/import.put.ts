@@ -281,9 +281,11 @@ export default defineEventHandler(async () => {
         ))
         .returning()
 
-      await tx.insert(images)
-        .values(insertImageValues)
-        .returning()
+      if (insertImageValues.length) {
+        await tx.insert(images)
+          .values(insertImageValues)
+          .returning()
+      }
 
       imagePaths.forEach((path) => {
         renameSync(path.from, resolveStoragePath('uploads', 'public/images', path.to))
