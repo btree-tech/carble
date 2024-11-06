@@ -22,7 +22,7 @@ export const useCardsSortId = () => useState('cardsSortId', () => 0)
 
 export const useCardsSortDirection = () => useState<'asc'|'desc'>('useCardsSortDirection', () => 'asc')
 
-export const FetchCardsKey = 'cards'
+export const getFetchCardsKey = (projectId: unknown) => `projects/${projectId}/cards`
 
 export function useFetchCards() {
   const {
@@ -37,12 +37,13 @@ export function useFetchCards() {
     },
     transform: (data) => cardsSchema.parse(data),
     default: () => cardsSchema.parse([]),
-    key: FetchCardsKey,
+    key: getFetchCardsKey(projectId),
   })
 }
 
 export function useCardsData() {
-  return useTypedNuxtData<typeof cardsSchema>(FetchCardsKey)
+  const { projectId } = useRoute().params
+  return useTypedNuxtData<typeof cardsSchema>(getFetchCardsKey(projectId))
 }
 
 export function useCardsDataItem(id: MaybeRefOrGetter<number>) {
