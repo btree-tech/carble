@@ -1,7 +1,14 @@
 <script setup lang="ts">
 const query = defineModel<string>({ default: '' })
 
-const input = ref('')
+const input = ref(query.value)
+
+watch(
+  query,
+  () => {
+    input.value = query.value
+  }
+)
 </script>
 
 <template>
