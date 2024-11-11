@@ -13,10 +13,17 @@ watch(
     input.value = query.value
   }
 )
+
+const { data: project } = useProjectData()
+
+const { data: cards } = useCardsData()
 </script>
 
 <template>
-  <form @submit.prevent="execute()">
+  <form
+    class="flex items-center gap-2"
+    @submit.prevent="execute()"
+  >
     <UInput
       v-model="input"
       icon="i-material-symbols-light-search"
@@ -33,5 +40,6 @@ watch(
         />
       </template>
     </UInput>
+    <span class="text-gray-500 dark:text-gray-400">{{ cards.length }} / {{project.cards.length }} 件表示中</span>
   </form>
 </template>

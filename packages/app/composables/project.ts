@@ -1,4 +1,4 @@
-import { fields, projects } from '@carble/db/schema'
+import { cards, fields, projects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -13,6 +13,9 @@ export const projectSchema = z.object({
     createdAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
   })),
+  cards: z.array(createSelectSchema(cards).pick({
+    id: true,
+  }))
 })
 
 export function useFetchProjects() {

@@ -3,5 +3,10 @@ export default defineEventHandler(async () => {
     fields: {
       orderBy: ({ order }, { asc }) => asc(order),
     },
+    cards: {
+      columns: {
+        id: true,
+      },
+    },
   })
 })
