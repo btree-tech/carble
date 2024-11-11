@@ -40,10 +40,12 @@ const importModalIsOpen = ref(false)
 
     <TableViewImport v-model="importModalIsOpen" />
 
-    <a
-      ref="exportLink"
-      :href="`/api/projects/${projectId}/export`"
-      :download="`${project.name}-${formattedNow}.zip`"
-    />
+    <ClientOnly>
+      <a
+        ref="exportLink"
+        :href="`/api/projects/${projectId}/export`"
+        :download="`${project.name}-${formattedNow}.zip`"
+      />
+    </ClientOnly>
   </div>
 </template>
