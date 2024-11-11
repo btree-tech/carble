@@ -1,7 +1,11 @@
 <script setup lang="ts">
-const query = defineModel<string>({ default: '' })
+const query = useCardsQuery()
 
 const input = ref(query.value)
+
+const execute = async (value = input.value) => {
+  await navigateTo(`?q=${value}&sort=${useCardsSortId().value}&direction=${useCardsSortDirection().value}`)
+}
 
 watch(
   query,
@@ -12,7 +16,7 @@ watch(
 </script>
 
 <template>
-  <form @submit.prevent="query = input">
+  <form @submit.prevent="execute()">
     <UInput
       v-model="input"
       icon="i-material-symbols-light-search"
@@ -25,7 +29,7 @@ watch(
           variant="link"
           icon="i-material-symbols-light-close"
           :padded="false"
-          @click="query = input = ''"
+          @click="execute('')"
         />
       </template>
     </UInput>

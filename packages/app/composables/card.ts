@@ -16,11 +16,11 @@ export const cardsSchema = z.array(
   })
 )
 
-export const useCardsQuery = () => useState<string>('cardsQuery', () => '')
+export const useCardsQuery = () => computed(() => String(useRoute().query.q || ''))
 
-export const useCardsSortId = () => useState('cardsSortId', () => 0)
+export const useCardsSortId = () => computed(() => Number(useRoute().query.sort || 0))
 
-export const useCardsSortDirection = () => useState<'asc'|'desc'>('useCardsSortDirection', () => 'asc')
+export const useCardsSortDirection = () => computed(() => useRoute().query.direction || 'asc')
 
 export const getFetchCardsKey = (projectId: unknown) => `projects/${projectId}/cards`
 

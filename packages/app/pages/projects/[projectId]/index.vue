@@ -13,12 +13,6 @@ const {
   statuses,
   status,
 } = useMultiAsyncDataStatus<string|number>()
-
-const sortId = useCardsSortId()
-
-const sortDirection = useCardsSortDirection()
-
-const query = useCardsQuery()
 </script>
 
 <template>
@@ -48,7 +42,7 @@ const query = useCardsQuery()
       <TableViewMenu />
     </div>
     <div class="flex items-center justify-between gap-4">
-      <TableViewFilter v-model="query" />
+      <TableViewFilter />
       <ScanButton class="justify-self-end" />
     </div>
     <div
@@ -61,8 +55,6 @@ const query = useCardsQuery()
             <td />
             <th>
               <TableViewFieldName
-                v-model:id="sortId"
-                v-model:direction="sortDirection"
                 :field-id="0"
                 field-name="ID"
               />
@@ -72,8 +64,6 @@ const query = useCardsQuery()
               :key="field.id"
             >
               <TableViewFieldName
-                v-model:id="sortId"
-                v-model:direction="sortDirection"
                 :field-id="field.id"
                 :field-name="field.name"
               />

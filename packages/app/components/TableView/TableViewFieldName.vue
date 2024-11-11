@@ -4,9 +4,9 @@ const props = defineProps<{
   fieldName: string|null
 }>()
 
-const sortId = defineModel<number>('id')
+const sortId = useCardsSortId()
 
-const direction = defineModel<'asc'|'desc'>('direction')
+const direction = useCardsSortDirection()
 
 const icon = computed(() => {
   if (props.fieldId === sortId.value) {
@@ -17,23 +17,21 @@ const icon = computed(() => {
   return 'i-material-symbols-light-swap-vert'
 })
 
-const onClick = () => {
-  if (props.fieldId === sortId.value) {
-    direction.value = direction.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortId.value = props.fieldId
-    direction.value = 'asc'
-  }
-}
+const url = computed(() => {
+  const d = (props.fieldId === sortId.value && direction.value === 'asc')
+    ? 'desc'
+    : 'asc'
+  return `?q=${useCardsQuery().value}&sort=${props.fieldId}&direction=${d}`
+})
 </script>
 
 <template>
   <UButton
+    :to="url"
     :label="fieldName || ''"
     :icon="icon"
     variant="ghost"
     color="gray"
     :trailing="true"
-    @click="onClick"
   />
 </template>
