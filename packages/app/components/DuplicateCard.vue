@@ -23,6 +23,7 @@ const {
   const newCard = cardSchema.parse(data)
   const { data: cards } = useCardsData()
   cards.value.push(newCard)
+  useProjectData().data.value.totalCardSize++
   emit('submitted', newCard)
   toast.add({
     id: 'card-duplicate',

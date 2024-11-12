@@ -16,7 +16,10 @@ export const projectSchema = z.object({
   cards: z.array(createSelectSchema(cards).pick({
     id: true,
   }))
-})
+}).transform((v) => ({
+  ...v,
+  totalCardSize: v.cards.length,
+}))
 
 export function useFetchProjects() {
   return useFetch(`/api/projects`, {

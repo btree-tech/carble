@@ -14,6 +14,8 @@ const {
     images: [],
     contents: [],
   }))
+
+  useProjectData().data.value.totalCardSize++
 }, {
   immediate: false,
 })
