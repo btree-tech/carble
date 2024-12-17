@@ -23,6 +23,7 @@ const body = computed({
       })
     } else {
       card.value.contents.push({
+        projectId: card.value.projectId,
         cardId: props.cardId,
         fieldId: props.fieldId,
         body: value,
@@ -49,18 +50,28 @@ watch(status, (status) => {
 </script>
 
 <template>
-  <UPopover
+  <!-- <UPopover
     v-model:open="hasFocus"
     :popper="{ placement: 'bottom-start', offsetDistance: -32 }"
-  >
+  > -->
+  <div class="relative">
     <UInput
       v-model="body"
       variant="none"
       class="w-40 xl:w-60"
       @focus="hasFocus = true"
     />
+    <UTextarea
+      v-if="hasFocus"
+      v-model="body"
+      autofocus
+      autoresize
+      class="absolute top-0 -left-1 z-50 w-40 xl:w-60 m-1"
+      @blur="hasFocus = false"
+    />
+  </div>
 
-    <template #panel>
+    <!-- <template #panel>
       <UTextarea
         v-if="hasFocus"
         v-model="body"
@@ -70,5 +81,5 @@ watch(status, (status) => {
         @blur="hasFocus = false"
       />
     </template>
-  </UPopover>
+  </UPopover> -->
 </template>
