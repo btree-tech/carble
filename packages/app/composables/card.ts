@@ -40,7 +40,7 @@ export const useCardsQueryString = () => computed(() => {
 })
 
 export const getFetchCardsKey = (projectId: unknown) => {
-  return `projects/${projectId}/cards?${useCardsQueryString().value}`
+  return `projects/${projectId}/cards`
 }
 
 export function useFetchCards() {
@@ -72,7 +72,7 @@ export function useCard(id: MaybeRefOrGetter) {
   const data = computed({
     get: () => {
       if (index.value < 0) throw 'invalid cardId'
-      return cards.value[index.value]
+      return (cards.value || [])[index.value]
     },
     set: (value: any) => {
       if (index.value >= 0) {
@@ -178,10 +178,8 @@ export function useCardImageAdd(cardId: MaybeRefOrGetter) {
 
   const imageFile = ref<File|null>()
   const asyncData = useAsyncData(async () => {
-    if (!imageFile.value) return
-
     const formData = new FormData()
-    formData.append('image', imageFile.value)
+    formData.append('image', imageFile.value!)
 
     const data = await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images`, {
       method: 'post',
@@ -190,6 +188,8 @@ export function useCardImageAdd(cardId: MaybeRefOrGetter) {
     card.value.images.push(imageSchema.parse(data))
 
     return useCardImage(cardId, data.id).data.value
+  }, {
+    immediate: false,
   })
   const execute = async (file?: File|null) => {
     imageFile.value = file
