@@ -7,6 +7,8 @@ const {
   data: cards,
 } = await useFetchCards()
 
+const queryParams = useCardsQueryParams()
+
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
 
 const {
@@ -110,7 +112,7 @@ const {
                 />
                 <UButton
                   icon="i-material-symbols-light-list-alt"
-                  :to="`/projects/${card.projectId}/cards/${card.id}`"
+                  :to="{ path: `/projects/${card.projectId}/cards/${card.id}`, query: queryParams }"
                 >
                   <span class="hidden md:inline">カード</span>
                 </UButton>

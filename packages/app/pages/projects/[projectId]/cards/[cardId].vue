@@ -3,6 +3,7 @@ import type { z } from 'zod'
 
 const {
   projectId,
+  cardId,
 } = useRoute().params
 
 const {
@@ -11,7 +12,9 @@ const {
 
 const {
   data: card,
-} = await useFetchCard()
+} = useCard(cardId)
+
+const query = useCardsQueryString()
 
 const {
   statuses,
@@ -21,21 +24,21 @@ const {
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
 
 const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
-  await navigateTo(`/projects/${projectId}/cards/${id}`)
+  await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
 }
 </script>
 
 <template>
   <div
     v-if="project && card"
-    class="grid row-auto gap-y-4 px-4"
+    class="grid row-auto gap-y-4 px-4 mb-16"
   >
     <div class="flex items-center justify-end gap-4">
       <StatusIcon :status="status" />
       <UButton
         label="テーブルビュー"
         icon="i-material-symbols-light-table-view"
-        :to="`/projects/${projectId}`"
+        :to="`/projects/${projectId}?${query}`"
         variant="soft"
       />
       <DuplicateCard
@@ -64,7 +67,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
           :key="field.id"
         >
           <UFormGroup
-            :label="field.name"
+            :label="field.name || ''"
             class="col-span-2 grid grid-cols-subgrid"
           >
             <CardViewContent

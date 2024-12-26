@@ -18,10 +18,11 @@ const { projectId } = useRoute().params
 
 const toast = useToast()
 
-const { files, open, reset, onChange } = useFileDialog({
+const { files, open, onChange } = useFileDialog({
   accept: 'image/*',
   multiple: false,
   capture: 'environment',
+  reset: true,
 })
 
 const detect = async (file: Blob) => {
@@ -49,10 +50,7 @@ const {
 
   const data = await detect(file)
   if (data) {
-    await $fetch(`/api/projects/${data.projectId}/cards/${data.cardId}/images`, {
-      method: 'post',
-      body: formData,
-    })
+    await useCardImageAdd(data.cardId).execute(file)
     await navigateTo(`/projects/${data.projectId}/cards/${data.cardId}`)
     toast.add({
       id: `card-scan-${data.cardId}`,
@@ -71,8 +69,6 @@ const {
     })
     await navigateTo(`/projects/${projectId}/cards/${data.id}`)
   }
-
-  reset()
 }, {
   immediate: false,
 })

@@ -7,12 +7,14 @@ export const projectsSchema = z.array(createSelectSchema(projects, {
   updatedAt: z.coerce.date(),
 }))
 
+export const fieldSchema = createSelectSchema(fields, {
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
 export const projectSchema = z.object({
   ...projectsSchema.element.shape,
-  fields: z.array(createSelectSchema(fields, {
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
-  })),
+  fields: z.array(fieldSchema),
   cards: z.array(createSelectSchema(cards).pick({
     id: true,
   }))

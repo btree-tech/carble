@@ -4,28 +4,15 @@ const props = defineProps<{
 }>()
 
 const {
-  projectId,
   cardId,
 } = useRoute().params
 
-const { data: card } = useCardData()
-
-const image = computed(() => card.value.images.find((image) => image.id === props.imageId)!)
+const { data: image } = useCardImage(cardId, props.imageId)
 
 const {
   execute,
   status,
-} = useAsyncData(async () => {
-  await $fetch(`/api/projects/${projectId}/cards/${cardId}/images/${props.imageId}`, {
-    method: 'delete',
-  })
-  const index = card.value.images.findIndex((image) => image.id === props.imageId)
-  if (index >= 0) {
-    card.value.images.splice(index, 1)
-  }
-}, {
-  immediate: false,
-})
+} = useCardImageRemove(cardId, props.imageId)
 </script>
 
 <template>

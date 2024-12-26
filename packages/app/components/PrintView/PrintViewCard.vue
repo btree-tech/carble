@@ -8,11 +8,9 @@ const props = defineProps<{
 
 const { data: project } = useProjectData()
 
-const { data: cards } = useCardsData()
-
 const fields = computed(() => (project.value?.fields || []).filter((field) => props.fieldVisibilities[field.id]))
 
-const card = computed(() => cards.value.find((card) => card.id === props.cardId)!)
+const { data: card } = useCard(props.cardId)
 
 const qrcode = useQRCode(() => JSON.stringify({
   projectId: card.value.projectId,

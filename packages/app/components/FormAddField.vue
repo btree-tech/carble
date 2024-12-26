@@ -23,7 +23,7 @@ const {
       ...input,
     },
   })
-  project.value.fields.push(projectSchema.shape.fields.element.parse(data))
+  project.value.fields.push(fieldSchema.parse(data))
 
   input.name = ''
 
