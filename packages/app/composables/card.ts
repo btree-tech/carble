@@ -68,7 +68,7 @@ export function useCardsData() {
 export function useCard(id: MaybeRefOrGetter) {
   const { data: cards } = useCardsData()
 
-  const index = computed(() => cards.value.findIndex((card) => card.id === Number(toValue(id))))
+  const index = computed(() => cards.value?.findIndex((card) => card.id === Number(toValue(id))))
   const data = computed({
     get: () => {
       if (index.value < 0) throw 'invalid cardId'

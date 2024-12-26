@@ -11,6 +11,11 @@ const {
 } = await useFetchProject()
 
 const {
+  data: cards,
+} = useCardsData()
+
+const {
+  index,
   data: card,
 } = useCard(cardId)
 
@@ -22,6 +27,10 @@ const {
 } = useMultiAsyncDataStatus<number>()
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
+
+const previousCard = computed(() => cards.value[index.value - 1])
+
+const nextCard = computed(() => cards.value[index.value + 1])
 
 const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
   await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
@@ -104,5 +113,25 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
         </div>
       </div>
     </div>
+
+    <UButton
+      v-if="previousCard"
+      label="前のカード"
+      icon="i-material-symbols-light-arrow-back-ios-new"
+      :to="`/projects/${projectId}/cards/${previousCard.id}?${query}`"
+      variant="soft"
+      size="lg"
+      class="fixed bottom-8 left-4 md:bottom-16 md:left-8"
+    />
+    <UButton
+      v-if="nextCard"
+      label="次のカード"
+      icon="i-material-symbols-light-arrow-forward-ios"
+      :to="`/projects/${projectId}/cards/${nextCard.id}?${query}`"
+      variant="soft"
+      size="lg"
+      :trailing="true"
+      class="fixed bottom-8 right-4 md:bottom-16 md:right-8"
+    />
   </div>
 </template>
