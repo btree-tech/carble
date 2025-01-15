@@ -38,7 +38,7 @@ onChange(async (files) => {
 
   await execute()
   if (status.value === 'success') {
-    await refreshNuxtData([FetchProjectKey, FetchCardsKey])
+    await refreshNuxtData([FetchProjectKey, getFetchCardsKey(projectId)])
     isOpen.value = false
   }
 
