@@ -15,7 +15,14 @@ const hasFocus = ref(false)
 const {
   status,
   data: body,
-} = useCardContentUpdate(props.cardId, props.fieldId)
+  execute,
+} = useCardContentUpdate(props.cardId, props.fieldId, hasFocus)
+
+const onBlur = async () => {
+  execute()
+  await nextTick()
+  hasFocus.value = false
+}
 
 watch(status, (status) => {
   emit('update:status', status)
@@ -36,12 +43,11 @@ watch(status, (status) => {
 
     <template #panel>
       <UTextarea
-        v-if="hasFocus"
         v-model="body"
         autofocus
         autoresize
         class="w-40 xl:w-60 m-1"
-        @blur="hasFocus = false"
+        @blur="onBlur"
       />
     </template>
   </UPopover>
