@@ -5,5 +5,10 @@
   "scripts": {
     "dev": "pnpm --filter @carble/* --parallel dev",
     "build": "pnpm --filter @carble/app build"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
   }
 }
