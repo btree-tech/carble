@@ -2,33 +2,89 @@
 import type { z } from 'zod'
 
 defineProps<{
-  fieldVisibilities: Record<number, boolean>
+  cards: z.infer<typeof cardSchema>[]
 }>()
 
-const { data: cards } = useCardsData()
+const {
+  data: project,
+} = useProjectData()
 
-const chunked = computed(() => cards.value.reduce((prev, _, i) => {
-  return i % 2 ? prev : [...prev, cards.value.slice(i, i + 2)]
-}, [] as z.infer<typeof cardsSchema>[]))
+const wrapper = ref<HTMLDivElement>()
+const { width: previewWidth } = useElementSize(wrapper)
+
+const measuring = ref<HTMLDivElement>()
+const { width: actualWidth } = useElementSize(measuring)
+
+const scale = computed(() => previewWidth.value / actualWidth.value)
+
+const visibleFieldIds = ref<number[]>(project.value.fields.map((field) => field.id))
+
+const print = () => {
+  window.print()
+}
 </script>
 
 <template>
-  <div>
+  <div
+    class="
+      grid gap-x-8 gap-y-4 grid-rows-subgrid row-start-3 row-end-5
+      landscape:grid-cols-[min(75%,210mm),1fr]
+      portrait:grid-rows-[1fr,auto]
+      print:hidden
+    "
+  >
     <div
-      v-for="(c, i) in chunked"
-      :key="i"
-      class="print:break-inside-avoid"
+      ref="wrapper"
+      class="overflow-x-hidden overflow-y-auto text-black bg-white"
     >
-      <PrintViewCard
-        v-for="card in c"
-        :key="card.id"
-        :card-id="card.id"
-        :field-visibilities="fieldVisibilities"
-        class="
-          w-[210mm] h-[148.5mm] aspect-[1.414] p-2 border border-gray-500
-          print:a-spect-[revert] print:w-full print:h-[50svh] print:p-2
-        "
-      />
+      <div
+        class="origin-top-left"
+        :style="{
+          scale,
+          // height: `${scale * 100}%`,
+          height: `calc(148.5mm * ${cards.length} * ${scale})`
+        }"
+      >
+        <PrintViewCard
+          v-for="card in cards"
+          :key="card.id"
+          :card-id="card.id"
+          :field-visibilities="visibleFieldIds"
+          class="w-[210mm] h-[148.5mm] aspect-[1.414] p-2 border border-gray-500"
+        />
+      </div>
     </div>
+    <div class="portrait:px-4 space-y-4">
+      <UButton
+        label="印刷"
+        size="xl"
+        block
+        @click="print"
+      />
+      <PrintViewSettings v-model="visibleFieldIds" />
+    </div>
+
+    <div
+      ref="measuring"
+      class="w-[210mm] absolute -top-full -left-full"
+    />
+
+    <Teleport to="body">
+      <div class="hidden print:block text-black bg-white">
+        <PrintViewCard
+          v-for="card in cards"
+          :key="card.id"
+          :card-id="card.id"
+          :field-visibilities="visibleFieldIds"
+          class="w-full h-[50svh] p-2 border border-gray-500"
+        />
+      </div>
+    </Teleport>
   </div>
 </template>
+
+<style>
+@page {
+  size: A4 portrait;
+}
+</style>

@@ -50,6 +50,12 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
         :to="`/projects/${projectId}?${query}`"
         variant="soft"
       />
+      <UButton
+        label="印刷ビュー"
+        icon="i-material-symbols-light-print"
+        :to="`/projects/${projectId}/cards/${cardId}/print?${query}`"
+        variant="soft"
+      />
       <DuplicateCard
         :card-id="card.id"
         @submitted="onDuplicated"

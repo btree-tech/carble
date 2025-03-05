@@ -3,12 +3,12 @@ import { useQRCode } from '@vueuse/integrations/useQRCode'
 
 const props = defineProps<{
   cardId: number
-  fieldVisibilities: Record<number, boolean>
+  fieldVisibilities: number[]
 }>()
 
 const { data: project } = useProjectData()
 
-const fields = computed(() => (project.value?.fields || []).filter((field) => props.fieldVisibilities[field.id]))
+const fields = computed(() => (project.value?.fields || []).filter((field) => props.fieldVisibilities.includes(field.id)))
 
 const { data: card } = useCard(props.cardId)
 
