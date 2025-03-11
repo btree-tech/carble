@@ -70,6 +70,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
       class="
         grid grid-cols-2 items-start gap-8 my-8
         portrait:grid-cols-1
+        border-2 p-2 min-h-[882px] rounded
       "
     >
       <div class="grid grid-cols-[auto,1fr] gap-4">
