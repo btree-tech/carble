@@ -55,7 +55,7 @@ const {
           <span class="hidden md:inline">印刷ビュー</span>
         </UButton>
         <TableViewFilter />
-        <div class="ml-auto">
+        <div class="ml-auto" style="min-width: 68px">
           <StatusIcon :status="status" class="mr-4"/>
           <TableViewMenu class="inline-block" />
         </div>
