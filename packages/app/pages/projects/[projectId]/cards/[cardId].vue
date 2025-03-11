@@ -40,13 +40,11 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
 <template>
   <div
     v-if="project && card"
-    class="grid row-auto gap-y-4 px-4 mb-16"
+    class="grid row-auto gap-y-4 px-4 mb-16 grid-cols-1"
   >
     <div
       class="
-        flex items-center gap-x-4
-        portrait:px-4
-      "
+        flex items-center gap-x-4"
     >
       <div class="grow truncate">
         {{ project.name }}
