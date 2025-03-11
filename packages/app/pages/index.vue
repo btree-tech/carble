@@ -8,15 +8,22 @@ const {
 
 const columns = [
   {
+    key: 'view',
+    class: 'w-12 md:w-28'
+  },
+  {
     key: 'name',
     label: 'プロジェクト名',
+    class: 'w-3/5'
   },
   {
     key: 'updatedAt',
     label: '最終更新日時',
+    class: 'hidden md:block'
   },
   {
     key: 'actions',
+    class: 'w-32'
   }
 ]
 
@@ -44,7 +51,8 @@ const onClickDeleteButton = async (id: number) => {
 const projectsInTable = (projects.value || []).map((p) => {
   return {
     ...p,
-    actions: { value: p.actions, class: 'text-right'}
+    updatedAt: { value: new Date(p.updatedAt).toLocaleString(), class: 'hidden md:block' },
+    actions: { value: p.actions, class: 'text-right' }
   }
 })
 </script>
@@ -68,22 +76,24 @@ const projectsInTable = (projects.value || []).map((p) => {
         v-if="projectsInTable"
         :columns="columns"
         :rows="projectsInTable"
+        :ui="{ base: 'w-full', td: { base: '' } }"
       >
-        <template #name-data="{ row }">
+        <template #view-data="{ row }">
           <UButton
-            label="詳細"
             variant="soft"
             icon="i-material-symbols-light-table"
             :to="`/projects/${row.id}`"
           >
             <span class="hidden md:inline">詳細</span>
           </UButton>
-          <span class="ml-4">
+        </template>
+        <template #name-data="{ row }">
+          <span>
             {{ row.name }}
           </span>
         </template>
         <template #updatedAt-data="{ row }">
-          {{ new Date(row.updatedAt).toLocaleString() }}
+          {{ row.updatedAt.value }}
         </template>
         <template #actions-data="{ row }">
           <UButton
