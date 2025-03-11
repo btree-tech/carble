@@ -26,7 +26,7 @@ const {
         { 'h-0 overflow-hidden': $route.name !== 'projects-projectId' },
       ]"
     >
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1">
         <UButton
           icon="i-material-symbols-light-home"
           to="/"
@@ -35,7 +35,6 @@ const {
         >
           <span class="hidden md:inline">ホーム</span>
         </UButton>
-        <!-- TODO: 余白広すぎるのでここだけgap小さくしたい-->
         <UIcon
           name="i-material-symbols-light-chevron-right"
           class="w-6 h-6"
@@ -44,7 +43,7 @@ const {
           class="grow"
           @update:status="statuses.set('name', $event)"
         />
-        <ScanButton />
+        <ScanButton class="ml-4"/>
       </div>
       <div class="flex gap-4">
         <UButton
