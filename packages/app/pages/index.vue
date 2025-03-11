@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import logoImage from "../assets/logo.svg";
+
 const {
   data: projects,
   refresh,
@@ -39,40 +41,57 @@ const onClickDeleteButton = async (id: number) => {
   await refresh()
   isDeleting.value.set(id, false)
 }
+const projectsInTable = (projects.value || []).map((p) => {
+  return {
+    ...p,
+    actions: { value: p.actions, class: 'text-right'}
+  }
+})
 </script>
 
 <template>
-  <div class="space-y-4">
-    <UButton
-      label="新規プロジェクト"
-      icon="i-material-symbols-light-add"
-      :loading="isCreating"
-      @click="onClickCreateButton"
-    />
-    <UTable
-      v-if="projects"
-      :columns="columns"
-      :rows="projects"
-    >
-      <template #name-data="{ row }">
-        {{ row.name }}
+  <div class="grid row-auto gap-y-4 px-4">
+    <div class="flex items-center justify-between gap-4 px-4">
+      <img class="img" :src="logoImage" width="100" />
+      <div class="justify-self-end">
         <UButton
-          label="詳細"
-          trailing-icon="i-material-symbols-light-arrow-forward"
-          :to="`/projects/${row.id}`"
-          class="ml-4"
+          label="新規プロジェクト"
+          icon="i-material-symbols-light-add"
+          :loading="isCreating"
+          @click="onClickCreateButton"
         />
-      </template>
-      <template #updatedAt-data="{ row }">
-        {{ new Date(row.updatedAt).toLocaleString() }}
-      </template>
-      <template #actions-data="{ row }">
-        <UButton
-          label="削除"
-          :loading="isDeleting.get(row.id)"
-          @click="onClickDeleteButton(row.id)"
-        />
-      </template>
-    </UTable>
+      </div>
+    </div>
+    <div>
+      <UTable
+        v-if="projectsInTable"
+        :columns="columns"
+        :rows="projectsInTable"
+      >
+        <template #name-data="{ row }">
+          <UButton
+            label="詳細"
+            variant="soft"
+            icon="i-material-symbols-light-table"
+            :to="`/projects/${row.id}`"
+          />
+          <span class="ml-4">
+            {{ row.name }}
+          </span>
+        </template>
+        <template #updatedAt-data="{ row }">
+          {{ new Date(row.updatedAt).toLocaleString() }}
+        </template>
+        <template #actions-data="{ row }">
+          <UButton
+            label="削除"
+            color="red"
+            icon="i-material-symbols-delete-forever"
+            :loading="isDeleting.get(row.id)"
+            @click="onClickDeleteButton(row.id)"
+          />
+        </template>
+      </UTable>
+    </div>
   </div>
 </template>
