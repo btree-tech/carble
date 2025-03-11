@@ -57,7 +57,7 @@ watch(project, (project) => {
       <UButton
         icon="i-material-symbols-light-table-view"
         :to="`/projects/${project.id}`"
-        variant="soft"
+        variant="outline"
       >
         <span class="hidden md:inline">テーブルビュー</span>
       </UButton>

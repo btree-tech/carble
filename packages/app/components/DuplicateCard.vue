@@ -36,10 +36,11 @@ const {
 
 <template>
   <UButton
-    label="複製"
     icon="i-material-symbols-light-content-copy"
     color="gray"
     :loading="status === 'pending'"
     @click="execute"
-  />
+  >
+    <span class="hidden md:inline">複製</span>
+  </UButton>
 </template>

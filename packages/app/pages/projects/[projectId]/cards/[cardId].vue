@@ -56,7 +56,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
         label="テーブルビュー"
         icon="i-material-symbols-light-table-view"
         :to="`/projects/${projectId}?${query}`"
-        variant="soft"
+        variant="outline"
       />
       <div class="justify-self-end">
         <StatusIcon :status="status" class="mr-4"/>
@@ -130,7 +130,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
       label="前のカード"
       icon="i-material-symbols-light-arrow-back-ios-new"
       :to="`/projects/${projectId}/cards/${previousCard.id}?${query}`"
-      variant="soft"
+      variant="outline"
       size="lg"
       class="fixed bottom-8 left-4 md:bottom-16 md:left-8"
     />
@@ -139,7 +139,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
       label="次のカード"
       icon="i-material-symbols-light-arrow-forward-ios"
       :to="`/projects/${projectId}/cards/${nextCard.id}?${query}`"
-      variant="soft"
+      variant="outline"
       size="lg"
       :trailing="true"
       class="fixed bottom-8 right-4 md:bottom-16 md:right-8"

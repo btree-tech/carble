@@ -80,7 +80,7 @@ const projectsInTable = (projects.value || []).map((p) => {
       >
         <template #view-data="{ row }">
           <UButton
-            variant="soft"
+            variant="outline"
             icon="i-material-symbols-light-table"
             :to="`/projects/${row.id}`"
           >

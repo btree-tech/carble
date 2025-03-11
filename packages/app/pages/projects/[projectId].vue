@@ -50,7 +50,7 @@ const {
           class="flex-none"
           icon="i-material-symbols-light-print"
           :to="`/projects/${project?.id}/print`"
-          variant="soft"
+          variant="outline"
         >
           <span class="hidden md:inline">印刷ビュー</span>
         </UButton>
@@ -115,7 +115,7 @@ const {
                 <UButton
                   :icon="card.images.length ? 'i-material-symbols-light-photo-library' : 'i-material-symbols-light-edit-note'"
                   :to="{ path: `/projects/${card.projectId}/cards/${card.id}`, query: queryParams }"
-                  variant="soft"
+                  variant="outline"
                 >
                   <span class="hidden md:inline">カード</span>
                 </UButton>
