@@ -26,33 +26,40 @@ const {
         { 'h-0 overflow-hidden': $route.name !== 'projects-projectId' },
       ]"
     >
-      <div>
+      <div class="flex items-center gap-4">
         <UButton
-          label="プロジェクト一覧に戻る"
-          icon="i-material-symbols-light-door-open"
+          icon="i-material-symbols-light-home"
           to="/"
           variant="link"
           :padded="false"
+        >
+          <span class="hidden md:inline">ホーム</span>
+        </UButton>
+        <!-- TODO: 余白広すぎるのでここだけgap小さくしたい-->
+        <UIcon
+          name="i-material-symbols-light-chevron-right"
+          class="w-6 h-6"
         />
-      </div>
-      <div class="flex items-center gap-4">
         <TableViewProjectName
           class="grow"
           @update:status="statuses.set('name', $event)"
         />
-        <StatusIcon :status="status" />
+        <ScanButton />
+      </div>
+      <div class="flex gap-4">
         <UButton
+          class="flex-none"
           icon="i-material-symbols-light-print"
           :to="`/projects/${project?.id}/print`"
           variant="soft"
         >
           <span class="hidden md:inline">印刷ビュー</span>
         </UButton>
-        <TableViewMenu />
-      </div>
-      <div class="flex items-center justify-between gap-4">
         <TableViewFilter />
-        <ScanButton class="justify-self-end" />
+        <div class="ml-auto">
+          <StatusIcon :status="status" class="mr-4"/>
+          <TableViewMenu class="inline-block" />
+        </div>
       </div>
       <div
         v-if="project"
@@ -106,13 +113,10 @@ const {
               :key="card.id"
             >
               <td class="flex items-center gap-x-2">
-                <UIcon
-                  name="i-material-symbols-light-image"
-                  :class="['w-6 h-6', { invisible: !card.images.length }]"
-                />
                 <UButton
-                  icon="i-material-symbols-light-list-alt"
+                  :icon="card.images.length ? 'i-material-symbols-light-photo-library' : 'i-material-symbols-light-edit-note'"
                   :to="{ path: `/projects/${card.projectId}/cards/${card.id}`, query: queryParams }"
+                  variant="soft"
                 >
                   <span class="hidden md:inline">カード</span>
                 </UButton>

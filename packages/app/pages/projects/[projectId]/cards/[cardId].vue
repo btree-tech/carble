@@ -42,20 +42,32 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
     v-if="project && card"
     class="grid row-auto gap-y-4 px-4 mb-16"
   >
-    <div class="flex items-center justify-end gap-4">
-      <StatusIcon :status="status" />
+    <div
+      class="
+        flex items-center gap-x-4
+        portrait:px-4
+      "
+    >
+      <div class="grow truncate">
+        {{ project.name }}
+      </div>
+      <ScanButton class="justify-self-end" />
+    </div>
+    <div class="flex items-center justify-between gap-4">
       <UButton
         label="テーブルビュー"
         icon="i-material-symbols-light-table-view"
         :to="`/projects/${projectId}?${query}`"
         variant="soft"
       />
-      <DuplicateCard
-        :card-id="card.id"
-        @submitted="onDuplicated"
-      />
+      <div class="justify-self-end">
+        <StatusIcon :status="status" class="mr-4"/>
+        <DuplicateCard
+          :card-id="card.id"
+          @submitted="onDuplicated"
+        />
+      </div>
     </div>
-    <ScanButton class="justify-self-end" />
     <div
       class="
         grid grid-cols-2 items-start gap-8 my-8
@@ -90,6 +102,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
           <UPopover :popper="{ placement: 'bottom-start' }">
             <UButton
               icon="i-material-symbols-light-add"
+              color="gray"
             />
 
             <template #panel="{ close }">

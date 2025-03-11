@@ -23,9 +23,10 @@ const {
 
 <template>
   <UButton
-    label="1行追加"
     icon="i-material-symbols-light-add"
     :loading="status === 'pending'"
     @click="execute"
-  />
+  >
+    <span class="hidden md:inline">カード追加</span>
+  </UButton>
 </template>

@@ -55,11 +55,12 @@ const projectsInTable = (projects.value || []).map((p) => {
       <img class="img" :src="logoImage" width="100" />
       <div class="justify-self-end">
         <UButton
-          label="新規プロジェクト"
           icon="i-material-symbols-light-add"
           :loading="isCreating"
           @click="onClickCreateButton"
-        />
+        >
+          <span class="hidden md:inline">新規プロジェクト</span>
+        </UButton>
       </div>
     </div>
     <div>
@@ -74,7 +75,9 @@ const projectsInTable = (projects.value || []).map((p) => {
             variant="soft"
             icon="i-material-symbols-light-table"
             :to="`/projects/${row.id}`"
-          />
+          >
+            <span class="hidden md:inline">詳細</span>
+          </UButton>
           <span class="ml-4">
             {{ row.name }}
           </span>
@@ -84,12 +87,13 @@ const projectsInTable = (projects.value || []).map((p) => {
         </template>
         <template #actions-data="{ row }">
           <UButton
-            label="削除"
             color="red"
             icon="i-material-symbols-delete-forever"
             :loading="isDeleting.get(row.id)"
             @click="onClickDeleteButton(row.id)"
-          />
+          >
+            <span class="hidden md:inline">削除</span>
+          </UButton>
         </template>
       </UTable>
     </div>
