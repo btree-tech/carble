@@ -60,7 +60,7 @@ const projectsInTable = (projects.value || []).map((p) => {
 <template>
   <div class="grid row-auto gap-y-4 px-4">
     <div class="flex items-center justify-between gap-4 px-4">
-      <img class="img" :src="logoImage" width="100" />
+      <logo-image style="fill: gray"></logo-image>
       <div class="justify-self-end">
         <UButton
           icon="i-material-symbols-light-add"
