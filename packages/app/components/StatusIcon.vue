@@ -8,17 +8,17 @@ defineProps<{
 
 <template>
   <UIcon
-    v-if="status === 'pending'"
-    name="i-material-symbols-light-progress-activity text-xl"
-    class="animate-spin"
+    v-show="status === 'pending'"
+    name="i-material-symbols-light-progress-activity"
+    class="animate-spin text-xl"
   />
   <UIcon
-    v-else-if="status === 'error'"
+    v-show="status === 'error'"
     name="i-material-symbols-light-error"
     class="text-red-500 dark:text-red-400 text-xl"
   />
   <UIcon
-    v-else
+    v-show="status !== 'pending' && status !== 'error'"
     name="i-material-symbols-light-done"
     :class="[
       'text-green-500 dark:text-green-400 text-xl',
