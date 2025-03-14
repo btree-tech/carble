@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { z } from 'zod'
 
-defineProps<{
+const props = defineProps<{
   cards: z.infer<typeof cardSchema>[]
 }>()
 
@@ -16,6 +16,10 @@ const measuring = ref<HTMLDivElement>()
 const { width: actualWidth } = useElementSize(measuring)
 
 const scale = computed(() => previewWidth.value / actualWidth.value)
+
+const chunkedCards = computed(() => props.cards.reduce((prev, _, i) => {
+  return i % 2 ? prev : [...prev, props.cards.slice(i, i + 2)]
+}, [] as z.infer<typeof cardsSchema>[]))
 
 const settings = ref({
   layoutId: 1,
@@ -74,13 +78,19 @@ const print = () => {
 
     <Teleport to="body">
       <div class="hidden print:block text-black bg-white">
-        <PrintViewCard
-          v-for="card in cards"
-          :key="card.id"
-          :card="card"
-          :settings="settings"
-          class="w-full h-[50svh]"
-        />
+        <div
+          v-for="(chunk, i) in chunkedCards"
+          :key="i"
+          class="w-full h-svh max-h-svh box-border break-inside-avoid"
+        >
+          <PrintViewCard
+            v-for="card in chunk"
+            :key="card.id"
+            :card="card"
+            :settings="settings"
+            class="h-[50%] overflow-hidden"
+          />
+        </div>
       </div>
     </Teleport>
   </div>

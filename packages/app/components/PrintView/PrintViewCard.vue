@@ -43,7 +43,7 @@ const unreservedArea = computed(() => {
       v-for="area in reservedAreas"
       :key="area.fieldId"
       :style="{ ...area.style }"
-      class="border border-black overflow-hidden p-1"
+      class="border border-black max-h-full overflow-hidden p-1"
     >
       <PrintViewCardContent
         v-if="Number(area.fieldId) > 0"
@@ -59,7 +59,7 @@ const unreservedArea = computed(() => {
     <div
       v-if="unreservedArea"
       :style="{ ...unreservedArea.style }"
-      class="border border-black overflow-hidden p-1"
+      class="border border-black max-h-full overflow-hidden p-1"
     >
       <img
         :src="qrcode"
