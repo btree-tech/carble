@@ -1,68 +1,76 @@
 <script setup lang="ts">
 import { useQRCode } from '@vueuse/integrations/useQRCode'
+import type { z } from 'zod'
 
 const props = defineProps<{
-  cardId: number
-  fieldVisibilities: number[]
+  card: z.infer<typeof cardSchema>
+  settings: { layoutId: number, fixedFieldId: number[], displayImageCount: number }
 }>()
 
-const { data: project } = useProjectData()
-
-const fields = computed(() => (project.value?.fields || []).filter((field) => props.fieldVisibilities.includes(field.id)))
-
-const { data: card } = useCard(props.cardId)
+const layout = computed(() => PrintViewLayouts.get(Number(props.settings.layoutId))!)
 
 const qrcode = useQRCode(() => JSON.stringify({
-  projectId: card.value.projectId,
-  cardId: card.value.id,
-}))
+  projectId: props.card.projectId,
+  cardId: props.card.id,
+}), { margin: 0 })
 
-const contents = computed(() => {
-  return Object.fromEntries(
-    project.value.fields.map(({ id: fieldId }) => [
-      fieldId,
-      (card.value.contents.find((c) => c.fieldId === fieldId)?.body || '').split(/\r\n|\r|\n/)
-    ])
-  )
+const reservedAreas = computed(() => {
+  return (layout.value.reservedAreas || []).map((area, i) => ({
+    ...area,
+    fieldId: props.settings.fixedFieldId[i],
+  }))
+})
+
+const unreservedArea = computed(() => {
+  const area = layout.value.unreservedArea
+  if (!area) return null
+  return {
+    ...area,
+    fieldIds: props.card.contents
+      .filter((c) => !props.settings.fixedFieldId.includes(c.fieldId))
+      .map((c) => c.fieldId),
+  }
 })
 </script>
 
 <template>
-  <div class="grid grid-cols-2 items-start gap-x-1 overflow-hidden">
-    <div class="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1">
-      <div class="font-bold">
-        ID
-      </div>
-      <div>{{ card.id }}</div>
-      <template
-        v-for="field in fields"
-        :key="field.id"
-      >
-        <div class="font-bold">
-          {{ field.name }}
-        </div>
-        <div class="break-all">
-          <template
-            v-for="(line, i) in contents[field.id]"
-            :key="line"
-          >
-            <br v-if="i > 0">
-            {{ line }}
-          </template>
-        </div>
-      </template>
+  <div
+    :style="{ ...layout.style }"
+    class="grid border border-black"
+  >
+    <div
+      v-for="area in reservedAreas"
+      :key="area.fieldId"
+      :style="{ ...area.style }"
+      class="border border-black overflow-hidden p-1"
+    >
+      <PrintViewCardContent
+        v-if="Number(area.fieldId) > 0"
+        :card="card"
+        :field-id="area.fieldId"
+      />
+      <PrintViewCardImages
+        v-else-if="settings.displayImageCount"
+        :card="card"
+        :display-count="settings.displayImageCount"
+      />
     </div>
-    <div class="flex flex-col gap-2">
+    <div
+      v-if="unreservedArea"
+      :style="{ ...unreservedArea.style }"
+      class="border border-black overflow-hidden p-1"
+    >
       <img
         :src="qrcode"
-        class="self-end size-20 -m-1"
+        class="size-20 float-right ml-2 mb-2"
       >
-      <div
-        v-for="image in card.images"
-        :key="image.id"
-      >
-        <img :src="`/uploads/images/${image.filename}`">
-      </div>
+      <PrintViewCardContent
+        v-for="fieldId in unreservedArea.fieldIds"
+        :key="fieldId"
+        :card="card"
+        :field-id="fieldId"
+        class="mb-1 last:mb-0"
+      />
     </div>
   </div>
 </template>

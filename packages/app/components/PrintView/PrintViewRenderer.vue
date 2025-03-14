@@ -17,7 +17,11 @@ const { width: actualWidth } = useElementSize(measuring)
 
 const scale = computed(() => previewWidth.value / actualWidth.value)
 
-const visibleFieldIds = ref<number[]>(project.value.fields.map((field) => field.id))
+const settings = ref({
+  layoutId: 1,
+  fixedFieldId: [0, project.value.fields[0].id],
+  displayImageCount: 1
+})
 
 const print = () => {
   window.print()
@@ -41,16 +45,15 @@ const print = () => {
         class="origin-top-left"
         :style="{
           scale,
-          // height: `${scale * 100}%`,
           height: `calc(148.5mm * ${cards.length} * ${scale})`
         }"
       >
         <PrintViewCard
           v-for="card in cards"
           :key="card.id"
-          :card-id="card.id"
-          :field-visibilities="visibleFieldIds"
-          class="w-[210mm] h-[148.5mm] aspect-[1.414] p-2 border border-gray-500"
+          :card="card"
+          :settings="settings"
+          class="w-[210mm] h-[148.5mm] aspect-[1.414]"
         />
       </div>
     </div>
@@ -61,7 +64,7 @@ const print = () => {
         block
         @click="print"
       />
-      <PrintViewSettings v-model="visibleFieldIds" />
+      <PrintViewSettings v-model="settings" />
     </div>
 
     <div
@@ -74,9 +77,9 @@ const print = () => {
         <PrintViewCard
           v-for="card in cards"
           :key="card.id"
-          :card-id="card.id"
-          :field-visibilities="visibleFieldIds"
-          class="w-full h-[50svh] p-2 border border-gray-500"
+          :card="card"
+          :settings="settings"
+          class="w-full h-[50svh]"
         />
       </div>
     </Teleport>
