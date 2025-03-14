@@ -27,10 +27,12 @@ const {
 
 <template>
   <UButton
-    label="削除"
-    icon="i-material-symbols-light-delete"
-    color="gray"
+    icon="i-material-symbols-delete-forever"
+    color="red"
+    variant="outline"
     :loading="status === 'pending'"
     @click="execute"
-  />
+  >
+    <span class="hidden md:inline">削除</span>
+  </UButton>
 </template>

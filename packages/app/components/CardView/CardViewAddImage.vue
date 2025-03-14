@@ -24,6 +24,7 @@ onChange(async () => {
   <UButton
     label="画像を追加"
     icon="i-material-symbols-light-add-a-photo"
+    color="gray"
     :loading="status === 'pending'"
     @click="open"
   />

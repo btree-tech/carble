@@ -40,7 +40,7 @@ const { data: cards } = useCardsData()
         />
       </template>
     </UInput>
-    <div class="text-gray-500 dark:text-gray-400">
+    <div class="text-gray-500 dark:text-gray-400 hidden md:block">
       <span v-if="query === ''">全 {{ project.totalCardSize }} 件</span>
       <span v-else>{{ cards.length }} / {{ project.totalCardSize }} 件表示中</span>
     </div>

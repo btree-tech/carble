@@ -83,6 +83,9 @@ onChange(async () => {
     label="スキャン"
     icon="i-material-symbols-light-add-a-photo"
     :loading="status === 'pending'"
-    @click="open"
-  />
+    @click="open" 
+  >
+    <span class="hidden md:inline">スキャン</span>
+  </UButton>
+
 </template>

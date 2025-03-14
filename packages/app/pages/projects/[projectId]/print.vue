@@ -13,15 +13,6 @@ const { data: cards } = await useFetchCards()
       print:hidden
     "
   >
-    <div class="portrait:px-4">
-      <UButton
-        label="プロジェクト一覧に戻る"
-        icon="i-material-symbols-light-door-open"
-        to="/"
-        variant="link"
-        :padded="false"
-      />
-    </div>
     <div
       class="
         flex items-center gap-x-4
@@ -31,10 +22,18 @@ const { data: cards } = await useFetchCards()
       <div class="grow truncate">
         {{ project.name }}
       </div>
+    </div>
+    <div
+      class="
+        flex items-center gap-x-4
+        landscape:col-span-2
+        portrait:px-4
+      "
+    >
       <UButton
         icon="i-material-symbols-light-table-view"
         :to="`/projects/${project.id}`"
-        variant="soft"
+        variant="outline"
       >
         <span class="hidden md:inline">テーブルビュー</span>
       </UButton>

@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import svgLoader from 'vite-svg-loader'
 
 const rootDirURL = new URL('../../', import.meta.url)
 
@@ -50,5 +51,6 @@ export default defineNuxtConfig({
         port: Number(process.env.APP_HMR_PORT) || 24678,
       },
     },
+    plugins: [svgLoader()]
   },
 })
