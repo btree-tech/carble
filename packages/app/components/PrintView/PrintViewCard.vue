@@ -24,10 +24,11 @@ const reservedAreas = computed(() => {
 const unreservedArea = computed(() => {
   const area = layout.value.unreservedArea
   if (!area) return null
+  const unreserveFieldIds = props.settings.fixedFieldId.map((id) => Number(id))
   return {
     ...area,
     fieldIds: props.card.contents
-      .filter((c) => !props.settings.fixedFieldId.includes(c.fieldId))
+      .filter((c) => !unreserveFieldIds.includes(c.fieldId))
       .map((c) => c.fieldId),
   }
 })
