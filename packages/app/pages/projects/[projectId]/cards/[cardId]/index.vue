@@ -48,8 +48,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
       </div>
       <ScanButton class="justify-self-end" />
     </div>
-    <div class="flex items-center justify-between gap-4">
-      <div class="flex gap-2">
+    <div class="flex items-center gap-4">
         <UButton
           label="テーブルビュー"
           icon="i-material-symbols-light-table-view"
@@ -62,14 +61,12 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
           :to="`/projects/${projectId}/cards/${cardId}/print?${query}`"
           variant="outline"
         />
-      </div>
-      <div>
-        <StatusIcon :status="status" class="mr-4"/>
-        <DuplicateCard
-          :card-id="card.id"
-          @submitted="onDuplicated"
-        />
-      </div>
+      <div class="grow" />
+      <StatusIcon :status="status" />
+      <DuplicateCard
+        :card-id="card.id"
+        @submitted="onDuplicated"
+      />
     </div>
     <div
       class="
