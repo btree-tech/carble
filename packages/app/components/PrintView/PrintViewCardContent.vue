@@ -19,9 +19,9 @@ const body = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-0.5">
-    <div class="text-sm font-bold">{{ field?.name }}</div>
-    <div class="break-all">
+  <div class="flex flex-col gap-y-0.5 mb-3">
+    <div class="text-xs font-bold text-gray-500">{{ field?.name }}</div>
+    <div class="text-xs break-all min-h-3">
       <template
         v-for="(line, i) in body"
         :key="line"
