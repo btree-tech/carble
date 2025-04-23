@@ -12,11 +12,13 @@ COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm build
 RUN pnpm --filter @carble/db deploy ./db
+RUN pnpm --filter @carble/cli deploy ./cli
 
 FROM base AS app
 ENV NODE_ENV="production"
 COPY --from=build /carble/packages/app/.output ./app
 COPY --from=build /carble/db ./db
+COPY --from=build /carble/cli ./cli
 COPY --from=build /carble/run.sh ./
 VOLUME [ "/carble/storage" ]
 CMD [ "/bin/sh", "./run.sh" ]

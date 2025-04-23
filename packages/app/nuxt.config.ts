@@ -7,10 +7,6 @@ const rootDirURL = new URL('../../', import.meta.url)
 export default defineNuxtConfig({
   devtools: {
     enabled: true,
-
-    timeline: {
-      enabled: true,
-    },
   },
 
   modules: [
@@ -29,12 +25,20 @@ export default defineNuxtConfig({
 
   nitro: {
     storage: {
+      fs: {
+        driver: 'fs',
+        base: '/carble/storage',
+      },
       uploads: {
         driver: 'fs',
         base: '/carble/storage/uploads',
       },
     },
     devStorage: {
+      fs: {
+        driver: 'fs',
+        base: '../../storage',
+      },
       uploads: {
         driver: 'fs',
         base: '../../storage/uploads',
