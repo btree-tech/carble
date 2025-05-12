@@ -27,6 +27,10 @@ export default defineEventHandler(async (event) => {
         if (user.username === `project-${projectId}`) return
       } else if (event.path !== '/') {
         return
+      } else if (event.path === '/') {
+        const projectId = user.username.replace('project-', '')
+        await sendRedirect(event, `/projects/${projectId}`)
+        return
       }
       throw createError({ statusCode: 404 })
     }
