@@ -30,11 +30,11 @@ const basicAuthProjectIdSchema = z.array(
 const pathArgs = {
   dbPath: {
     type: 'string',
-    default: process.env.DB_PATH ?? resolve(__dirname, '../storage/dev.db'),
+    default: process.env.DB_PATH ?? resolve(__dirname, '../../storage/dev.db'),
   },
   storagePath: {
     type: 'string',
-    default: process.env.DB_PATH ? resolve(process.env.DB_PATH, '../') : resolve(__dirname, '../storage'),
+    default: process.env.DB_PATH ? resolve(process.env.DB_PATH, '../') : resolve(__dirname, '../../storage'),
   },
 } as const satisfies ArgsDef
 
