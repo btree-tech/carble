@@ -20,6 +20,9 @@ export default defineEventHandler(async (event) => {
     const user = await findUser(username, password)
     if (user) {
       if (event.path.startsWith('/api/projects')) {
+        if (event.path === '/api/projects') {
+          throw createError({ statusCode: 404, data: { redirectTo: `/projects/${user.username.replace('project-', '')}` } })
+        }
         const projectId = event.path.replace(/^\/api\/projects\/([0-9]+).*$/, '$1')
         if (event.path !== '/api/projects' && user.username === `project-${projectId}`) return
       } else if (event.path.startsWith('/projects')) {
