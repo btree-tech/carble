@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import logoImage from "../assets/logo.svg";
+import logoImage from '../assets/logo.svg'
 
 const {
   data: projects,
@@ -48,11 +48,12 @@ const onClickDeleteButton = async (id: number) => {
   await refresh()
   isDeleting.value.set(id, false)
 }
+
 const projectsInTable = (projects.value || []).map((p) => {
   return {
     ...p,
     updatedAt: { value: new Date(p.updatedAt).toLocaleString(), class: 'hidden md:block' },
-    actions: { value: p.actions, class: 'text-right' }
+    actions: { class: 'text-right' },
   }
 })
 </script>
@@ -60,7 +61,7 @@ const projectsInTable = (projects.value || []).map((p) => {
 <template>
   <div class="grid row-auto gap-y-4 px-4">
     <div class="flex items-center justify-between gap-4 px-4">
-      <logo-image style="fill: gray"></logo-image>
+      <logoImage style="fill: gray" />
       <div class="justify-self-end">
         <UButton
           icon="i-material-symbols-light-add"
