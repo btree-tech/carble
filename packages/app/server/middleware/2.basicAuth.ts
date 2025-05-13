@@ -1,4 +1,4 @@
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   if (event.path?.startsWith('/api/health')) {
     return
   }
@@ -11,10 +11,28 @@ export default defineEventHandler((event) => {
   const base64Credentials = event.node.req.headers.authorization?.split(' ')?.[1]
   if (base64Credentials) {
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
-    const [user, password] = credentials.split(':')
+    const [username, password] = credentials.split(':')
 
-    if (user === authData.user && password === authData.password) {
-      return
+    if (username === authData.user && password === authData.password) return
+
+    // CESCHI-137
+    if (!(await getAllUsers()).length) return
+    const user = await findUser(username, password)
+    if (user) {
+      if (event.path.startsWith('/api/projects')) {
+        const projectId = event.path.replace(/^\/api\/projects\/([0-9]+).*$/, '$1')
+        if (event.path !== '/api/projects' && user.username === `project-${projectId}`) return
+      } else if (event.path.startsWith('/projects')) {
+        const projectId = event.path.replace(/^\/projects\/([0-9]+).*$/, '$1')
+        if (user.username === `project-${projectId}`) return
+      } else if (event.path !== '/') {
+        return
+      } else if (event.path === '/') {
+        const projectId = user.username.replace('project-', '')
+        await sendRedirect(event, `/projects/${projectId}`)
+        return
+      }
+      throw createError({ statusCode: 404 })
     }
   }
 

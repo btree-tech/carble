@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @carble/* --parallel dev",
-    "build": "pnpm --filter @carble/app build"
+    "build": "pnpm --filter @carble/app build",
+    "cli": "pnpm --filter @carble/cli exec jiti"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
