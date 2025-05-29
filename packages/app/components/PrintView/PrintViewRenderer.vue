@@ -5,9 +5,7 @@ const props = defineProps<{
   cards: z.infer<typeof cardSchema>[]
 }>()
 
-const {
-  data: project,
-} = useProjectData()
+await useFetchPrintSetting()
 
 const wrapper = ref<HTMLDivElement>()
 const { width: previewWidth } = useElementSize(wrapper)
@@ -20,12 +18,6 @@ const scale = computed(() => previewWidth.value / actualWidth.value)
 const chunkedCards = computed(() => props.cards.reduce((prev, _, i) => {
   return i % 2 ? prev : [...prev, props.cards.slice(i, i + 2)]
 }, [] as z.infer<typeof cardsSchema>[]))
-
-const settings = ref({
-  layoutId: 1,
-  fixedFieldId: [0, project.value.fields[0].id],
-  displayImageCount: 1
-})
 
 const print = () => {
   window.print()
@@ -56,7 +48,6 @@ const print = () => {
           v-for="card in cards"
           :key="card.id"
           :card="card"
-          :settings="settings"
           class="w-[210mm] h-[148.5mm] aspect-[1.414]"
         />
       </div>
@@ -68,7 +59,7 @@ const print = () => {
         block
         @click="print"
       />
-      <PrintViewSettings v-model="settings" />
+      <PrintViewSettings />
     </div>
 
     <div
@@ -87,7 +78,6 @@ const print = () => {
             v-for="card in chunk"
             :key="card.id"
             :card="card"
-            :settings="settings"
             class="h-[50%] overflow-hidden"
           />
         </div>
