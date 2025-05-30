@@ -22,8 +22,11 @@ const {
   <div>
     <div
       :class="[
-        'grid grid-rows-[auto,auto,1fr,auto] gap-y-4 max-h-dvh p-4 -my-4',
-        { 'h-0 overflow-hidden': $route.name !== 'projects-projectId' },
+        'grid grid-rows-[auto,auto,1fr,auto] gap-y-4 max-h-dvh',
+        {
+          'p-4 -my-4': $route.name === 'projects-projectId',
+          'h-0 overflow-hidden !my-0': $route.name !== 'projects-projectId',
+        },
       ]"
     >
       <div class="flex items-center gap-1">
