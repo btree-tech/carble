@@ -16,7 +16,7 @@ const { data: layout } = usePrintLayout(() => printSetting.value.data.layoutId)
 
 const area = computed(() => layout.value?.areas.find(({ id }) => id === props.areaId))
 
-const fields = computed(() => printSetting.value.data.fields.filter(({ areaId }) => areaId === area.value?.id))
+const fields = computed(() => printSetting.value.data.fields.filter(({ areaId, isVisible }) => areaId === area.value?.id && isVisible))
 </script>
 
 <template>
