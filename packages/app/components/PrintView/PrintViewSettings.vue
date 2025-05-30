@@ -14,15 +14,15 @@ const layoutOptions = computed(() => {
 </script>
 
 <template>
-  <div v-if="setting && layout" class="flex flex-col gap-4">
+  <div v-if="setting" class="flex flex-col gap-4">
     <UFormGroup label="レイアウト">
       <USelect
-        v-model="setting.data.layoutId"
+        v-model.number="setting.data.layoutId"
         :options="layoutOptions"
       />
     </UFormGroup>
     <template
-      v-for="area in layout.areas"
+      v-for="area in layout?.areas"
       :key="area.id"
     >
       <PrintViewSettingAreaReserved
