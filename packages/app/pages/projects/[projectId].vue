@@ -22,7 +22,7 @@ const {
   <div>
     <div
       :class="[
-        'grid row-auto gap-y-4 px-4',
+        'grid grid-rows-[auto,auto,1fr,auto] gap-y-4 max-h-dvh p-4 -my-4',
         { 'h-0 overflow-hidden': $route.name !== 'projects-projectId' },
       ]"
     >
@@ -61,7 +61,7 @@ const {
       </div>
       <div
         v-if="project"
-        class="overflow-x-auto -mx-4 p-4 xl:mx-0 xl:p-0"
+        class="overflow-auto -mx-4 p-4 xl:mx-0 xl:p-0"
       >
         <table class="table-auto border-separate border-spacing-2 whitespace-nowrap">
           <thead>
