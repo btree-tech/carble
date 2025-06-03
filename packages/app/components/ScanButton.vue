@@ -16,6 +16,8 @@ const CardQRCodeData = z.object({
 
 const { projectId } = useRoute().params
 
+const { data: cards } = useCardsData()
+
 const toast = useToast()
 
 const { files, open, onChange } = useFileDialog({
@@ -62,6 +64,11 @@ const {
       method: 'post',
       body: formData,
     })
+    cards.value.push(cardSchema.parse({
+      ...data,
+      images: [],
+      contents: [],
+    }))
     toast.add({
       id: `card-scan-${data.id}`,
       title: 'スキャン完了',
@@ -83,7 +90,7 @@ onChange(async () => {
     label="スキャン"
     icon="i-material-symbols-light-add-a-photo"
     :loading="status === 'pending'"
-    @click="open" 
+    @click="open"
   >
     <span class="hidden md:inline">スキャン</span>
   </UButton>
