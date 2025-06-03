@@ -61,10 +61,10 @@ export default defineEventHandler(async () => {
 
             createReadStream(path)
               .on('data', (chunk) => {
-                file.push(Buffer.from(chunk))
+                file.push(Uint8Array.from(typeof chunk === 'object' ? chunk : Buffer.from(chunk)))
               })
               .on('close', () => {
-                file.push(Buffer.from([]), true)
+                file.push(new Uint8Array(), true)
                 resolve()
               })
           })
