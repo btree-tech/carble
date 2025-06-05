@@ -66,7 +66,6 @@ const {
     })
     cards.value.push(cardSchema.parse({
       ...data,
-      images: [],
       contents: [],
     }))
     toast.add({

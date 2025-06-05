@@ -33,20 +33,27 @@ export default defineEventHandler(async (event) => {
       })
       .returning()
 
+    const cardImages: typeof images.$inferSelect[] = []
     if (data?.image) {
       const filename = `${createId()}.${data.image.ext}`
 
-      await tx.insert(images).values({
-        projectId: project.id,
-        cardId: card.id,
-        filename,
-      })
+      const [image] = await tx.insert(images)
+        .values({
+          projectId: project.id,
+          cardId: card.id,
+          filename,
+        })
+        .returning()
+      cardImages.push(image)
 
       await useStorage('uploads/public/images').setItemRaw(filename, data.image.data)
     }
 
     await touchProjectUpdatedAt()
 
-    return card
+    return {
+      ...card,
+      images: cardImages,
+    }
   })
 })
