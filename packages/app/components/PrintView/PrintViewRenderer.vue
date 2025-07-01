@@ -72,7 +72,7 @@ const print = () => {
         <div
           v-for="(chunk, i) in chunkedCards"
           :key="i"
-          class="grid grid-rows-[1fr,5mm,1fr] w-svw h-svh max-h-svh overflow-hidden box-border break-inside-avoid"
+          class="grid grid-rows-[1fr,5mm,1fr] w-full h-svh max-h-svh overflow-hidden box-border break-inside-avoid"
         >
           <PrintViewCard
             v-for="(card, j) in chunk"
