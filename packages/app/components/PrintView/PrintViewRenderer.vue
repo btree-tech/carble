@@ -72,13 +72,13 @@ const print = () => {
         <div
           v-for="(chunk, i) in chunkedCards"
           :key="i"
-          class="w-full h-svh max-h-svh box-border break-inside-avoid"
+          class="grid grid-rows-[1fr,5mm,1fr] w-full h-svh max-h-svh overflow-hidden box-border break-inside-avoid"
         >
           <PrintViewCard
-            v-for="card in chunk"
+            v-for="(card, j) in chunk"
             :key="card.id"
             :card="card"
-            class="h-[50%] overflow-hidden"
+            :class="['overflow-hidden', { 'row-start-3': !!j }]"
           />
         </div>
       </div>
