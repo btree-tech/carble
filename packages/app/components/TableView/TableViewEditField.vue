@@ -19,7 +19,7 @@ const {
 } = useFetch(`/api/projects/${project.value.id}/fields/${props.fieldId}`, {
   method: 'put',
   body: {
-    name: refDebounced(computed(() => field.value.name), 200),
+    name: refDebounced(computed(() => field.value.name), 1000),
   },
   immediate: false,
 })

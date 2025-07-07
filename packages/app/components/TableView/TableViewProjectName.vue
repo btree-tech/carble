@@ -7,7 +7,7 @@ const emit = defineEmits<{
 
 const { data: project } = useProjectData()
 
-const debounced = refDebounced(computed(() => project.value.name), 200)
+const debounced = refDebounced(computed(() => project.value.name), 1000)
 
 const { status } = useFetch(`/api/projects/${project.value.id}`, {
   method: 'put',

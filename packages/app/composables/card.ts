@@ -147,7 +147,7 @@ export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRef
     })
   }, {
     immediate: false,
-    watch: [debouncedRef(data, 200)],
+    watch: [debouncedRef(data, 1000)],
   })
 
   return {
