@@ -139,7 +139,7 @@ export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRef
   const asyncData = useAsyncData(async () => {
     if (!toValue(watch)) return
     const url = `/api/projects/${content.value.projectId}/cards/${content.value.cardId}/fields/${content.value.fieldId}`
-    content.value = await $fetch<any>(url, {
+    await $fetch(url, {
       method: 'put',
       body: {
         body: data.value,
