@@ -150,7 +150,9 @@ const {
           </tbody>
         </table>
       </div>
-      <TableViewAddCard class="justify-self-start" />
+      <AddCard class="justify-self-start">
+        <span class="hidden md:inline">カード追加</span>
+      </AddCard>
     </div>
     <NuxtPage />
   </div>
