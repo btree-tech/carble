@@ -9,6 +9,8 @@ const {
   projectId,
 } = useRoute().params
 
+const toast = useToast()
+
 const {
   data: cards,
 } = useCardsData()
@@ -30,6 +32,11 @@ const {
   useProjectData().data.value.totalCardSize++
 
   emit('added', card)
+
+  toast.add({
+    id: 'card-add',
+    title: '追加しました',
+  })
 }, {
   immediate: false,
 })
