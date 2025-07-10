@@ -44,7 +44,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
 <template>
   <div
     v-if="project && card"
-    class="grid row-auto gap-y-4 px-4 mb-16 grid-cols-1"
+    class="grid row-auto gap-y-4 px-4 mb-24 grid-cols-1"
   >
     <div class="flex items-center gap-x-4">
       <div class="grow truncate">
@@ -139,7 +139,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
       :to="`/projects/${projectId}/cards/${previousCard.id}?${query}`"
       variant="soft"
       size="lg"
-      class="fixed bottom-8 left-4 md:bottom-16 md:left-8"
+      class="fixed bottom-12 left-4 md:bottom-24 md:left-8"
     />
     <UButton
       v-if="nextCard"
@@ -149,14 +149,14 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
       variant="soft"
       size="lg"
       :trailing="true"
-      class="fixed bottom-8 right-4 md:bottom-16 md:right-8"
+      class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
     />
     <AddCard
       v-else
       variant="soft"
       size="lg"
       :trailing="true"
-      class="fixed bottom-8 right-4 md:bottom-16 md:right-8"
+      class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
       @added="onAdded"
     />
   </div>
