@@ -44,7 +44,7 @@ const {
 
 <template>
   <UButton
-    label="カード追加"
+    label="追加"
     icon="i-material-symbols-light-add"
     :loading="status === 'pending'"
     @click="execute"
