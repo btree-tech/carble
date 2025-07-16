@@ -60,7 +60,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
           variant="outline"
         />
         <UButton
-          label="印刷ビュー"
+          label="カード印刷ビュー"
           icon="i-material-symbols-light-print"
           :to="`/projects/${projectId}/cards/${cardId}/print?${query}`"
           variant="outline"
@@ -134,7 +134,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
 
     <UButton
       v-if="previousCard"
-      label="前のカード"
+      label="前"
       icon="i-material-symbols-light-arrow-back-ios-new"
       :to="`/projects/${projectId}/cards/${previousCard.id}?${query}`"
       variant="soft"
@@ -143,7 +143,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
     />
     <UButton
       v-if="nextCard"
-      label="次のカード"
+      label="次"
       icon="i-material-symbols-light-arrow-forward-ios"
       :to="`/projects/${projectId}/cards/${nextCard.id}?${query}`"
       variant="soft"
