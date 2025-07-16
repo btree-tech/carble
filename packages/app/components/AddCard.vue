@@ -1,5 +1,19 @@
 <script setup lang="ts">
-const { projectId } = useRoute().params
+import type { z } from 'zod'
+
+const emit = defineEmits<{
+  added: [z.infer<typeof cardSchema>]
+}>()
+
+const {
+  projectId,
+} = useRoute().params
+
+const toast = useToast()
+
+const {
+  data: cards,
+} = useCardsData()
 
 const {
   execute,
@@ -8,14 +22,21 @@ const {
   const data = await $fetch(`/api/projects/${projectId}/cards`, {
     method: 'post',
   })
-  const { data: cards } = useCardsData()
-  cards.value.push(cardSchema.parse({
+  const card = cardSchema.parse({
     ...data,
     images: [],
     contents: [],
-  }))
+  })
+  cards.value.push(card)
 
   useProjectData().data.value.totalCardSize++
+
+  emit('added', card)
+
+  toast.add({
+    id: 'card-add',
+    title: '追加しました',
+  })
 }, {
   immediate: false,
 })
@@ -23,10 +44,11 @@ const {
 
 <template>
   <UButton
+    label="追加"
     icon="i-material-symbols-light-add"
     :loading="status === 'pending'"
     @click="execute"
   >
-    <span class="hidden md:inline">カード追加</span>
+    <slot />
   </UButton>
 </template>

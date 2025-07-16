@@ -55,7 +55,7 @@ const {
           :to="`/projects/${project?.id}/print`"
           variant="outline"
         >
-          <span class="hidden md:inline">印刷ビュー</span>
+          <span class="hidden md:inline">カード印刷ビュー</span>
         </UButton>
         <TableViewFilter />
         <div class="grow" />
@@ -119,7 +119,7 @@ const {
                   :to="{ path: `/projects/${card.projectId}/cards/${card.id}`, query: queryParams }"
                   variant="outline"
                 >
-                  <span class="hidden md:inline">カード</span>
+                  <span class="hidden md:inline">カード入力</span>
                 </UButton>
               </td>
               <td class="text-right">
@@ -150,7 +150,9 @@ const {
           </tbody>
         </table>
       </div>
-      <TableViewAddCard class="justify-self-start" />
+      <AddCard class="justify-self-start">
+        <span class="hidden md:inline">追加</span>
+      </AddCard>
     </div>
     <NuxtPage />
   </div>

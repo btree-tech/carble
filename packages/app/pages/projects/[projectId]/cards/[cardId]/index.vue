@@ -35,12 +35,16 @@ const nextCard = computed(() => cards.value[index.value + 1])
 const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
   await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
 }
+
+const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
+  await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
+}
 </script>
 
 <template>
   <div
     v-if="project && card"
-    class="grid row-auto gap-y-4 px-4 mb-16 grid-cols-1"
+    class="grid row-auto gap-y-4 px-4 mb-24 grid-cols-1"
   >
     <div class="flex items-center gap-x-4">
       <div class="grow truncate">
@@ -56,7 +60,7 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
           variant="outline"
         />
         <UButton
-          label="印刷ビュー"
+          label="カード印刷ビュー"
           icon="i-material-symbols-light-print"
           :to="`/projects/${projectId}/cards/${cardId}/print?${query}`"
           variant="outline"
@@ -130,22 +134,30 @@ const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
 
     <UButton
       v-if="previousCard"
-      label="前のカード"
+      label="前"
       icon="i-material-symbols-light-arrow-back-ios-new"
       :to="`/projects/${projectId}/cards/${previousCard.id}?${query}`"
       variant="soft"
       size="lg"
-      class="fixed bottom-8 left-4 md:bottom-16 md:left-8"
+      class="fixed bottom-12 left-4 md:bottom-24 md:left-8"
     />
     <UButton
       v-if="nextCard"
-      label="次のカード"
+      label="次"
       icon="i-material-symbols-light-arrow-forward-ios"
       :to="`/projects/${projectId}/cards/${nextCard.id}?${query}`"
       variant="soft"
       size="lg"
       :trailing="true"
-      class="fixed bottom-8 right-4 md:bottom-16 md:right-8"
+      class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
+    />
+    <AddCard
+      v-else
+      variant="soft"
+      size="lg"
+      :trailing="true"
+      class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
+      @added="onAdded"
     />
   </div>
 </template>

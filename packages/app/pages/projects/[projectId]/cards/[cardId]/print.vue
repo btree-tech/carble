@@ -52,7 +52,7 @@ const query = useCardsQueryString()
         :to="`/projects/${project.id}/cards/${cardId}?${query}`"
         variant="outline"
       >
-        <span class="hidden md:inline">カードビュー</span>
+        <span class="hidden md:inline">カード入力ビュー</span>
       </UButton>
     </div>
     <PrintViewRenderer :cards="[card]" />
