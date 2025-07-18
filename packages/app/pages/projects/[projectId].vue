@@ -19,52 +19,61 @@ const {
 </script>
 
 <template>
-  <div>
+  <div
+    :class="[
+      'grid-cols-subgrid col-span-3 !col-start-1',
+      {
+        'grid-rows-[0,1fr] !gap-y-0': $route.name !== 'projects-projectId',
+      },
+    ]"
+  >
     <div
       :class="[
-        'grid grid-rows-[auto,auto,1fr,auto] gap-y-4 max-h-dvh',
+        'grid grid-cols-subgrid col-span-3',
         {
-          'p-4 -my-4': $route.name === 'projects-projectId',
-          'h-0 overflow-hidden !my-0': $route.name !== 'projects-projectId',
+          'grid-rows-subgrid row-span-3 py-4': $route.name === 'projects-projectId',
+          'overflow-hidden': $route.name !== 'projects-projectId',
         },
       ]"
     >
-      <div class="flex items-center gap-1">
-        <UButton
-          icon="i-material-symbols-light-home"
-          to="/"
-          variant="link"
-          :padded="false"
-        >
-          <span class="hidden md:inline">ホーム</span>
-        </UButton>
-        <UIcon
-          name="i-material-symbols-light-chevron-right"
-          class="w-6 h-6"
-        />
-        <TableViewProjectName
-          class="grow"
-          @update:status="statuses.set('name', $event)"
-        />
-        <ScanButton class="ml-4"/>
-      </div>
-      <div class="flex items-center gap-4">
-        <UButton
-          class="flex-none"
-          icon="i-material-symbols-light-print"
-          :to="`/projects/${project?.id}/print`"
-          variant="outline"
-        >
-          <span class="hidden md:inline">カード印刷ビュー</span>
-        </UButton>
-        <TableViewFilter />
-        <div class="grow" />
-        <StatusIcon :status="status" />
-        <TableViewMenu />
-      </div>
+      <HeaderMenu class="col-start-2">
+        <div class="flex items-center gap-1">
+          <UButton
+            icon="i-material-symbols-light-home"
+            to="/"
+            variant="link"
+            :padded="false"
+          >
+            <span class="hidden md:inline">ホーム</span>
+          </UButton>
+          <UIcon
+            name="i-material-symbols-light-chevron-right"
+            class="w-6 h-6"
+          />
+          <TableViewProjectName
+            class="grow"
+            @update:status="statuses.set('name', $event)"
+          />
+          <ScanButton class="ml-4"/>
+        </div>
+        <div class="flex items-center gap-4">
+          <UButton
+            class="flex-none"
+            icon="i-material-symbols-light-print"
+            :to="`/projects/${project?.id}/print`"
+            variant="outline"
+          >
+            <span class="hidden md:inline">カード印刷ビュー</span>
+          </UButton>
+          <TableViewFilter />
+          <div class="grow" />
+          <StatusIcon :status="status" />
+          <TableViewMenu />
+        </div>
+      </HeaderMenu>
       <div
         v-if="project"
-        class="overflow-auto -mx-4 p-4 xl:mx-0 xl:p-0"
+        class="col-span-3 overflow-auto p-4 landscape:px-8"
       >
         <table class="table-auto border-separate border-spacing-2 whitespace-nowrap">
           <thead>
@@ -150,10 +159,10 @@ const {
           </tbody>
         </table>
       </div>
-      <AddCard class="justify-self-start">
+      <AddCard class="col-start-2 justify-self-start">
         <span class="hidden md:inline">追加</span>
       </AddCard>
     </div>
-    <NuxtPage />
+    <NuxtPage class="col-start-2 grid grid-rows-[auto,1fr,auto] max-h-dvh py-4" />
   </div>
 </template>
