@@ -32,7 +32,7 @@ const {
         'grid grid-cols-subgrid col-span-3',
         {
           'grid-rows-subgrid row-span-3 py-4': $route.name === 'projects-projectId',
-          'overflow-hidden': $route.name !== 'projects-projectId',
+          'h-0 overflow-hidden print:hidden': $route.name !== 'projects-projectId',
         },
       ]"
     >
