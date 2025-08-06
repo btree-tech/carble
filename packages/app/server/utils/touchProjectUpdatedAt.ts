@@ -1,8 +1,13 @@
 import { projects } from '@carble/db/schema'
 import { eq } from 'drizzle-orm'
+import { z } from 'zod'
 
-export default async function() {
-  const projectId = getRouterParam(useEvent(), 'projectId')
+const schema = z.object({
+  projectId: z.coerce.number(),
+})
+
+export default async function(projectId?: number) {
+  projectId ??= (await getValidatedRouterParams(useEvent(), schema.parse)).projectId
   if (!projectId) return
 
   await useDatabase().update(projects)

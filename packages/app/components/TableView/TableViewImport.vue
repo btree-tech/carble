@@ -15,7 +15,6 @@ const { files, open, reset, onChange } = useFileDialog({
 const {
   execute,
   status,
-  error,
 } = useAsyncData(async () => {
   const file = files.value?.item(0)
   if (!file) return
@@ -23,24 +22,19 @@ const {
   const formData = new FormData()
   formData.append('file', file)
 
-  await $fetch(`/api/projects/${projectId}/import`, {
-    method: 'put',
+  await $fetch(`/api/projects/${projectId}/imports`, {
+    method: 'post',
     body: formData,
   })
 }, {
   immediate: false,
 })
 
-const errorMessage = computed(() => JSON.parse((error.value?.data as any)?.message))
-
 onChange(async (files) => {
   if (!files?.length) return
 
   await execute()
-  if (status.value === 'success') {
-    await refreshNuxtData([FetchProjectKey, getFetchCardsKey(projectId)])
-    isOpen.value = false
-  }
+  await refreshNuxtData(getFetchProjectImportsInProgressKey())
 
   reset()
 })
@@ -72,22 +66,6 @@ onChange(async (files) => {
             @click="open"
           />
         </div>
-        <UAlert
-          v-if="status === 'error'"
-          color="red"
-          title="エラーがあります"
-        >
-          <template #description>
-            <ul class="list-inside list-disc">
-              <li
-                v-for="message in errorMessage"
-                :key="message"
-              >
-                {{ message }}
-              </li>
-            </ul>
-          </template>
-        </UAlert>
       </div>
     </UCard>
   </UModal>

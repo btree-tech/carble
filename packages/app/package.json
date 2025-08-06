@@ -33,7 +33,7 @@
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "fflate": "^0.8.2",
-    "file-type": "^19.5.0",
+    "file-type": "^21.0.0",
     "qrcode": "^1.5.4",
     "sharp": "^0.33.5",
     "sortablejs": "^1.15.3",

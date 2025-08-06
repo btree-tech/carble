@@ -8,5 +8,9 @@ export function createDatabase() {
 }
 
 export function useDatabase() {
+  if (!db) {
+    const { dbPath } = useRuntimeConfig()
+    db = connect(dbPath)
+  }
   return db
 }
