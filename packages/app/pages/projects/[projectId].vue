@@ -28,15 +28,12 @@ const {
     ]"
   >
     <div
-      :class="[
-        'grid grid-cols-subgrid col-span-3',
-        {
-          'grid-rows-subgrid row-span-3 py-4': $route.name === 'projects-projectId',
-          'h-0 overflow-hidden print:hidden': $route.name !== 'projects-projectId',
-        },
-      ]"
+      :class="{
+        'col-span-3 grid grid-cols-1 grid-rows-subgrid row-span-3 py-4': $route.name === 'projects-projectId',
+        'h-0 overflow-hidden print:hidden': $route.name !== 'projects-projectId',
+      }"
     >
-      <HeaderMenu class="col-start-2">
+      <HeaderMenu class="mx-4 max-w-screen-xl">
         <div class="flex items-center gap-1">
           <UButton
             icon="i-material-symbols-light-home"
@@ -159,9 +156,11 @@ const {
           </tbody>
         </table>
       </div>
-      <AddCard class="col-start-2 justify-self-start">
-        <span class="hidden md:inline">追加</span>
-      </AddCard>
+      <div class="mx-4">
+        <AddCard>
+          <span class="hidden md:inline">追加</span>
+        </AddCard>
+      </div>
     </div>
     <NuxtPage class="col-start-2 grid grid-rows-[auto,1fr,auto] max-h-dvh py-4" />
   </div>
