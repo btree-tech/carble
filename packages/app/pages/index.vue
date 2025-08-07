@@ -70,10 +70,10 @@ const projectsInTable = (projects.value || []).map((p) => {
 </script>
 
 <template>
-  <div class="grid row-auto gap-y-4 px-4">
+  <div class="grid row-auto gap-y-4 py-4">
     <div class="flex items-center justify-between gap-4 px-4">
-      <logoImage style="fill: gray" />
-      <div class="justify-self-end">
+      <logoImage class="fill-zinc-500" />
+      <div>
         <UButton
           icon="i-material-symbols-light-add"
           :loading="isCreating"

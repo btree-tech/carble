@@ -44,39 +44,41 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
 <template>
   <div
     v-if="project && card"
-    class="grid row-auto gap-y-4 px-4 mb-24 grid-cols-1"
+    class="row-span-3 grid grid-rows-subgrid gap-y-8"
   >
-    <div class="flex items-center gap-x-4">
-      <div class="grow truncate">
-        {{ project.name }}
+    <div>
+      <div class="flex items-center gap-x-4 mb-4">
+        <div class="grow truncate">
+          {{ project.name }}
+        </div>
+        <ScanButton class="justify-self-end" />
       </div>
-      <ScanButton class="justify-self-end" />
-    </div>
-    <div class="flex items-center gap-4">
-        <UButton
-          label="テーブルビュー"
-          icon="i-material-symbols-light-table-view"
-          :to="`/projects/${projectId}?${query}`"
-          variant="outline"
+      <div class="flex items-center gap-4">
+          <UButton
+            label="テーブルビュー"
+            icon="i-material-symbols-light-table-view"
+            :to="`/projects/${projectId}?${query}`"
+            variant="outline"
+          />
+          <UButton
+            label="カード印刷ビュー"
+            icon="i-material-symbols-light-print"
+            :to="`/projects/${projectId}/cards/${cardId}/print?${query}`"
+            variant="outline"
+          />
+        <div class="grow" />
+        <StatusIcon :status="status" />
+        <DuplicateCard
+          :card-id="card.id"
+          @submitted="onDuplicated"
         />
-        <UButton
-          label="カード印刷ビュー"
-          icon="i-material-symbols-light-print"
-          :to="`/projects/${projectId}/cards/${cardId}/print?${query}`"
-          variant="outline"
-        />
-      <div class="grow" />
-      <StatusIcon :status="status" />
-      <DuplicateCard
-        :card-id="card.id"
-        @submitted="onDuplicated"
-      />
+      </div>
     </div>
     <div
       class="
-        grid grid-cols-2 items-start gap-8 my-8
+        grid grid-cols-2 items-start gap-8
         portrait:grid-cols-1
-        border-2 p-2 min-h-[882px] rounded
+        border-2 p-2 rounded
       "
     >
       <div class="grid grid-cols-[auto,1fr] gap-4">
@@ -131,6 +133,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
         </div>
       </div>
     </div>
+    <div class="h-32" />
 
     <UButton
       v-if="previousCard"
