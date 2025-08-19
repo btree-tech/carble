@@ -1,10 +1,12 @@
-import Database from 'better-sqlite3'
-import { drizzle } from 'drizzle-orm/better-sqlite3'
+import Database, { RunResult } from 'better-sqlite3'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import { drizzle } from 'drizzle-orm/better-sqlite3'
 import type { Schema } from './helper'
 import * as schema from './schema'
 
 export * from './helper'
+
+export type BetterSQLite3RunResult = RunResult
 
 export type Database = BetterSQLite3Database<Schema>
 

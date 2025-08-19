@@ -1,5 +1,7 @@
+import type { BetterSQLite3RunResult } from '@carble/db'
 import { cards, contents, fields, images, imports } from '@carble/db/schema'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
+import { getTableConfig, type SQLiteInsertBase, type SQLiteInsertValue, type SQLiteTable } from 'drizzle-orm/sqlite-core'
 import { AsyncUnzipInflate, Unzip } from 'fflate/node'
 import { fileTypeFromFile } from 'file-type'
 import * as fs from 'node:fs'
@@ -90,6 +92,25 @@ async function toWorkbook(target: typeof imports.$inferSelect) {
       isZip,
       wb: XLSX.readFile(resolveStoragePath('uploads', 'imports', target.filename)),
     }
+  }
+}
+
+async function chunkInsert<
+  T extends SQLiteTable,
+  V extends SQLiteInsertValue<T>,
+>(
+  table: T,
+  values: V[],
+  modifier?: (query: SQLiteInsertBase<T, 'sync', BetterSQLite3RunResult>) => SQLiteInsertBase<T, 'sync', BetterSQLite3RunResult>,
+  length = Math.ceil(999 / Object.keys(getTableConfig(table).columns).length),
+) {
+  const chunked = Map.groupBy(values, (_, i) => Math.floor(i / length)).values()
+  for await (const chunk of chunked) {
+    let query = useDatabase().insert(table).values(chunk)
+    if (modifier) {
+      query = modifier(query)
+    }
+    await query
   }
 }
 
@@ -238,19 +259,19 @@ export default defineTask({
           }
         })
 
-        await tx.insert(cards)
-          .values(insertCardValues)
-          .onConflictDoNothing({ target: [cards.projectId, cards.id] })
+        await chunkInsert(cards, insertCardValues, (query) => {
+          return query.onConflictDoNothing({ target: [cards.projectId, cards.id] })
+        })
 
-        await tx.insert(contents)
-          .values(insertContentValues)
-          .onConflictDoUpdate({
+        await chunkInsert(contents, insertContentValues, (query) => {
+          return query.onConflictDoUpdate({
             target: [contents.projectId, contents.cardId, contents.fieldId],
             set: {
               body: sql`excluded.body`,
               updatedAt: new Date(),
             },
           })
+        })
 
         // 「画像ファイル列」が存在する場合のみ画像データを置き換え
         if (hasImageField) {
