@@ -110,7 +110,7 @@ const projectsInTable = (projects.value || []).map((p) => {
         <template #actions-data="{ row }">
           <UButton
             color="red"
-            icon="i-material-symbols-delete-forever"
+            icon="i-material-symbols-light-delete-forever"
             :loading="isDeleting.get(row.id)"
             @click="onClickDeleteButton(row.id)"
           >

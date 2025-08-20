@@ -27,7 +27,7 @@ const {
 
 <template>
   <UButton
-    icon="i-material-symbols-delete-forever"
+    icon="i-material-symbols-light-delete-forever"
     color="red"
     variant="outline"
     :loading="status === 'pending'"
