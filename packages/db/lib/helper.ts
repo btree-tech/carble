@@ -1,4 +1,4 @@
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import type { LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 
 export type Schema = typeof schema
@@ -9,9 +9,9 @@ export type TableKey = keyof Omit<Schema, `${string}Relations`>
 
 export type RelationKey = keyof Omit<Schema, TableKey>
 
-export type DB = BetterSQLite3Database<Schema>
+export type Database = LibSQLDatabase<Schema>
 
-export type RelationalQueryBuilderConfig<K extends TableKey, M extends keyof DB['query'][TableKey]> = NonNullable<Parameters<DB['query'][K][M]>[0]>
+export type RelationalQueryBuilderConfig<K extends TableKey, M extends keyof Database['query'][TableKey]> = NonNullable<Parameters<Database['query'][K][M]>[0]>
 
 export function table<T extends TableKey>(key: T): Schema[T] {
   return schema[key]
