@@ -1,5 +1,5 @@
 import { fields } from '@carble/db/schema'
-import { count, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -8,15 +8,13 @@ const updateFieldsSchema = z.array(createSelectSchema(fields).pick({
   order: true,
 }))
 .superRefine(async (value, context) => {
-  const [result] = await useDatabase()
-    .select({ count: count(fields.id) })
-    .from(fields)
-    .where(eq(fields.projectId, Number(getRouterParam(useEvent(), 'projectId'))))
-  if (result.count !== value.length) {
+  const count = await useDatabase()
+    .$count(fields.id, eq(fields.projectId, Number(getRouterParam(useEvent(), 'projectId'))))
+  if (count !== value.length) {
     context.addIssue({
-      code: z.ZodIssueCode.too_big,
-      type: 'array',
-      maximum: result.count,
+      code: 'too_big',
+      origin: 'array',
+      maximum: count,
       exact: true,
       inclusive: true,
     })
@@ -24,7 +22,7 @@ const updateFieldsSchema = z.array(createSelectSchema(fields).pick({
 
   if (value.length !== new Set(value.map((v) => v.order)).size) {
     context.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: `No duplicates allowed.`,
     })
   }
