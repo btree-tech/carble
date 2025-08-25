@@ -1,13 +1,19 @@
+import type { Database, Transaction } from '@carble/db'
 import { projects } from '@carble/db/schema'
 import { eq } from 'drizzle-orm'
+import z from 'zod'
 
-export default async function() {
-  const projectId = getRouterParam(useEvent(), 'projectId')
-  if (!projectId) return
+export default async function(db: Transaction|Database = useDatabase()) {
+  const { projectId } = await getValidatedRouterParams(
+    useEvent(),
+    z.object({
+      projectId: z.coerce.number(),
+    }).parse,
+  )
 
-  await useDatabase().update(projects)
+  await db.update(projects)
     .set({
       updatedAt: new Date(),
     })
-    .where(eq(projects.id, Number(projectId)))
+    .where(eq(projects.id, projectId))
 }

@@ -1,6 +1,8 @@
 import type { LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 
+export type { ResultSet } from '@libsql/client'
+
 export type Schema = typeof schema
 
 export type SchemaKey = keyof Schema
@@ -20,3 +22,5 @@ export function table<T extends TableKey>(key: T): Schema[T] {
 export function field<T extends TableKey, F extends keyof Schema[T]>(table: T, field: F): Schema[T][F] {
   return schema[table][field]
 }
+
+export type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]

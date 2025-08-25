@@ -1,7 +1,6 @@
 import { cards, contents, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import { eq, max } from 'drizzle-orm'
-import type { SQLiteInsertValue } from 'drizzle-orm/sqlite-core'
 import { copyFile } from 'node:fs/promises'
 import { extname } from 'node:path'
 
@@ -12,15 +11,15 @@ export default defineEventHandler(async () => {
   })
 
   return await useDatabase().transaction(async (tx) => {
-    const [result] = await tx
-      .select({ max: max(cards.id) })
+    const [{ maxCardId }] = await tx
+      .select({ maxCardId: max(cards.id) })
       .from(cards)
       .where(eq(cards.projectId, card.projectId))
 
     const [newCard] = await tx.insert(cards)
       .values({
         projectId: card.projectId,
-        id: (result.max || 0) + 1,
+        id: (maxCardId ?? 0) + 1,
       })
       .returning()
 
@@ -33,7 +32,7 @@ export default defineEventHandler(async () => {
     }
 
     if (card.images.length) {
-      const insertImageValues: SQLiteInsertValue<typeof images>[] = []
+      const insertImageValues: typeof images.$inferInsert[] = []
       const imagePaths: { from: string, to: string }[] = []
       card.images.forEach((image) => {
         const filename = `${createId()}.${extname(image.filename)}`
@@ -57,7 +56,7 @@ export default defineEventHandler(async () => {
       }))
     }
 
-    await touchProjectUpdatedAt()
+    await touchProjectUpdatedAt(tx)
 
     return await tx.query.cards.findFirst({
       where: (t, { eq, and }) => and(

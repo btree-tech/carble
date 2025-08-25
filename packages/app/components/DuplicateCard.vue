@@ -16,22 +16,26 @@ const toast = useToast()
 const {
   execute,
   status,
-} = useAsyncData(async () => {
-  const data = await $fetch(`/api/projects/${projectId}/cards/${props.cardId}/duplicate`, {
-    method: 'post',
-  })
-  const newCard = cardSchema.parse(data)
-  const { data: cards } = useCardsData()
-  cards.value.push(newCard)
-  useProjectData().data.value.totalCardSize++
-  emit('submitted', newCard)
-  toast.add({
-    id: 'card-duplicate',
-    title: '複製しました',
-  })
-}, {
-  immediate: false,
-})
+} = useAsyncData(
+  computed(() => `post /api/projects/${projectId}/cards/${props.cardId}/duplicate`),
+  async () => {
+    const data = await $fetch(`/api/projects/${projectId}/cards/${props.cardId}/duplicate`, {
+      method: 'post',
+    })
+    const newCard = cardSchema.parse(data)
+    const { data: cards } = useCardsData()
+    cards.value.push(newCard)
+    useProjectData().data.value.totalCardSize++
+    emit('submitted', newCard)
+    toast.add({
+      id: 'card-duplicate',
+      title: '複製しました',
+    })
+  },
+  {
+    immediate: false,
+  },
+)
 </script>
 
 <template>

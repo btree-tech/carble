@@ -8,21 +8,25 @@ const { projectId } = useRoute().params
 const {
   execute,
   status,
-} = useAsyncData(async () => {
-  if (!window.confirm('削除してよろしいですか？')) return
+} = useAsyncData(
+  computed(() => `delete /api/projects/${projectId}/cards/${props.cardId}`),
+  async () => {
+    if (!window.confirm('削除してよろしいですか？')) return
 
-  await $fetch(`/api/projects/${projectId}/cards/${props.cardId}`, {
-    method: 'delete',
-  })
-  const { data: cards } = useCardsData()
-  const index = cards.value.findIndex((c) => c.id === props.cardId)
-  if (index >= 0) {
-    cards.value.splice(index, 1)
-    useProjectData().data.value.totalCardSize--
-  }
-}, {
-  immediate: false,
-})
+    await $fetch(`/api/projects/${projectId}/cards/${props.cardId}`, {
+      method: 'delete',
+    })
+    const { data: cards } = useCardsData()
+    const index = cards.value.findIndex((c) => c.id === props.cardId)
+    if (index >= 0) {
+      cards.value.splice(index, 1)
+      useProjectData().data.value.totalCardSize--
+    }
+  },
+  {
+    immediate: false,
+  },
+)
 </script>
 
 <template>

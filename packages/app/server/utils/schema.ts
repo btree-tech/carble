@@ -15,13 +15,21 @@ export async function validate<Schema extends z.ZodTypeAny>(schema: Schema, data
 export const formDataSchema = z.instanceof(FormData)
   .transform((data) => Object.fromEntries(data.entries()))
 
-export const imageFileSchema = z.instanceof(File)
+export const imageFileSchema = z.file()
   .transform(async (data) => ({
-    data: Buffer.from(await data.arrayBuffer()),
+    data,
     ...await fileTypeFromBlob(data),
   }))
   .pipe(z.object({
-    data: z.instanceof(Buffer),
-    mime: z.string().startsWith('image/'),
+    data: z.file(),
+    mime: z.string().superRefine((data, ctx) => {
+      if (!data.startsWith('image/')) {
+        ctx.addIssue({
+          code: 'invalid_value',
+          values: ['image/*'],
+          input: data,
+        })
+      }
+    }),
     ext: z.string(),
   }))

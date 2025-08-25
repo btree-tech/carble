@@ -8,6 +8,6 @@ export default defineEventHandler(async () => {
     await tx.delete(fields)
       .where(eq(fields.id, field.id))
 
-    await touchProjectUpdatedAt()
+    await touchProjectUpdatedAt(tx)
   })
 })
