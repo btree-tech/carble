@@ -296,7 +296,7 @@ export default defineEventHandler(async () => {
       )
     }
 
-    await touchProjectUpdatedAt()
+    await touchProjectUpdatedAt(tx)
   })
 
   cleanup(baseDir)

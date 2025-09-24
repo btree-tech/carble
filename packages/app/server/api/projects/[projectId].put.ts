@@ -2,13 +2,14 @@ import { projects } from '@carble/db/schema'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 
-const updateProjectSchema = z.object({
-  name: z.string(),
-})
-
 export default defineEventHandler(async (event) => {
   const project = await findProject()
-  const data = await validate(updateProjectSchema, await readBody(event))
+  const data = await readValidatedBody(
+    event,
+    z.object({
+      name: z.string(),
+    }).parse,
+  )
 
   const [updated] = await useDatabase().update(projects)
     .set({

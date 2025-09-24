@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url'
 import svgLoader from 'vite-svg-loader'
 
 const rootDirURL = new URL('../../', import.meta.url)
@@ -16,7 +15,7 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    dbPath: fileURLToPath(new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL)),
+    dbPath: new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL).toString(),
     basicAuth: {
       user: '',
       password: '',

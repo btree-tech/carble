@@ -1,9 +1,15 @@
 import { createReadStream, existsSync } from 'node:fs'
 import { basename } from 'node:path'
 import sharp from 'sharp'
+import z from 'zod'
 
 export default defineEventHandler(async (event) => {
-  const filename = getRouterParam(useEvent(), 'filename')!
+  const { filename } = await getValidatedRouterParams(
+    event,
+    z.object({
+      filename: z.string(),
+    }).parse,
+  )
   const imagePath = resolveStoragePath('uploads', 'public/images', basename(filename, '.webp'))
   const thumbPath = resolveStoragePath('uploads', 'public/thumbs', filename)
 
