@@ -1,21 +1,22 @@
 import { imports } from '@carble/db/schema'
-import { and, count, eq, inArray, isNull } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
-const schema = z.object({
-  status: z.array(createSelectSchema(imports).shape.status).optional(),
-  unnotified: z.coerce.boolean().optional(),
-  page: z.coerce.number().default(1),
-  pageCount: z.coerce.number().default(10),
-})
-
 export default defineEventHandler(async (event) => {
-  const projectId = getRouterParam(useEvent(), 'projectId')
-  const data = await getValidatedQuery(event, schema.parse)
+  const project = await findProject()
+  const data = await getValidatedQuery(
+    event,
+    z.object({
+      status: z.array(createSelectSchema(imports).shape.status).optional(),
+      unnotified: z.coerce.boolean().optional(),
+      page: z.coerce.number().default(1),
+      pageCount: z.coerce.number().default(10),
+    }).parse,
+  )
 
   const where = and(
-    eq(imports.projectId, Number(projectId)),
+    eq(imports.projectId, project.id),
     data.status ? inArray(imports.status, data.status) : undefined,
     data.unnotified ? isNull(imports.notifiedAt) : undefined,
   )
@@ -28,9 +29,7 @@ export default defineEventHandler(async (event) => {
       offset: (data.page - 1) * data.pageCount,
     })
 
-    const [{ total }] = await tx.select({ total: count(imports.id) })
-      .from(imports)
-      .where(where)
+    const total = await tx.$count(imports, where)
 
     return {
       items: items,

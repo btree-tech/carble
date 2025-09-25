@@ -1,4 +1,4 @@
-import type { LibSQLResultSet } from '@carble/db'
+import type { Database, LibSQLResultSet, Transaction } from '@carble/db'
 import { cards, contents, fields, images, imports } from '@carble/db/schema'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
 import { getTableConfig, type SQLiteInsertBase, type SQLiteInsertValue, type SQLiteTable } from 'drizzle-orm/sqlite-core'
@@ -103,10 +103,11 @@ async function chunkInsert<
   values: V[],
   modifier?: (query: SQLiteInsertBase<T, 'async', LibSQLResultSet>) => SQLiteInsertBase<T, 'async', LibSQLResultSet>,
   length = Math.ceil(999 / Object.keys(getTableConfig(table).columns).length),
+  db: Transaction|Database = useDatabase(),
 ) {
   const chunked = Map.groupBy(values, (_, i) => Math.floor(i / length)).values()
   for await (const chunk of chunked) {
-    let query = useDatabase().insert(table).values(chunk)
+    let query = db.insert(table).values(chunk)
     if (modifier) {
       query = modifier(query)
     }
@@ -261,7 +262,7 @@ export default defineTask({
 
         await chunkInsert(cards, insertCardValues, (query) => {
           return query.onConflictDoNothing({ target: [cards.projectId, cards.id] })
-        })
+        }, undefined, tx)
 
         await chunkInsert(contents, insertContentValues, (query) => {
           return query.onConflictDoUpdate({
@@ -271,7 +272,7 @@ export default defineTask({
               updatedAt: new Date(),
             },
           })
-        })
+        }, undefined, tx)
 
         // 「画像ファイル列」が存在する場合のみ画像データを置き換え
         if (hasImageField) {
