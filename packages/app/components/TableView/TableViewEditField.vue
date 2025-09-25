@@ -75,7 +75,7 @@ const {
       @click="toggleIsVisible"
     />
     <UButton
-      icon="i-material-symbols-delete-forever"
+      icon="i-material-symbols-light-delete-forever"
       :loading="deleteStatus === 'pending'"
       color="red"
       @click="deleteField"

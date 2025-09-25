@@ -23,7 +23,7 @@ const {
 
 <template>
   <UButton
-    icon="i-material-symbols-delete-forever"
+    icon="i-material-symbols-light-delete-forever"
     :loading="status === 'pending'"
     color="red"
     @click="execute"

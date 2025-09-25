@@ -1,4 +1,4 @@
-import type { BetterSQLite3RunResult } from '@carble/db'
+import type { LibSQLResultSet } from '@carble/db'
 import { cards, contents, fields, images, imports } from '@carble/db/schema'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
 import { getTableConfig, type SQLiteInsertBase, type SQLiteInsertValue, type SQLiteTable } from 'drizzle-orm/sqlite-core'
@@ -101,7 +101,7 @@ async function chunkInsert<
 >(
   table: T,
   values: V[],
-  modifier?: (query: SQLiteInsertBase<T, 'sync', BetterSQLite3RunResult>) => SQLiteInsertBase<T, 'sync', BetterSQLite3RunResult>,
+  modifier?: (query: SQLiteInsertBase<T, 'async', LibSQLResultSet>) => SQLiteInsertBase<T, 'async', LibSQLResultSet>,
   length = Math.ceil(999 / Object.keys(getTableConfig(table).columns).length),
 ) {
   const chunked = Map.groupBy(values, (_, i) => Math.floor(i / length)).values()
@@ -298,7 +298,7 @@ export default defineTask({
         }
       })
 
-      await touchProjectUpdatedAt(target.projectId)
+      await touchProjectUpdatedAt(undefined, target.projectId)
 
       await useDatabase()
         .update(imports)

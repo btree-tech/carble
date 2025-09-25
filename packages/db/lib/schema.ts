@@ -23,9 +23,9 @@ export const cards = sqliteTable('cards', {
   id: integer('id').notNull(),
   projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
   createdAt: timestamps.createdAt,
-}, ({ projectId, id }) => ({
-  primaryKey: primaryKey({ columns: [projectId, id] }),
-}))
+}, ({ projectId, id }) => [
+  primaryKey({ columns: [projectId, id] }),
+])
 
 export const cardsRelations = relations(cards, ({ one, many }) => ({
   project: one(projects, {
@@ -43,9 +43,9 @@ export const fields = sqliteTable('fields', {
   isVisible: integer('isVisible', { mode: 'boolean' }).notNull().default(true),
   order: integer('order').notNull(),
   ...timestamps,
-}, ({ projectId, order }) => ({
-  orderIndex: index('projectId_order_index').on(projectId, order),
-}))
+}, ({ projectId, order }) => [
+  index('projectId_order_index').on(projectId, order),
+])
 
 export const fieldsRelations = relations(fields, ({ one, many }) => ({
   project: one(projects, {
@@ -61,13 +61,13 @@ export const contents = sqliteTable('contents', {
   fieldId: integer('fieldId').notNull().references(() => fields.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
   body: text('body'),
   ...timestamps,
-}, ({ projectId, cardId, fieldId }) => ({
-  primaryKey: primaryKey({ columns: [projectId, cardId, fieldId] }),
-  cardIdReference: foreignKey({
+}, ({ projectId, cardId, fieldId }) => [
+  primaryKey({ columns: [projectId, cardId, fieldId] }),
+  foreignKey({
     columns: [projectId, cardId],
     foreignColumns: [cards.projectId, cards.id],
   }).onUpdate('cascade').onDelete('cascade'),
-}))
+])
 
 export const contentsRelations = relations(contents, ({ one }) => ({
   project: one(projects, {
@@ -90,12 +90,12 @@ export const images = sqliteTable('images', {
   cardId: integer('cardId').notNull(),
   filename: text('filename').notNull().unique(),
   createdAt: timestamps.createdAt,
-}, ({ projectId, cardId }) => ({
-  cardIdReference: foreignKey({
+}, ({ projectId, cardId }) => [
+  foreignKey({
     columns: [projectId, cardId],
     foreignColumns: [cards.projectId, cards.id],
   }).onUpdate('cascade').onDelete('cascade'),
-}))
+])
 
 export const imagesRelations = relations(images, ({ one }) => ({
   project: one(projects, {

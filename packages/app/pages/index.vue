@@ -30,7 +30,7 @@ const columns = [
   {
     key: 'updatedAt',
     label: '最終更新日時',
-    class: 'hidden md:block'
+    class: 'hidden md:table-cell'
   },
   {
     key: 'actions',
@@ -60,12 +60,12 @@ const onClickDeleteButton = async (id: number) => {
   isDeleting.value.set(id, false)
 }
 
-const projectsInTable = (projects.value || []).map((p) => {
-  return {
+const projectsInTable = computed(() => {
+  return (projects.value || []).map((p) => ({
     ...p,
-    updatedAt: { value: new Date(p.updatedAt).toLocaleString(), class: 'hidden md:block' },
+    updatedAt: { value: p.updatedAt, class: 'hidden md:table-cell' },
     actions: { class: 'text-right' },
-  }
+  }))
 })
 </script>
 
@@ -105,12 +105,16 @@ const projectsInTable = (projects.value || []).map((p) => {
           </span>
         </template>
         <template #updatedAt-data="{ row }">
-          {{ row.updatedAt.value }}
+          <NuxtTime
+            :datetime="row.updatedAt.value"
+            date-style="medium"
+            time-style="medium"
+          />
         </template>
         <template #actions-data="{ row }">
           <UButton
             color="red"
-            icon="i-material-symbols-delete-forever"
+            icon="i-material-symbols-light-delete-forever"
             :loading="isDeleting.get(row.id)"
             @click="onClickDeleteButton(row.id)"
           >

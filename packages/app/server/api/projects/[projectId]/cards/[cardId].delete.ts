@@ -1,26 +1,24 @@
 import { cards } from '@carble/db/schema'
 import { and, eq } from 'drizzle-orm'
 
-export default defineEventHandler(async (event) => {
-  const projectId = getRouterParam(event, 'projectId')
-  const cardId = getRouterParam(event, 'cardId')
-
+export default defineEventHandler(async () => {
+  const card = await findCard()
   return await useDatabase().transaction(async (tx) => {
     const images = await tx.query.images.findMany({
       columns: { filename: true },
       where: (t, { and, eq }) => and(
-        eq(t.projectId, Number(projectId)),
-        eq(t.cardId, Number(cardId)),
+        eq(t.projectId, card.projectId),
+        eq(t.cardId, card.id),
       ),
     })
 
     await tx.delete(cards)
       .where(and(
-        eq(cards.projectId, Number(projectId)),
-        eq(cards.id, Number(cardId)),
+        eq(cards.projectId, card.projectId),
+        eq(cards.id, card.id),
       ))
 
-    await touchProjectUpdatedAt()
+    await touchProjectUpdatedAt(tx)
 
     await Promise.all(
       images.map(({ filename }) => [

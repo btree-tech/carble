@@ -2,23 +2,17 @@ import { cards, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
 import { eq, max } from 'drizzle-orm'
 import { z } from 'zod'
-import { H3Error } from 'h3'
-
-const createCardSchema = formDataSchema
-  .pipe(z.object({
-    image: imageFileSchema.optional(),
-  }))
-  .optional()
 
 export default defineEventHandler(async (event) => {
   const project = await findProject()
-
-  let data: z.infer<typeof createCardSchema>
-  try {
-    data = await validate(createCardSchema, await readFormData(event))
-  } catch (err) {
-    if (err instanceof H3Error) throw err
-  }
+  const data = getRequestHeader(event, 'content-type')?.startsWith('multipart/form-data')
+    ? await readValidatedFormData(
+        event,
+        z.object({
+          image: imageFileSchema.optional(),
+        }).parseAsync
+      )
+    : {}
 
   return await useDatabase().transaction(async (tx) => {
     const [result] = await tx
@@ -46,10 +40,10 @@ export default defineEventHandler(async (event) => {
         .returning()
       cardImages.push(image)
 
-      await useStorage('uploads/public/images').setItemRaw(filename, data.image.data)
-    }
+      await useStorage('uploads/public/images').setItemRaw(filename, Buffer.from(await data.image.data.arrayBuffer()))
 
-    await touchProjectUpdatedAt()
+      await touchProjectUpdatedAt(tx)
+    }
 
     return {
       ...card,

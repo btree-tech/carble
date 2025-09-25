@@ -2,14 +2,14 @@ import { fields } from '@carble/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
-const createFieldSchema = z.object({
-  name: z.string(),
-})
-
 export default defineEventHandler(async (event) => {
   const project = await findProject()
-
-  const data = await validate(createFieldSchema, await readBody(event))
+  const data = await readValidatedBody(
+    event,
+    z.object({
+      name: z.string(),
+    }).parse,
+  )
 
   return await useDatabase().transaction(async (tx) => {
     const maxOrder = tx.$with('max_order').as(
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       })
       .returning()
 
-    await touchProjectUpdatedAt()
+    await touchProjectUpdatedAt(tx)
 
     return field
   })
