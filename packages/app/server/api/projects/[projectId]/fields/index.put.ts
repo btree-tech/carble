@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       order: true,
     }))
     .superRefine(async (value, context) => {
-      const count = await useDatabase().$count(fields.id, eq(fields.projectId, project.id))
+      const count = await useDatabase().$count(fields, eq(fields.projectId, project.id))
       if (count !== value.length) {
         context.addIssue({
           code: 'too_big',

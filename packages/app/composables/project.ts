@@ -1,4 +1,4 @@
-import { cards, fields, projects } from '@carble/db/schema'
+import { cards, fields, imports, projects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -22,6 +22,20 @@ export const projectSchema = z.object({
   ...v,
   totalCardSize: v.cards.length,
 }))
+
+export const importsSchema = z.object({
+  items: z.array(createSelectSchema(imports, {
+    createdAt: z.coerce.date(),
+    updatedAt: z.coerce.date(),
+    notifiedAt: z.coerce.date(),
+  })),
+  total: z.number(),
+  pageCount: z.number(),
+}).default({
+  items: [],
+  total: 0,
+  pageCount: 10,
+})
 
 export function useFetchProjects() {
   return useFetch(`/api/projects`, {
@@ -50,4 +64,24 @@ export function useFetchProject() {
 
 export function useProjectData() {
   return useTypedNuxtData<typeof projectSchema>(FetchProjectKey)
+}
+
+export function getFetchProjectImportsInProgressKey() {
+  const { projectId } = useRoute().params
+  return `projects/${projectId}/imports?status=OPEN&status=IN_PROGRESS`
+}
+
+export function useFetchProjectImportsInProgress() {
+  const {
+    projectId,
+  } = useRoute().params
+
+  return useFetch(`/api/projects/${projectId}/imports`, {
+    query: {
+      status: ['OPEN', 'IN_PROGRESS'],
+      pageCount: 1,
+    },
+    transform: (data) => importsSchema.parse(data).items.at(0),
+    key: getFetchProjectImportsInProgressKey(),
+  })
 }

@@ -43,8 +43,12 @@ export default defineNuxtConfig({
         base: '../../storage/uploads',
       },
     },
+    scheduledTasks: {
+      '* * * * *': ['import'],
+    },
     experimental: {
       asyncContext: true,
+      tasks: true,
     },
   },
 

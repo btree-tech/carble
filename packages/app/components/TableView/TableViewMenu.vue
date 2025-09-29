@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { DropdownItem } from '#ui/types'
+
 const { projectId } = useRoute().params
 
 const { data: project } = useProjectData()
@@ -16,6 +18,11 @@ const items = [[
     },
   },
   {
+    label: 'インポート履歴',
+    icon: 'i-material-symbols-light-history',
+    to: `/projects/${projectId}/imports`,
+  },
+  {
     label: 'エクスポート',
     icon: 'i-material-symbols-light-download',
     click: () => {
@@ -24,7 +31,7 @@ const items = [[
       }
     },
   },
-]]
+]] satisfies DropdownItem[][]
 
 const importModalIsOpen = ref(false)
 </script>
