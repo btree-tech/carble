@@ -1,1 +1,20 @@
-{"version":"5","dialect":"sqlite","entries":[{"idx":0,"version":"5","when":1712891415609,"tag":"0000_fast_blackheart","breakpoints":true}]}
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1712891415609,
+      "tag": "0000_fast_blackheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1759484209955,
+      "tag": "0001_moaning_ezekiel_stane",
+      "breakpoints": true
+    }
+  ]
+}
