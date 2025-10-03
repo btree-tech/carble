@@ -136,19 +136,23 @@ export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRef
       }
     },
   })
-  const asyncData = useAsyncData(async () => {
-    if (!toValue(watch)) return
-    const url = `/api/projects/${content.value.projectId}/cards/${content.value.cardId}/fields/${content.value.fieldId}`
-    await $fetch(url, {
-      method: 'put',
-      body: {
-        body: data.value,
-      },
-    })
-  }, {
-    immediate: false,
-    watch: [debouncedRef(data, 1000)],
-  })
+  const asyncData = useAsyncData(
+    computed(() => `put /api/projects/${content.value.projectId}/cards/${content.value.cardId}/fields/${content.value.fieldId}`),
+    async () => {
+      if (!toValue(watch)) return
+      const url = `/api/projects/${content.value.projectId}/cards/${content.value.cardId}/fields/${content.value.fieldId}`
+      await $fetch(url, {
+        method: 'put',
+        body: {
+          body: data.value,
+        },
+      })
+    },
+    {
+      immediate: false,
+      watch: [debouncedRef(data, 1000)],
+    }
+  )
 
   return {
     ...asyncData,
