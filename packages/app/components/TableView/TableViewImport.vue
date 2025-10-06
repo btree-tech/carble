@@ -50,7 +50,7 @@ onChange(async (files) => {
 
       <div class="grid grid-cols-1 gap-y-4">
         <div class="prose dark:prose-invert">
-          <p>xlsx,csv,zipファイルのいずれかを選択してください。</p>
+          <p>xlsx,csv,zipファイルのいずれか（600MBまで）を選択してください。</p>
           <ul>
             <li><var>ID</var>列に入力された数値と同IDのカードが存在する場合、そのカードの内容を上書きします</li>
             <li>zipファイルを選択し、かつ<var>画像ファイル</var>列が存在する場合、列で指定された画像ファイルを取り込みます</li>
