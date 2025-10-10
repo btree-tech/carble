@@ -93,5 +93,4 @@ onChange(async () => {
   >
     <span class="hidden md:inline">スキャン</span>
   </UButton>
-
 </template>
