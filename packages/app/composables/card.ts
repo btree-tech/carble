@@ -71,8 +71,7 @@ export function useCard(id: MaybeRefOrGetter) {
   const index = computed(() => cards.value?.findIndex((card) => card.id === Number(toValue(id))))
   const data = computed({
     get: () => {
-      if (index.value < 0) throw 'invalid cardId'
-      return (cards.value || [])[index.value]
+      return (cards.value ?? []).at(index.value)!
     },
     set: (value: any) => {
       if (index.value >= 0) {
@@ -190,20 +189,24 @@ export function useCardImageAdd(cardId: MaybeRefOrGetter) {
   const { data: card } = useCard(cardId)
 
   const imageFile = ref<File|null>()
-  const asyncData = useAsyncData(async () => {
-    const formData = new FormData()
-    formData.append('image', imageFile.value!)
+  const asyncData = useAsyncData(
+    computed(() => `post /api/projects/${card.value.projectId}/cards/${card.value.id}/images`),
+    async () => {
+      const formData = new FormData()
+      formData.append('image', imageFile.value!)
 
-    const data = await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images`, {
-      method: 'post',
-      body: formData,
-    })
-    card.value.images.push(imageSchema.parse(data))
+      const data = await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images`, {
+        method: 'post',
+        body: formData,
+      })
+      card.value.images.push(imageSchema.parse(data))
 
-    return useCardImage(cardId, data.id).data.value
-  }, {
-    immediate: false,
-  })
+      return useCardImage(cardId, data.id).data.value
+    },
+    {
+      immediate: false,
+    },
+  )
   const execute = async (file?: File|null) => {
     imageFile.value = file
     await asyncData.execute()
@@ -218,12 +221,15 @@ export function useCardImageAdd(cardId: MaybeRefOrGetter) {
 export function useCardImageRemove(cardId: MaybeRefOrGetter, imageId: MaybeRefOrGetter) {
   const { data: card } = useCard(cardId)
 
-  return useAsyncData(async () => {
-    await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images/${toValue(imageId)}`, {
-      method: 'delete',
-    })
-    card.value.images = card.value.images.filter((image) => image.id !== Number(toValue(imageId)))
-  }, {
-    immediate: false,
-  })
+  return useAsyncData(
+    computed(() => `delete /api/projects/${card.value.projectId}/cards/${card.value.id}/images/${toValue(imageId)}`),
+    async () => {
+      await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images/${toValue(imageId)}`, {
+        method: 'delete',
+      })
+      card.value.images = card.value.images.filter((image) => image.id !== Number(toValue(imageId)))
+    }, {
+      immediate: false,
+    },
+  )
 }

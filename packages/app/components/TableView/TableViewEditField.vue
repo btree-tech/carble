@@ -27,37 +27,45 @@ const {
 const {
   execute: toggleIsVisible,
   status: updateIsVisibleStatus,
-} = useAsyncData(async () => {
-  const newValue = !field.value.isVisible
-  await $fetch(`/api/projects/${project.value.id}/fields/${props.fieldId}`, {
-    method: 'put',
-    body: {
+} = useAsyncData(
+  computed(() => `put /api/projects/${project.value.id}/fields/${props.fieldId}`),
+  async () => {
+    const newValue = !field.value.isVisible
+    await $fetch(`/api/projects/${project.value.id}/fields/${props.fieldId}`, {
+      method: 'put',
+      body: {
+        isVisible: newValue,
+      },
+    })
+    field.value = {
+      ...field.value,
       isVisible: newValue,
-    },
-  })
-  field.value = {
-    ...field.value,
-    isVisible: newValue,
-  }
-}, {
-  immediate: false,
-})
+    }
+  },
+  {
+    immediate: false,
+  },
+)
 
 const {
   execute: deleteField,
   status: deleteStatus,
-} = useAsyncData(async () => {
-  if (!window.confirm('削除してよろしいですか？')) return
+} = useAsyncData(
+  computed(() => `delete /api/projects/${project.value.id}/fields/${props.fieldId}`),
+  async () => {
+    if (!window.confirm('削除してよろしいですか？')) return
 
-  await $fetch(`/api/projects/${project.value.id}/fields/${props.fieldId}`, {
-    method: 'delete',
-  })
-  if (index.value >= 0) {
-    project.value.fields.splice(index.value, 1)
-  }
-}, {
-  immediate: false,
-})
+    await $fetch(`/api/projects/${project.value.id}/fields/${props.fieldId}`, {
+      method: 'delete',
+    })
+    if (index.value >= 0) {
+      project.value.fields.splice(index.value, 1)
+    }
+  },
+  {
+    immediate: false,
+  },
+)
 </script>
 
 <template>
