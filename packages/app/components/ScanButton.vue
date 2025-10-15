@@ -41,11 +41,11 @@ const detect = async (file: Blob) => {
 }
 
 const {
-  execute,
-  status,
-} = useAsyncData(async () => {
+  executeImmediate,
+  isLoading,
+} = useAsyncState(async () => {
   const file = files.value?.item(0)
-  if (!file) return
+  if (!file) return null
 
   const formData = new FormData()
   formData.append('image', file)
@@ -75,12 +75,13 @@ const {
     })
     await navigateTo(`/projects/${projectId}/cards/${data.id}`)
   }
-}, {
+  return file
+}, null, {
   immediate: false,
 })
 
 onChange(async () => {
-  await execute()
+  await executeImmediate()
 })
 </script>
 
@@ -88,7 +89,7 @@ onChange(async () => {
   <UButton
     label="スキャン"
     icon="i-material-symbols-light-add-a-photo"
-    :loading="status === 'pending'"
+    :loading="isLoading"
     @click="open"
   >
     <span class="hidden md:inline">スキャン</span>
