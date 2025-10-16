@@ -13,6 +13,7 @@ export const contentSchema = createSelectSchema(contents, {
 
 export const cardSchema = createSelectSchema(cards, {
   createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 }).extend({
   images: z.array(imageSchema),
   contents: z.array(contentSchema),
@@ -22,7 +23,7 @@ export const cardsSchema = z.array(cardSchema)
 
 export const useCardsQuery = () => computed(() => String(useRoute().query.q || ''))
 
-export const useCardsSortId = () => computed(() => Number(useRoute().query.sort || 0))
+export const useCardsSortId = () => computed(() => Number(useRoute().query.sort) || 'id')
 
 export const useCardsSortDirection = () => computed(() => useRoute().query.direction || 'asc')
 

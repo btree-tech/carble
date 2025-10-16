@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     event,
     z.object({
       q: z.string().optional(),
-      sort: z.coerce.number().default(0),
+      sort: z.union([z.coerce.number(), z.literal('id'), z.literal('order')]).default('id'),
       direction: z.union([z.literal('asc'), z.literal('desc')]).default('asc'),
     }).parse,
   )
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
             data.q?.length ? like(contents.body, `%${data.q}%`) : undefined,
           ))
       )
-  const weight = data.sort === 0
+  const weight = typeof data.sort === 'string'
     ? undefined
     : db.$with('weight').as(
         db.select({ cardId: contents.cardId, body: contents.body })
@@ -48,6 +48,8 @@ export default defineEventHandler(async (event) => {
     query
       .leftJoin(weight, eq(cards.id, weight.cardId))
       .orderBy(sortFunc(weight.body), sortFunc(cards.id))
+  } else if (data.sort === 'order') {
+    query.orderBy(sortFunc(cards.order), sortFunc(cards.id))
   } else {
     query.orderBy(sortFunc(cards.id))
   }

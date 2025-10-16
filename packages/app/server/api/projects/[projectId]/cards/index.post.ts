@@ -15,15 +15,22 @@ export default defineEventHandler(async (event) => {
     : {}
 
   return await useDatabase().transaction(async (tx) => {
-    const [result] = await tx
-      .select({ max: max(cards.id) })
+    const [{
+      maxCardId,
+      maxOrder,
+    }] = await tx
+      .select({
+        maxCardId: max(cards.id),
+        maxOrder: max(cards.order),
+      })
       .from(cards)
       .where(eq(cards.projectId, project.id))
 
     const [card] = await tx.insert(cards)
       .values({
         projectId: project.id,
-        id: (result.max || 0) + 1,
+        id: (maxCardId ?? 0) + 1,
+        order: (maxOrder ?? 0) + 1,
       })
       .returning()
 
