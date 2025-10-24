@@ -36,8 +36,6 @@ const lastSelectedCardId = ref<number|null>(null)
 
 const selectedCount = computed(() => [...selectionState.value.values()].filter((v) => v).length)
 
-const isSelectedAny = computed(() => [...selectionState.value.values()].some((v) => v))
-
 const toggle = (cardId: number) => {
   const selected = !selectionState.value.get(cardId)
   selectionState.value.set(cardId, selected)
@@ -49,13 +47,17 @@ const toggle = (cardId: number) => {
       selectionState.value.set(id, selected)
     })
   }
-  lastSelectedCardId.value = isSelectedAny.value ? cardId : null
+  lastSelectedCardId.value = selectedCount.value ? cardId : null
 }
 
 const onClickCard = async (event: MouseEvent, cardId: number) => {
   if (!shiftKeyState.value) return
   event.preventDefault()
   toggle(cardId)
+}
+
+const unselectAll = () => {
+  selectionState.value.forEach((_, key) => selectionState.value.set(key, false))
 }
 
 watch(cards, (cards) => {
@@ -70,7 +72,7 @@ watch(cards, (cards) => {
 
 <template>
   <div class="gap-y-4">
-    <HeaderMenu>
+    <HeaderMenu v-if="project">
       <div class="flex items-center gap-x-4">
         <div class="grow truncate">
           {{ project.name }}
@@ -86,9 +88,23 @@ watch(cards, (cards) => {
       </div>
     </HeaderMenu>
     <div>
-      <UButtonGroup class="my-4">
+      <UButtonGroup
+        size="lg"
+        :class="['my-4', { invisible: !selectedCount }]"
+      >
         <UButton
           :label="`${selectedCount}件選択中`"
+          color="white"
+          @click="unselectAll"
+        />
+        <UButton
+          label="複製"
+          icon="i-material-symbols-light-content-copy"
+          color="white"
+        />
+        <UButton
+          label="削除"
+          icon="i-material-symbols-light-delete-forever"
           color="white"
         />
       </UButtonGroup>
