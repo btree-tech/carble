@@ -19,9 +19,9 @@ export default function<
   })
 
   const status = computed<AsyncDataRequestStatus>(() => {
-    if (asyncState.isLoading) return 'pending'
-    if (asyncState.error) return 'error'
-    if (asyncState.isReady) return 'success'
+    if (asyncState.isLoading.value) return 'pending'
+    if (asyncState.error.value) return 'error'
+    if (asyncState.isReady.value) return 'success'
     return 'idle'
   })
 

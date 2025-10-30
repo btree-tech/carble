@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useSortable, type UseSortableOptions } from '@vueuse/integrations/useSortable'
+import { moveArrayElement, useSortable, type UseSortableOptions } from '@vueuse/integrations/useSortable'
 
 const { data: project } = useProjectData()
 
 const { data: cards } = useCardsData()
 
-const cardOrders = computed(() => cards.value.map(({ id }, i) => ({
-  id,
-  order: i + 1,
-})))
+const {
+  data: selectionState,
+  selectedIds,
+} = useGridViewSelectionState()
 
 const {
   execute,
@@ -16,25 +16,26 @@ const {
 } = useAsyncStatus(async () => {
   await $fetch(`/api/projects/${project.value.id}/cards`, {
     method: 'put',
-    body: cardOrders.value,
+    body: cards.value.map(({ id }, i) => ({
+      id,
+      order: i + 1,
+    })),
   })
 }, {
   immediate: false,
 })
 
 useSortable(useTemplateRef('sortable'), cards, {
-  onSort: async () => {
+  onUpdate: async (e) => {
+    moveArrayElement(cards, e.oldIndex!, e.newIndex!, e)
+    await nextTick()
     await execute()
   },
 } satisfies UseSortableOptions)
 
 const shiftKeyState = useKeyModifier('Shift')
 
-const selectionState = ref(new Map<number, boolean>())
-
 const lastSelectedCardId = ref<number|null>(null)
-
-const selectedCount = computed(() => [...selectionState.value.values()].filter((v) => v).length)
 
 const toggle = (cardId: number) => {
   const selected = !selectionState.value.get(cardId)
@@ -47,32 +48,20 @@ const toggle = (cardId: number) => {
       selectionState.value.set(id, selected)
     })
   }
-  lastSelectedCardId.value = selectedCount.value ? cardId : null
+  lastSelectedCardId.value = selectedIds.value.length ? cardId : null
 }
 
-const onClickCard = async (event: MouseEvent, cardId: number) => {
-  if (!shiftKeyState.value) return
-  event.preventDefault()
-  toggle(cardId)
-}
-
-const unselectAll = () => {
+const deselectAll = () => {
   selectionState.value.forEach((_, key) => selectionState.value.set(key, false))
 }
-
-watch(cards, (cards) => {
-  if (!cards) return
-  const prev = new Map(selectionState.value.entries())
-  selectionState.value.clear()
-  cards.forEach(({ id }) => {
-    selectionState.value.set(id, !!prev.get(id))
-  })
-})
 </script>
 
 <template>
-  <div class="gap-y-4">
-    <HeaderMenu v-if="project">
+  <div
+    v-if="project"
+    class="gap-y-4"
+  >
+    <HeaderMenu>
       <div class="flex items-center gap-x-4">
         <div class="grow truncate">
           {{ project.name }}
@@ -84,55 +73,51 @@ watch(cards, (cards) => {
           landscape:col-span-2
         "
       >
-        <slot name="header-nav" />
+        <UButton
+          icon="i-material-symbols-light-table-view"
+          :to="`/projects/${project.id}`"
+          variant="outline"
+        >
+          <span class="hidden md:inline">テーブルビュー</span>
+        </UButton>
+        <div class="grow" />
+        <StatusIcon :status="status" />
       </div>
     </HeaderMenu>
     <div>
-      <UButtonGroup
-        size="lg"
-        :class="['my-4', { invisible: !selectedCount }]"
-      >
-        <UButton
-          :label="`${selectedCount}件選択中`"
-          color="white"
-          @click="unselectAll"
-        />
-        <UButton
-          label="複製"
-          icon="i-material-symbols-light-content-copy"
-          color="white"
-        />
-        <UButton
-          label="削除"
-          icon="i-material-symbols-light-delete-forever"
-          color="white"
-        />
-      </UButtonGroup>
+      <div class="flex justify-between">
+        <UButtonGroup
+          size="lg"
+          :class="['my-4', { invisible: !selectedIds.length }]"
+        >
+          <UButton
+            :label="`${selectedIds.length}件選択中`"
+            color="white"
+            @click="deselectAll"
+          />
+          <UButton
+            label="複製"
+            icon="i-material-symbols-light-content-copy"
+            color="white"
+          />
+          <UButton
+            label="削除"
+            icon="i-material-symbols-light-delete-forever"
+            color="white"
+          />
+        </UButtonGroup>
+        <GridViewSettingFields />
+      </div>
       <div
         ref="sortable"
         class="flex flex-wrap gap-8"
       >
-        <NuxtLink
+        <GridViewCard
           v-for="card in cards"
           :key="card.id"
-          :to="`/projects/${card.projectId}/cards/${card.id}`"
-          :class="[
-            'group relative grid grid-rows-[1fr,auto] gap-0 border w-40 h-40',
-            { 'bg-primary-500/25 dark:bg-primary-600/25': selectionState.get(card.id) },
-          ]"
-          @click="onClickCard($event, card.id)"
-        >
-          <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100">
-            <UCheckbox
-              :model-value="selectionState.get(card.id)"
-              :ui="{ container: 'h-7', base: 'w-6 h-6' }"
-              @click.stop
-              @change="toggle(card.id)"
-            />
-          </div>
-          <div class="overflow-hidden p-2 border-b">{{ card.contents.at(0)?.body }}</div>
-          <div class="p-2">ID: {{ card.id }}</div>
-        </NuxtLink>
+          :card="card"
+          @change="toggle(card.id)"
+        />
       </div>
     </div>
   </div>
