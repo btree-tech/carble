@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "pnpm migrate && pnpm studio",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit push",
+    "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio --host 0.0.0.0"
   },
   "files": [

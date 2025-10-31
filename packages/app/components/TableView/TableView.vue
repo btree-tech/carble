@@ -42,6 +42,14 @@ const {
       <div class="flex items-center gap-4">
         <UButton
           class="flex-none"
+          icon="i-material-symbols-light-grid-view"
+          :to="`/projects/${project?.id}/grid`"
+          variant="outline"
+        >
+          <span class="hidden md:inline">グリッドビュー</span>
+        </UButton>
+        <UButton
+          class="flex-none"
           icon="i-material-symbols-light-print"
           :to="`/projects/${project?.id}/print`"
           variant="outline"

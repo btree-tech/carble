@@ -22,9 +22,11 @@ export const projectsRelations = relations(projects, ({ many }) => ({
 export const cards = sqliteTable('cards', {
   id: integer('id').notNull(),
   projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
-  createdAt: timestamps.createdAt,
-}, ({ projectId, id }) => [
+  order: integer('order').notNull(),
+  ...timestamps,
+}, ({ projectId, id, order }) => [
   primaryKey({ columns: [projectId, id] }),
+  index('cards_projectId_order_index').on(projectId, order),
 ])
 
 export const cardsRelations = relations(cards, ({ one, many }) => ({
@@ -44,7 +46,7 @@ export const fields = sqliteTable('fields', {
   order: integer('order').notNull(),
   ...timestamps,
 }, ({ projectId, order }) => [
-  index('projectId_order_index').on(projectId, order),
+  index('fields_projectId_order_index').on(projectId, order),
 ])
 
 export const fieldsRelations = relations(fields, ({ one, many }) => ({
