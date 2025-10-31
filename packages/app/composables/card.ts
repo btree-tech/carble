@@ -23,7 +23,7 @@ export const cardsSchema = z.array(cardSchema)
 
 export const useCardsQuery = () => computed(() => String(useRoute().query.q || ''))
 
-export const useCardsSortId = () => computed(() => Number(useRoute().query.sort) || 'id')
+export const useCardsSortId = () => computed<number|'id'|'order'>(() => Number(useRoute().query.sort) || 'order')
 
 export const useCardsSortDirection = () => computed(() => useRoute().query.direction || 'asc')
 
