@@ -75,6 +75,7 @@ onLongPress(
     >
       <UCheckbox
         v-model="selected"
+        :input-class="selected ? '' : '!bg-none dark:!bg-gray-900 !border-gray-300 dark:!border-gray-700'"
         :ui="{ container: 'h-7', base: 'w-6 h-6' }"
         @pointerdown.stop
       />
