@@ -6,7 +6,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  change: []
+  change: [boolean]
 }>()
 
 const {
@@ -14,26 +14,44 @@ const {
   selectedIds,
 } = useGridViewSelectionState()
 
-const selected = computed(() => selectionState.value.get(props.card.id))
+const selected = computed({
+  get: () => !!selectionState.value.get(props.card.id),
+  set: (value) => emit('change', value),
+})
 
 const { data: setting } = useGridViewSetting()
 
 const shiftKeyState = useKeyModifier('Shift')
 
-const onClick = () => {
-  if (shiftKeyState.value || selectedIds.value.length) {
-    emit('change')
-  } else {
-    navigateTo(`/projects/${props.card.projectId}/cards/${props.card.id}`)
-  }
-}
+const root = useTemplateRef('root')
+
+onLongPress(
+  root,
+  () => {
+    selected.value = !selected.value
+  },
+  {
+    modifiers: {
+      prevent: true,
+    },
+    onMouseUp: (_, __, isLongPress) => {
+      if (!isLongPress) {
+        if (shiftKeyState.value || selectedIds.value.length) {
+          selected.value = !selected.value
+        } else {
+          navigateTo(`/projects/${props.card.projectId}/cards/${props.card.id}`)
+        }
+      }
+    },
+  },
+)
 </script>
 
 <template>
   <button
+    ref="root"
     type="button"
     class="group relative grid grid-rows-[1fr,auto] gap-0 text-left border w-40 h-40"
-    @click="onClick"
   >
     <GridViewCardContent
       :card="card"
@@ -56,10 +74,9 @@ const onClick = () => {
       ]"
     >
       <UCheckbox
-        :model-value="selected"
+        v-model="selected"
         :ui="{ container: 'h-7', base: 'w-6 h-6' }"
-        @click.stop
-        @change="emit('change')"
+        @pointerdown.stop
       />
     </div>
   </button>
