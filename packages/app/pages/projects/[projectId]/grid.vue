@@ -85,7 +85,12 @@ const deselectAll = () => {
       </div>
     </HeaderMenu>
     <div>
-      <div class="flex justify-between">
+      <div
+        class="
+          flex flex-col-reverse
+          md:flex-row md:justify-between md:my-0
+        "
+      >
         <UButtonGroup
           size="lg"
           :class="['my-4', { invisible: !selectedIds.length }]"
@@ -106,7 +111,7 @@ const deselectAll = () => {
             color="white"
           />
         </UButtonGroup>
-        <GridViewSettingFields />
+        <GridViewSettingFields class="justify-end" />
       </div>
       <div
         ref="sortable"
