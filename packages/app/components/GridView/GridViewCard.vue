@@ -31,9 +31,6 @@ onLongPress(
     selected.value = !selected.value
   },
   {
-    modifiers: {
-      prevent: true,
-    },
     onMouseUp: (_, __, isLongPress) => {
       if (!isLongPress) {
         if (shiftKeyState.value || selectedIds.value.length) {
@@ -56,12 +53,12 @@ onLongPress(
     <GridViewCardContent
       :card="card"
       :field-id="setting.data.fields[0]"
-      class="overflow-hidden border-b"
+      class="overflow-hidden border-b pointer-events-none"
     />
     <GridViewCardContent
       :card="card"
       :field-id="setting.data.fields[1]"
-      class="h-10 overflow-hidden"
+      class="h-10 overflow-hidden pointer-events-none"
     />
     <div
       v-if="selected"
