@@ -20,36 +20,10 @@ const selected = computed({
 })
 
 const { data: setting } = useGridViewSetting()
-
-const shiftKeyState = useKeyModifier('Shift')
-
-const root = useTemplateRef('root')
-
-onLongPress(
-  root,
-  () => {
-    selected.value = !selected.value
-  },
-  {
-    onMouseUp: (_, __, isLongPress) => {
-      if (!isLongPress) {
-        if (shiftKeyState.value || selectedIds.value.length) {
-          selected.value = !selected.value
-        } else {
-          navigateTo(`/projects/${props.card.projectId}/cards/${props.card.id}`)
-        }
-      }
-    },
-  },
-)
 </script>
 
 <template>
-  <button
-    ref="root"
-    type="button"
-    class="group relative grid grid-rows-[1fr,auto] gap-0 text-left border w-40 h-40"
-  >
+  <label class="group relative grid grid-rows-[1fr,auto,auto] border w-40 h-40">
     <GridViewCardContent
       :card="card"
       :field-id="setting.data.fields[0]"
@@ -58,24 +32,26 @@ onLongPress(
     <GridViewCardContent
       :card="card"
       :field-id="setting.data.fields[1]"
-      class="h-10 overflow-hidden pointer-events-none"
+      class="h-9 overflow-hidden border-b pointer-events-none"
+    />
+    <UButton
+      label="カード入力"
+      :icon="card.images.length ? 'i-material-symbols-light-photo-library' : 'i-material-symbols-light-edit-note'"
+      :to="`/projects/${card.projectId}/cards/${card.id}`"
+      variant="link"
     />
     <div
       v-if="selected"
       class="absolute inset-0 bg-primary-500 dark:bg-primary-600 opacity-25"
     />
-    <div
+    <UCheckbox
+      v-model="selected"
+      :input-class="selected ? '' : '!bg-none dark:!bg-gray-900 !border-gray-300 dark:!border-gray-700'"
+      :ui="{ container: 'h-7', base: 'w-6 h-6' }"
       :class="[
         'absolute top-1 right-1 opacity-0 group-hover:opacity-100',
         { 'opacity-100': selectedIds.length },
       ]"
-    >
-      <UCheckbox
-        v-model="selected"
-        :input-class="selected ? '' : '!bg-none dark:!bg-gray-900 !border-gray-300 dark:!border-gray-700'"
-        :ui="{ container: 'h-7', base: 'w-6 h-6' }"
-        @pointerdown.stop
-      />
-    </div>
-  </button>
+    />
+  </label>
 </template>

@@ -18,7 +18,7 @@ const content = computed(() => {
     <div v-if="!content">&nbsp;</div>
     <div
       v-else-if="fieldId !== 'image'"
-      class="max-h-full overflow-hidden m-2"
+      class="max-h-full overflow-hidden mx-2.5 my-1.5"
     >
       {{ content }}
     </div>
