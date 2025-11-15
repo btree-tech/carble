@@ -188,9 +188,10 @@ export default defineTask({
       // save
       await useDatabase().transaction(async (tx) => {
         const project = target.project
-        const [{ value: currentMaxCardId }] = await tx
+        const [{ currentMaxCardId, currentMaxOrder }] = await tx
           .select({
-            value: max(cards.id),
+            currentMaxCardId: max(cards.id),
+            currentMaxOrder: max(cards.order),
           })
           .from(cards)
           .where(eq(cards.projectId, project.id))
@@ -217,12 +218,13 @@ export default defineTask({
         const insertContentValues: typeof contents.$inferInsert[] = []
         const insertImageValues: typeof images.$inferInsert[] = []
         const imagePaths: { from: string, to: string }[] = []
-        importData.forEach((raw) => {
+        importData.forEach((raw, i) => {
           const cardId = raw[idIndex] ? Number(raw[idIndex]) : ++maxCardId
 
           insertCardValues.push({
             id: cardId,
             projectId: project.id,
+            order: (currentMaxOrder ?? 0) + i + 1,
           })
 
           header.forEach((fieldName, i) => {
