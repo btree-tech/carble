@@ -16,7 +16,7 @@ export default defineEventHandler(async () => {
 
   const cards = await useDatabase().query.cards.findMany({
     where: ({ projectId }, { eq }) => eq(projectId, project.id),
-    orderBy: ({ id }, { asc }) => asc(id),
+    orderBy: ({ order, id }, { asc }) => [asc(order), asc(id)],
     with: {
       contents: true,
       images: {
