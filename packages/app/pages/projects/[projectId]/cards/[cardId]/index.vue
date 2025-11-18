@@ -90,6 +90,14 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
             {{ card.id }}
           </div>
         </UFormGroup>
+        <UFormGroup
+          label="並び順"
+          class="col-span-2 grid grid-cols-subgrid space-y-0"
+        >
+          <div class="text-sm ml-2">
+            {{ card.order }}
+          </div>
+        </UFormGroup>
         <template
           v-for="field in fields"
           :key="field.id"

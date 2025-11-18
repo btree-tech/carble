@@ -73,8 +73,14 @@ const {
             <td />
             <th>
               <TableViewFieldName
-                :field-id="0"
+                field-id="id"
                 field-name="ID"
+              />
+            </th>
+            <th>
+              <TableViewFieldName
+                field-id="order"
+                field-name="並び順"
               />
             </th>
             <th
@@ -125,6 +131,9 @@ const {
             </td>
             <td class="text-right">
               {{ card.id }}
+            </td>
+            <td class="text-right">
+              {{ card.order }}
             </td>
             <td
               v-for="field in fields"

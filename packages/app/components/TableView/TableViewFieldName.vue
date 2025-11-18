@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  fieldId: number
+  fieldId: number|'id'|'order'
   fieldName: string|null
 }>()
 
