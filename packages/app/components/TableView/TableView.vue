@@ -70,17 +70,17 @@ const {
       <table class="table-auto border-separate border-spacing-2 whitespace-nowrap">
         <thead>
           <tr class="text-left">
+            <th class="text-right">
+              <TableViewFieldName
+                field-id="order"
+                field-name="並び順"
+              />
+            </th>
             <td />
             <th>
               <TableViewFieldName
                 field-id="id"
                 field-name="ID"
-              />
-            </th>
-            <th>
-              <TableViewFieldName
-                field-id="order"
-                field-name="並び順"
               />
             </th>
             <th
@@ -120,6 +120,9 @@ const {
             v-for="card in cards"
             :key="card.id"
           >
+            <td class="text-right pr-4">
+              {{ card.order }}
+            </td>
             <td class="flex items-center gap-x-2">
               <UButton
                 :icon="card.images.length ? 'i-material-symbols-light-photo-library' : 'i-material-symbols-light-edit-note'"
@@ -131,9 +134,6 @@ const {
             </td>
             <td class="text-right">
               {{ card.id }}
-            </td>
-            <td class="text-right">
-              {{ card.order }}
             </td>
             <td
               v-for="field in fields"
