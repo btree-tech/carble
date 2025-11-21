@@ -7,7 +7,7 @@ const { data: cards } = useCardsData()
 
 const {
   data: selectionState,
-  selectedIds,
+  selectedCards,
 } = useGridViewSelectionState()
 
 const {
@@ -48,7 +48,7 @@ const toggle = (cardId: number) => {
       selectionState.value.set(id, selected)
     })
   }
-  lastSelectedCardId.value = selectedIds.value.length ? cardId : null
+  lastSelectedCardId.value = selectedCards.value.length ? cardId : null
 }
 
 const deselectAll = () => {
@@ -93,10 +93,10 @@ const deselectAll = () => {
       >
         <UButtonGroup
           size="lg"
-          :class="['my-4', { invisible: !selectedIds.length }]"
+          :class="['my-4', { invisible: !selectedCards.length }]"
         >
           <UButton
-            :label="`${selectedIds.length}件選択中`"
+            :label="`${selectedCards.length}件選択中`"
             color="white"
             @click="deselectAll"
           />
@@ -105,11 +105,7 @@ const deselectAll = () => {
             icon="i-material-symbols-light-content-copy"
             color="white"
           />
-          <UButton
-            label="削除"
-            icon="i-material-symbols-light-delete-forever"
-            color="white"
-          />
+          <ButtonCardsDelete :cards="selectedCards" />
         </UButtonGroup>
         <GridViewSettingFields class="justify-end" />
       </div>

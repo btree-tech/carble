@@ -6,10 +6,12 @@ export function useGridViewSelectionState() {
 
   const data = useState(`project/${projectId}/grid/selection`, () => new Map<number, boolean>())
 
-  const selectedIds = computed(() => [...data.value.entries()]
-    .filter(([, v]) => v)
-    .map(([id]) => id)
-  )
+  const selectedCards = computed(() => {
+    const ids = [...data.value.entries()]
+      .filter(([, v]) => v)
+      .map(([id]) => id)
+    return cards.value.filter(({ id }) => ids.includes(id))
+  })
 
   watch(cards, (cards) => {
     if (!cards) return
@@ -22,7 +24,7 @@ export function useGridViewSelectionState() {
 
   return {
     data,
-    selectedIds,
+    selectedCards,
   }
 }
 

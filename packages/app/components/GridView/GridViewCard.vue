@@ -11,7 +11,7 @@ const emit = defineEmits<{
 
 const {
   data: selectionState,
-  selectedIds,
+  selectedCards,
 } = useGridViewSelectionState()
 
 const selected = computed({
@@ -50,7 +50,7 @@ const { data: setting } = useGridViewSetting()
       :ui="{ container: 'h-7', base: 'w-6 h-6' }"
       :class="[
         'absolute top-1 right-1 opacity-0 group-hover:opacity-100',
-        { 'opacity-100': selectedIds.length },
+        { 'opacity-100': selectedCards.length },
       ]"
     />
   </label>

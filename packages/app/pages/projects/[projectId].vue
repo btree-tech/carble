@@ -19,7 +19,7 @@ const isTableViewPage = computed(() => {
     <TableView
       :class="{
         'col-span-3 grid grid-cols-1 grid-rows-subgrid row-span-3 py-4': isTableViewPage,
-        'h-0 overflow-hidden': !isTableViewPage,
+        hidden: !isTableViewPage,
       }"
     />
     <NuxtPage class="col-start-2 grid grid-rows-[auto,1fr,auto] max-h-dvh py-4" />

@@ -15,6 +15,19 @@ const {
   statuses,
   status,
 } = useMultiAsyncDataStatus<string|number>()
+
+const {
+  checkedItems,
+  isCheckedAll,
+  isIndeterminate,
+} = useTriStateCheckbox(cards)
+
+watch(
+  () => useRoute().name,
+  () => {
+    checkedItems.value = []
+  }
+)
 </script>
 
 <template>
@@ -65,19 +78,44 @@ const {
     </HeaderMenu>
     <div
       v-if="project"
-      class="col-span-3 overflow-auto p-4 landscape:px-8"
+      class="relative col-span-3 overflow-auto p-4 landscape:px-8"
     >
-      <table class="table-auto border-separate border-spacing-2 whitespace-nowrap">
+      <UButtonGroup
+        size="lg"
+        :class="[
+          'fixed top-20 right-4 z-50 shadow lg:left-64 lg:right-auto',
+          { invisible: !checkedItems.length }
+        ]"
+      >
+        <UButton
+          :label="`${checkedItems.length}件選択中`"
+          color="white"
+          @click="checkedItems = []"
+        />
+        <UButton
+          label="複製"
+          icon="i-material-symbols-light-content-copy"
+          color="white"
+        />
+        <ButtonCardsDelete :cards="checkedItems" />
+      </UButtonGroup>
+      <table class="table-auto border-collapse whitespace-nowrap">
         <thead>
           <tr class="text-left">
-            <th class="text-right">
+            <th class="text-right p-1">
               <TableViewFieldName
                 field-id="order"
                 field-name="並び順"
               />
             </th>
-            <td />
-            <th>
+            <td class="p-1" />
+            <td class="p-1">
+              <UCheckbox
+                v-model="isCheckedAll"
+                :indeterminate="isIndeterminate"
+              />
+            </td>
+            <th class="p-1">
               <TableViewFieldName
                 field-id="id"
                 field-name="ID"
@@ -86,13 +124,14 @@ const {
             <th
               v-for="field in fields"
               :key="field.id"
+              class="p-1"
             >
               <TableViewFieldName
                 :field-id="field.id"
                 :field-name="field.name"
               />
             </th>
-            <td>
+            <td class="p-1">
               <UPopover>
                 <UButton
                   icon="i-material-symbols-light-more-horiz"
@@ -120,10 +159,10 @@ const {
             v-for="card in cards"
             :key="card.id"
           >
-            <td class="text-right pr-4">
+            <td class="text-right p-1 pr-4">
               {{ card.order }}
             </td>
-            <td class="flex items-center gap-x-2">
+            <td class="p-1">
               <UButton
                 :icon="card.images.length ? 'i-material-symbols-light-photo-library' : 'i-material-symbols-light-edit-note'"
                 :to="{ path: `/projects/${card.projectId}/cards/${card.id}`, query: queryParams }"
@@ -132,13 +171,19 @@ const {
                 <span class="hidden md:inline">カード入力</span>
               </UButton>
             </td>
-            <td class="text-right">
+            <td class="p-1">
+              <UCheckbox
+                v-model="checkedItems"
+                :value="card"
+              />
+            </td>
+            <td class="text-right p-1">
               {{ card.id }}
             </td>
             <td
               v-for="field in fields"
               :key="field.id"
-              class="relative border-b border-gray-300 dark:border-gray-700"
+              class="relative border-b border-gray-300 dark:border-gray-700 p-1"
             >
               <TableViewContent
                 :card-id="card.id"
@@ -146,7 +191,7 @@ const {
                 @update:status="statuses.set(card.id, $event)"
               />
             </td>
-            <td class="space-x-2">
+            <td class="space-x-2 p-1">
               <DuplicateCard
                 :project-id="project.id"
                 :card-id="card.id"
