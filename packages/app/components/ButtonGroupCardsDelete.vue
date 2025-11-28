@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import type z from 'zod'
-
 const props = defineProps<{
-  cards: z.infer<typeof cardsSchema>
-}>()
-
-const emit = defineEmits<{
-  deleted: []
+  cards: number[]
 }>()
 
 const { projectId } = useRoute().params
@@ -20,11 +14,10 @@ const {
   await $fetch(`/api/projects/${projectId}/cards`, {
     method: 'delete',
     body: {
-      ids: props.cards.map(({ id }) => id),
+      ids: props.cards,
     },
   })
   await useFetchCards().refresh()
-  emit('deleted')
 }, { immediate: false })
 </script>
 

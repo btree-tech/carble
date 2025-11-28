@@ -5,19 +5,11 @@ const props = defineProps<{
   card: z.infer<typeof cardSchema>
 }>()
 
-const emit = defineEmits<{
-  change: [boolean]
-}>()
-
 const {
   data: selectionState,
-  selectedCards,
 } = useGridViewSelectionState()
 
-const selected = computed({
-  get: () => !!selectionState.value.get(props.card.id),
-  set: (value) => emit('change', value),
-})
+const selected = computed(() => selectionState.value.includes(props.card.id))
 
 const { data: setting } = useGridViewSetting()
 </script>
@@ -45,12 +37,13 @@ const { data: setting } = useGridViewSetting()
       class="absolute inset-0 bg-primary-500 dark:bg-primary-600 opacity-25"
     />
     <UCheckbox
-      v-model="selected"
+      v-model="selectionState"
+      :value="card.id"
       :input-class="selected ? '' : '!bg-none dark:!bg-gray-900 !border-gray-300 dark:!border-gray-700'"
       :ui="{ container: 'h-7', base: 'w-6 h-6' }"
       :class="[
         'absolute top-1 right-1 opacity-0 group-hover:opacity-100',
-        { 'opacity-100': selectedCards.length },
+        { 'opacity-100': selectionState.length },
       ]"
     />
   </label>

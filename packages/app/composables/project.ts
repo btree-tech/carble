@@ -49,7 +49,10 @@ export function useProjectsData() {
   return useTypedNuxtData<typeof projectSchema>('projects')
 }
 
-export const FetchProjectKey = 'project'
+export const getFetchProjectKey = () => {
+  const { projectId } = useRoute().params
+  return `projects/${projectId}`
+}
 
 export function useFetchProject() {
   const {
@@ -58,12 +61,12 @@ export function useFetchProject() {
 
   return useFetch(`/api/projects/${projectId}`, {
     transform: (data) => projectSchema.parse(data),
-    key: FetchProjectKey,
+    key: getFetchProjectKey(),
   })
 }
 
 export function useProjectData() {
-  return useTypedNuxtData<typeof projectSchema>(FetchProjectKey)
+  return useTypedNuxtData<typeof projectSchema>(getFetchProjectKey())
 }
 
 export function getFetchProjectImportsInProgressKey() {

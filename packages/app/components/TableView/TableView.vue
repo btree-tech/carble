@@ -20,7 +20,7 @@ const {
   checkedItems,
   isCheckedAll,
   isIndeterminate,
-} = useTriStateCheckbox(cards)
+} = useTriStateCheckbox(computed(() => cards.value.map(({ id }) => id)))
 
 watch(
   () => useRoute().name,
@@ -80,25 +80,10 @@ watch(
       v-if="project"
       class="relative col-span-3 overflow-auto p-4 landscape:px-8"
     >
-      <UButtonGroup
-        size="lg"
-        :class="[
-          'fixed top-20 right-4 z-50 shadow lg:left-64 lg:right-auto',
-          { invisible: !checkedItems.length }
-        ]"
-      >
-        <UButton
-          :label="`${checkedItems.length}件選択中`"
-          color="white"
-          @click="checkedItems = []"
-        />
-        <UButton
-          label="複製"
-          icon="i-material-symbols-light-content-copy"
-          color="white"
-        />
-        <ButtonCardsDelete :cards="checkedItems" />
-      </UButtonGroup>
+      <ButtonGroupCards
+        v-model="checkedItems"
+        class="fixed top-16 right-4 z-50 shadow lg:left-60 lg:right-auto"
+      />
       <table class="table-auto border-collapse whitespace-nowrap">
         <thead>
           <tr class="text-left">
@@ -174,7 +159,7 @@ watch(
             <td class="p-1">
               <UCheckbox
                 v-model="checkedItems"
-                :value="card"
+                :value="card.id"
               />
             </td>
             <td class="text-right p-1">

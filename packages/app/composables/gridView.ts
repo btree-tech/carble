@@ -4,27 +4,42 @@ export function useGridViewSelectionState() {
   const { projectId } = useRoute().params
   const { data: cards } = useCardsData()
 
-  const data = useState(`project/${projectId}/grid/selection`, () => new Map<number, boolean>())
+  const shiftKeyState = useKeyModifier('Shift')
 
-  const selectedCards = computed(() => {
-    const ids = [...data.value.entries()]
-      .filter(([, v]) => v)
-      .map(([id]) => id)
-    return cards.value.filter(({ id }) => ids.includes(id))
+  const state = useState(`project/${projectId}/grid/selection`, () => [] as number[])
+
+  const lastSelected = useState<number|null>(`project/${projectId}/grid/selection/latest`, () => null)
+
+  const data = computed({
+    get: () => state.value,
+    set: (value) => {
+      const newData = new Set(value)
+      const isAdded = value.length > state.value.length
+      const latestSelected = [...newData.symmetricDifference(new Set(state.value))][0]
+      if (shiftKeyState.value && lastSelected.value) {
+        const ids = [latestSelected, lastSelected.value]
+        const start = cards.value.findIndex(({ id }) => ids.includes(id))
+        const end = cards.value.findLastIndex(({ id }) => ids.includes(id))
+        cards.value.slice(start, end + 1).forEach(({ id }) => {
+          if (isAdded) {
+            newData.add(id)
+          } else {
+            newData.delete(id)
+          }
+        })
+      }
+      lastSelected.value = newData.size ? latestSelected : null
+      state.value = [...newData]
+    },
   })
 
   watch(cards, (cards) => {
     if (!cards) return
-    const prev = new Map(data.value.entries())
-    data.value.clear()
-    cards.forEach(({ id }) => {
-      data.value.set(id, !!prev.get(id))
-    })
+    state.value = state.value.filter((cardId) => cards.some(({ id }) => id === cardId))
   })
 
   return {
     data,
-    selectedCards,
   }
 }
 

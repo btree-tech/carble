@@ -24,8 +24,8 @@ export async function readValidatedFormData<T>(
   }
 }
 
-function createValidationError(validateError?: any) {
-  throw createError({
+export function createValidationError(validateError?: any) {
+  return createError({
     status: 400,
     statusMessage: "Validation Error",
     message: validateError?.message || "Validation Error",

@@ -7,7 +7,6 @@ const { data: cards } = useCardsData()
 
 const {
   data: selectionState,
-  selectedCards,
 } = useGridViewSelectionState()
 
 const {
@@ -32,28 +31,6 @@ useSortable(useTemplateRef('sortable'), cards, {
     await execute()
   },
 } satisfies UseSortableOptions)
-
-const shiftKeyState = useKeyModifier('Shift')
-
-const lastSelectedCardId = ref<number|null>(null)
-
-const toggle = (cardId: number) => {
-  const selected = !selectionState.value.get(cardId)
-  selectionState.value.set(cardId, selected)
-  if (shiftKeyState.value && lastSelectedCardId.value && lastSelectedCardId.value !== cardId) {
-    const ids = [cardId, lastSelectedCardId.value]
-    const start = cards.value.findIndex(({ id }) => ids.includes(id))
-    const end = cards.value.findLastIndex(({ id }) => ids.includes(id))
-    cards.value.slice(start, end + 1).forEach(({ id }) => {
-      selectionState.value.set(id, selected)
-    })
-  }
-  lastSelectedCardId.value = selectedCards.value.length ? cardId : null
-}
-
-const deselectAll = () => {
-  selectionState.value.forEach((_, key) => selectionState.value.set(key, false))
-}
 </script>
 
 <template>
@@ -91,22 +68,7 @@ const deselectAll = () => {
           md:flex-row md:justify-between md:my-0
         "
       >
-        <UButtonGroup
-          size="lg"
-          :class="['my-4', { invisible: !selectedCards.length }]"
-        >
-          <UButton
-            :label="`${selectedCards.length}件選択中`"
-            color="white"
-            @click="deselectAll"
-          />
-          <UButton
-            label="複製"
-            icon="i-material-symbols-light-content-copy"
-            color="white"
-          />
-          <ButtonCardsDelete :cards="selectedCards" />
-        </UButtonGroup>
+        <ButtonGroupCards v-model="selectionState" />
         <GridViewSettingFields class="justify-end" />
       </div>
       <div
@@ -117,7 +79,6 @@ const deselectAll = () => {
           v-for="card in cards"
           :key="card.id"
           :card="card"
-          @change="toggle(card.id)"
         />
       </div>
     </div>
