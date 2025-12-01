@@ -38,16 +38,6 @@ const columns = [
   }
 ]
 
-const isCreating = ref(false)
-const onClickCreateButton = async () => {
-  isCreating.value = true
-  const project = await $fetch('/api/projects', {
-    method: 'post',
-  })
-  await navigateTo(`/projects/${project.id}`)
-  isCreating.value = false
-}
-
 const isDeleting = ref(new Map<number, boolean>())
 const onClickDeleteButton = async (id: number) => {
   if (!window.confirm('削除してよろしいですか？')) return
@@ -73,15 +63,7 @@ const projectsInTable = computed(() => {
   <div class="grid row-auto gap-y-4 py-4">
     <div class="flex items-center justify-between gap-4 px-4">
       <logoImage class="fill-zinc-500" />
-      <div>
-        <UButton
-          icon="i-material-symbols-light-add"
-          :loading="isCreating"
-          @click="onClickCreateButton"
-        >
-          <span class="hidden md:inline">新規プロジェクト</span>
-        </UButton>
-      </div>
+      <ButtonProjectAdd />
     </div>
     <div>
       <UTable
