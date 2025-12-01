@@ -9,6 +9,12 @@ const isImporting = computed({
   get: () => !!importingData.value,
   set: () => {},
 })
+
+useIntervalFn(async () => {
+  if (isImporting.value) {
+    await refresh()
+  }
+}, 30 * 1000)
 </script>
 
 <template>
