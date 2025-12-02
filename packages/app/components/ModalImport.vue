@@ -5,7 +5,7 @@ const emit = defineEmits<{
   uploaded: [number]
 }>()
 
-const { files, open, onChange } = useFileDialog({
+const { files, open, reset, onChange } = useFileDialog({
   accept: [
     'application/zip',
     'text/csv',
@@ -47,6 +47,7 @@ const {
 onChange(async (files) => {
   if (!files?.length) return
   await execute()
+  reset()
 })
 </script>
 

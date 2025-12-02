@@ -1,10 +1,12 @@
 <script setup lang="ts">
 const {
   data: project,
+  status: fetchProjectStatus,
 } = await useFetchProject()
 
 const {
   data: cards,
+  status: fetchCardsStatus,
 } = await useFetchCards()
 
 const queryParams = useCardsQueryParams()
@@ -31,7 +33,7 @@ watch(
 </script>
 
 <template>
-  <div>
+  <div v-if="fetchProjectStatus === 'success' && fetchCardsStatus === 'success'">
     <HeaderMenu class="mx-4 max-w-screen-xl">
       <div class="flex items-center gap-1">
         <UButton
@@ -76,10 +78,7 @@ watch(
       </div>
       <TableViewAlertImported />
     </HeaderMenu>
-    <div
-      v-if="project"
-      class="relative col-span-3 overflow-auto p-4 landscape:px-8"
-    >
+    <div class="relative col-span-3 overflow-auto p-4 landscape:px-8">
       <ButtonGroupCards
         v-model="checkedItems"
         class="fixed top-16 right-4 z-50 shadow lg:left-60 lg:right-auto"
@@ -178,11 +177,11 @@ watch(
             </td>
             <td class="space-x-2 p-1">
               <DuplicateCard
-                :project-id="project.id"
+                :project-id="project!.id"
                 :card-id="card.id"
               />
               <TableViewDeleteCard
-                :project-id="project.id"
+                :project-id="project!.id"
                 :card-id="card.id"
               />
             </td>

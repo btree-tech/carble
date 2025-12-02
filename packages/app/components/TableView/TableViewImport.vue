@@ -2,6 +2,7 @@
 const isOpen = defineModel<boolean>()
 
 const onUploaded = async () => {
+  clearNuxtData(getFetchProjectKey())
   await refreshNuxtData(getFetchProjectImportsInProgressKey())
 }
 </script>
