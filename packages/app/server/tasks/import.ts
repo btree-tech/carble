@@ -29,20 +29,24 @@ async function unzip(target: typeof imports.$inferSelect) {
     let writedCount = 0
 
     const unzipper = new Unzip((file) => {
-      const toPath = pathResolve(getUnzippedDir(target), file.name)
+      const toPath = pathResolve(getUnzippedDir(target), file.name.replace(/[\\/:*?"<>|]/, '_'))
       files.push(toPath)
 
       const writeStream = createWriteStream(toPath)
-      writeStream.on('close', () => {
-        writedCount++
-        if (writedCount >= files.length) {
-          resolve(files)
-        }
-      })
+
+      writeStream
+        .on('close', () => {
+          writedCount++
+          if (writedCount >= files.length) {
+            resolve(files)
+          }
+        })
+        .on('error', (err) => {
+          reject(err)
+        })
 
       file.ondata = (err, data, final) => {
         if (err) {
-          writeStream.destroy()
           return reject(err)
         }
         if (final) {

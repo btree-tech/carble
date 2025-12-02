@@ -46,7 +46,7 @@ export default defineEventHandler(async () => {
         }
       })
 
-      const xlsxFile = new AsyncZipDeflate(`${project.name}.xlsx`)
+      const xlsxFile = new AsyncZipDeflate(`${(project.name ?? '').replace(/[\\/:*?"<>|]/, '_')}.xlsx`)
       zip.add(xlsxFile)
       xlsxFile.push(XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }), true)
 
