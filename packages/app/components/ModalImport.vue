@@ -12,13 +12,12 @@ const { files, open, reset, onChange } = useFileDialog({
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ].join(','),
   multiple: false,
-  reset: true,
 })
 
 const {
   execute,
   status,
-} = useAsyncData(async () => {
+} = useAsyncStatus(async () => {
   const file = files.value?.item(0)
   if (!file) return
 
@@ -45,9 +44,10 @@ const {
 })
 
 onChange(async (files) => {
-  if (!files?.length) return
-  await execute()
-  reset()
+  if (files?.length) {
+    await execute()
+    reset()
+  }
 })
 </script>
 
