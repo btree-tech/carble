@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { moveArrayElement, useSortable, type UseSortableOptions } from '@vueuse/integrations/useSortable'
+import type GridViewCard from '~/components/GridView/GridViewCard.vue'
 
 const { data: project } = useProjectData()
 
@@ -65,10 +66,13 @@ useSortable(useTemplateRef('sortable'), cards, {
       <div
         class="
           flex flex-col-reverse
-          md:flex-row md:justify-between md:my-0
+          md:flex-row md:justify-between md:items-end
         "
       >
-        <ButtonGroupCards v-model="selectionState" />
+        <ButtonGroupCards
+          v-model="selectionState"
+          class="my-4"
+        />
         <GridViewSettingFields class="justify-end" />
       </div>
       <div

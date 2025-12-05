@@ -27,6 +27,7 @@ const {
     icon="i-material-symbols-light-delete-forever"
     color="white"
     :loading="status === 'pending'"
+    class="rounded-e-md"
     @click="execute"
   />
 </template>

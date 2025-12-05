@@ -24,6 +24,8 @@ const {
   isIndeterminate,
 } = useTriStateCheckbox(computed(() => cards.value.map(({ id }) => id)))
 
+const buttonGroupCardsRef = useTemplateRef('buttonGroupCardsRef')
+
 watch(
   () => useRoute().name,
   () => {
@@ -80,8 +82,10 @@ watch(
     </HeaderMenu>
     <div class="relative col-span-3 overflow-auto p-4 landscape:px-8">
       <ButtonGroupCards
+        v-if="buttonGroupCardsRef"
         v-model="checkedItems"
-        class="fixed top-16 right-4 z-50 shadow lg:left-60 lg:right-auto"
+        :reference="buttonGroupCardsRef!"
+        class="_fixed _top-16 ?right-4 z-50 shadow lg:left-60 lg:right-auto"
       />
       <table class="table-auto border-collapse whitespace-nowrap">
         <thead>
@@ -93,7 +97,10 @@ watch(
               />
             </th>
             <td class="p-1" />
-            <td class="p-1">
+            <td
+              ref="buttonGroupCardsRef"
+              class="p-1"
+            >
               <UCheckbox
                 v-model="isCheckedAll"
                 :indeterminate="isIndeterminate"

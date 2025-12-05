@@ -17,6 +17,7 @@ export const projectsRelations = relations(projects, ({ many }) => ({
   fields: many(fields),
   contents: many(contents),
   images: many(images),
+  imports: many(imports),
 }))
 
 export const cards = sqliteTable('cards', {

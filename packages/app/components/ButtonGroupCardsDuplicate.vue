@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DropdownItem } from '#ui/types'
+import type { VerticalNavigationLink } from '#ui/types';
 
 const props = defineProps<{
   cards: number[]
@@ -19,13 +19,15 @@ const items = computed(() => [
     .map((project) => ({
       label: project.name ?? '',
       click: () => duplicate(project.id),
+      disabled: !!project.imports.length,
+      badge: project.imports.length ? 'インポート中' : undefined,
     })),
   [{
     label: '新しいプロジェクト',
     icon: 'i-material-symbols-light-add',
     click: () => duplicate(),
   }],
-] satisfies DropdownItem[][])
+] satisfies VerticalNavigationLink[][])
 
 const {
   executeImmediate: duplicate,
@@ -47,15 +49,20 @@ const {
 </script>
 
 <template>
-  <UDropdown
-    :items="items"
-    :popper="{ placement: 'bottom-start' }"
-  >
+  <UPopover :popper="{ placement: 'bottom-start' }">
     <UButton
       label="複製"
       icon="i-material-symbols-light-content-copy"
       :loading="status === 'pending'"
       color="white"
+      class="rounded-none"
     />
-  </UDropdown>
+
+    <template #panel>
+      <UVerticalNavigation
+        :links="items"
+        class="m-2"
+      />
+    </template>
+  </UPopover>
 </template>

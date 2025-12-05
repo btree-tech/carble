@@ -10,7 +10,7 @@ const {
 // CESCHI-137
 watch(error, async (error) => {
   if (!error) return
-  if (error.data.data?.redirectTo) {
+  if (error.data?.data?.redirectTo) {
     await navigateTo(error.data.data.redirectTo)
   } else {
     createError(error)

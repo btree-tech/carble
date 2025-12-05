@@ -2,10 +2,18 @@ import { cards, fields, imports, projects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
-export const projectsSchema = z.array(createSelectSchema(projects, {
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-}))
+export const projectsSchema = z.array(
+  createSelectSchema(projects, {
+    createdAt: z.coerce.date(),
+    updatedAt: z.coerce.date(),
+  }).extend({
+    imports: z.array(createSelectSchema(imports, {
+      createdAt: z.coerce.date(),
+      updatedAt: z.coerce.date(),
+      notifiedAt: z.coerce.date(),
+    })),
+  })
+)
 
 export const fieldSchema = createSelectSchema(fields, {
   createdAt: z.coerce.date(),
@@ -18,6 +26,8 @@ export const projectSchema = z.object({
   cards: z.array(createSelectSchema(cards).pick({
     id: true,
   }))
+}).omit({
+  imports: true,
 }).transform((v) => ({
   ...v,
   totalCardSize: v.cards.length,
