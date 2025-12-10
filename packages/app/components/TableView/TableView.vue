@@ -87,7 +87,7 @@ watch(
         :reference="buttonGroupCardsRef!"
         class="z-50 shadow lg:left-60 lg:right-auto"
       />
-      <table class="table-auto border-collapse whitespace-nowrap">
+      <table class="table-auto border-separate border-spacing-2 whitespace-nowrap">
         <thead>
           <tr class="text-left">
             <th class="text-right p-1">
