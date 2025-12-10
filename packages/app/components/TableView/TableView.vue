@@ -85,7 +85,7 @@ watch(
         v-if="buttonGroupCardsRef"
         v-model="checkedItems"
         :reference="buttonGroupCardsRef!"
-        class="_fixed _top-16 ?right-4 z-50 shadow lg:left-60 lg:right-auto"
+        class="z-50 shadow lg:left-60 lg:right-auto"
       />
       <table class="table-auto border-collapse whitespace-nowrap">
         <thead>
