@@ -107,7 +107,7 @@ export function useCardAdd() {
   const toast = useToast()
 
   return useAsyncStatus(async (nextToId?: number) => {
-    await $fetch(`/api/projects/${projectId}/cards`, {
+    const newCard = await $fetch(`/api/projects/${projectId}/cards`, {
       method: 'post',
       body: {
         nextToId,
@@ -121,6 +121,8 @@ export function useCardAdd() {
       id: 'cards-add',
       title: '追加しました',
     })
+
+    return newCard
   }, {
     immediate: false,
   })

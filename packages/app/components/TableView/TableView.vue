@@ -9,6 +9,11 @@ const {
   status: fetchCardsStatus,
 } = await useFetchCards()
 
+const {
+  execute: add,
+  status: addStatus,
+} = useCardAdd()
+
 const queryParams = useCardsQueryParams()
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
@@ -190,9 +195,13 @@ watch(
       </table>
     </div>
     <div class="mx-4">
-      <AddCard>
+      <UButton
+        icon="i-material-symbols-light-add"
+        :loading="addStatus === 'pending'"
+        @click="add()"
+      >
         <span class="hidden md:inline">追加</span>
-      </AddCard>
+      </UButton>
     </div>
   </div>
 </template>

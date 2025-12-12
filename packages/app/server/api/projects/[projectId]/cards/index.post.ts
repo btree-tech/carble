@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     : await readValidatedBody(
         event,
         z.object({
-          nextToId: z.number(),
+          nextToId: z.number().optional(),
         }).parseAsync
       )
 
@@ -31,11 +31,11 @@ export default defineEventHandler(async (event) => {
       .from(cards)
       .where(eq(cards.projectId, project.id))
 
-    if ('nextToId' in data) {
+    if ('nextToId' in data && data.nextToId) {
       const nextTo = await tx.query.cards.findFirst({
         where: ({ projectId, id }, { and, eq }) => and(
           eq(projectId, project.id),
-          eq(id, data.nextToId),
+          eq(id, data.nextToId!),
         ),
       })
       if (!nextTo) throw createValidationError()

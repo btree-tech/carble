@@ -19,6 +19,12 @@ const {
   data: card,
 } = useCard(cardId)
 
+const {
+  execute: add,
+  state: addedCard,
+  status: addStatus,
+} = useCardAdd()
+
 const query = useCardsQueryString()
 
 const {
@@ -32,8 +38,9 @@ const previousCard = computed(() => cards.value[index.value - 1])
 
 const nextCard = computed(() => cards.value[index.value + 1])
 
-const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
-  await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
+const addCard = async() => {
+  await add()
+  await navigateTo(`/projects/${projectId}/cards/${addedCard.value.id}?${query.value}`)
 }
 </script>
 
@@ -155,13 +162,16 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
       :trailing="true"
       class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
     />
-    <AddCard
+    <UButton
       v-else
+      label="追加"
+      icon="i-material-symbols-light-add"
       variant="soft"
       size="lg"
       :trailing="true"
+      :loading="addStatus === 'pending'"
       class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
-      @added="onAdded"
+      @click="addCard"
     />
   </div>
 </template>
