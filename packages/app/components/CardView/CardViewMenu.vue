@@ -68,6 +68,7 @@ const items = computed(() => [
     {
       label: '複製先カードを表示',
       icon: 'i-material-symbols-light-arrow-right',
+      disabled: !props.card.duplicates.length,
       class: 'flex-row-reverse justify-between',
       click: () => duplicatesSubMenuIsOpen.value = true,
     },
