@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { z } from 'zod'
-
 const {
   projectId,
   cardId,
