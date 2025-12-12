@@ -25,8 +25,13 @@ export default function<
     return 'idle'
   })
 
+  const execute = async (...args: Params) => {
+    await asyncState.executeImmediate(...args)
+  }
+
   return {
     ...asyncState,
     status,
+    execute,
   }
 }

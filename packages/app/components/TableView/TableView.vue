@@ -183,14 +183,7 @@ watch(
               />
             </td>
             <td class="space-x-2 p-1">
-              <DuplicateCard
-                :project-id="project!.id"
-                :card-id="card.id"
-              />
-              <TableViewDeleteCard
-                :project-id="project!.id"
-                :card-id="card.id"
-              />
+              <TableViewCardMenu :card="card" />
             </td>
           </tr>
         </tbody>

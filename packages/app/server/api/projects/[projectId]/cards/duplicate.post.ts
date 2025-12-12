@@ -1,6 +1,7 @@
 import type { Transaction } from '@carble/db'
 import { cards, contents, fields, images, projects } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
+import { eq, sql } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-zod'
 import { copyFile } from 'node:fs/promises'
 import { extname } from 'node:path'
@@ -8,25 +9,26 @@ import z from 'zod'
 
 type FromProject  = typeof projects.$inferSelect & {
   fields: (typeof fields.$inferSelect)[]
-  cards: typeof cards.$inferSelect & {
+  cards: (typeof cards.$inferSelect & {
     contents: (typeof contents.$inferSelect)[]
     images: (typeof images.$inferSelect)[]
-  }[]
+  })[]
 }
 
 export default defineEventHandler(async (event) => {
   const data = await readValidatedBody(
     event,
     z.object({
-      id: z.array(createSelectSchema(cards).shape.id).nonempty(),
-      to: createSelectSchema(projects).shape.id.optional(),
+      cardId: z.array(createSelectSchema(cards).shape.id).nonempty(),
+      toProjectId: createSelectSchema(projects).shape.id.optional(),
+      nextToId: createSelectSchema(cards).shape.id.optional(),
     }).parse,
   )
 
   const fromProject = await findProject({
     fields: true,
     cards: {
-      where: ({ id }, { inArray }) => inArray(id, data.id),
+      where: ({ id }, { inArray }) => inArray(id, data.cardId),
       orderBy: ({ order, id }, { asc }) => [asc(order), asc(id)],
       with: {
         contents: true,
@@ -41,7 +43,11 @@ export default defineEventHandler(async (event) => {
       maxFieldOrder,
       maxCardId,
       maxCardOrder,
-    } = await findOrCreateProject(tx, data.to)
+    } = await findOrCreateProject(tx, data.toProjectId)
+
+    const nextToOrder = 'nextToId' in data
+      ? fromProject.cards.find(({ id }) => id === data.nextToId)?.order
+      : undefined
 
     const insertFieldValues = fromProject.fields
       .filter(({ name }) => !(toProject.fields ?? []).find((f) => f.name === name))
@@ -59,13 +65,32 @@ export default defineEventHandler(async (event) => {
       [...toProject.fields, ...newFields].map(({ id, name }) => [name ?? '', id])
     )
 
-    const insertCardValues = fromProject.cards.map((_, i) => ({
+    const insertCardValues = fromProject.cards.map(({ id }, i) => ({
       projectId: toProject.id,
       id: (maxCardId ?? 0) + 1 + i,
-      order: (maxCardOrder ?? 0) + 1 + i,
+      order: nextToOrder ? nextToOrder + (1 + i) * 0.1 : (maxCardOrder ?? 0) + 1 + i,
+      originalProjectId: fromProject.id,
+      originalCardId: id,
     } satisfies typeof cards.$inferInsert))
 
-    await tx.insert(cards).values(insertCardValues)
+    const newCards = await tx.insert(cards).values(insertCardValues).returning()
+
+    if (nextToOrder) {
+      const newOrders = tx.$with('newOrders').as(
+        tx.select({
+            id: cards.id,
+            order: sql<number>`row_number() over (order by "order" asc, "id" asc)`.as('order'),
+          })
+          .from(cards)
+          .where(eq(cards.projectId, toProject.id))
+      )
+      await tx.with(newOrders)
+        .update(cards)
+        .set({
+          order: sql`(select ${newOrders.order} from ${newOrders} where ${cards.id} = ${newOrders.id})`,
+        })
+        .where(eq(cards.projectId, toProject.id))
+    }
 
     const insertContentValues = fromProject.cards.flatMap(({ contents: fromContents }, i) => {
       return fromContents.map(({ fieldId, body }) => {
@@ -112,9 +137,7 @@ export default defineEventHandler(async (event) => {
 
     await touchProjectUpdatedAt(tx, toProject.id)
 
-    return {
-      id: toProject.id,
-    }
+    return newCards
   })
 })
 

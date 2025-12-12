@@ -1,4 +1,4 @@
-import { cards, contents, images } from '@carble/db/schema'
+import { cards, contents, images, projects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -11,12 +11,18 @@ export const contentSchema = createSelectSchema(contents, {
   updatedAt: z.coerce.date(),
 })
 
-export const cardSchema = createSelectSchema(cards, {
+const baseCardSchema = createSelectSchema(cards, {
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-}).extend({
+})
+
+export const cardSchema = baseCardSchema.extend({
   images: z.array(imageSchema),
   contents: z.array(contentSchema),
+  original: baseCardSchema.nullable(),
+  duplicates: z.array(baseCardSchema.extend({
+    project: createSelectSchema(projects).pick({ name: true }),
+  })),
 })
 
 export const cardsSchema = z.array(cardSchema)
@@ -94,6 +100,84 @@ export function useCard(id: MaybeRefOrGetter) {
     index,
     data,
   }
+}
+
+export function useCardAdd() {
+  const { projectId } = useRoute().params
+  const toast = useToast()
+
+  return useAsyncStatus(async (nextToId?: number) => {
+    await $fetch(`/api/projects/${projectId}/cards`, {
+      method: 'post',
+      body: {
+        nextToId,
+      },
+    })
+
+    await refreshNuxtData(getFetchCardsKey(projectId))
+    useProjectData().data.value.totalCardSize++
+
+    toast.add({
+      id: 'cards-add',
+      title: '追加しました',
+    })
+  }, {
+    immediate: false,
+  })
+}
+
+export function useCardDuplicate() {
+  const { projectId: fromProjectId } = useRoute().params
+  const toast = useToast()
+
+  return useAsyncStatus<[
+    cardId: number|number[],
+    { toProjectId?: number, nextToId?: number }?
+  ]>(async (cardId, { toProjectId, nextToId } = {}) => {
+    const newCards = await $fetch(`/api/projects/${fromProjectId}/cards/duplicate`, {
+      method: 'post',
+      body: {
+        cardId: [cardId].flat(),
+        toProjectId,
+        nextToId,
+      },
+    })
+
+    await refreshNuxtData(getFetchCardsKey(toProjectId))
+
+    toast.add({
+      id: 'cards-duplicate',
+      title: '複製しました',
+    })
+
+    return newCards
+  }, { immediate: false })
+}
+
+export function useCardRemove() {
+  const { projectId } = useRoute().params
+  const toast = useToast()
+
+  return useAsyncStatus(
+    async (cardId: number) => {
+      if (!window.confirm('削除してよろしいですか？')) return
+
+      await $fetch(`/api/projects/${projectId}/cards/${cardId}`, {
+        method: 'delete',
+      })
+
+      await refreshNuxtData(getFetchCardsKey(projectId))
+      useProjectData().data.value.totalCardSize--
+
+      toast.add({
+        id: 'cards-remove',
+        title: '削除しました',
+      })
+    },
+    {
+      immediate: false,
+    }
+  )
 }
 
 export function useCardContent(cardId: MaybeRefOrGetter, fieldId: MaybeRefOrGetter) {

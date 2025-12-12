@@ -24,10 +24,16 @@ export const cards = sqliteTable('cards', {
   id: integer('id').notNull(),
   projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
   order: integer('order').notNull(),
+  originalProjectId: integer('originalProjectId'),
+  originalCardId: integer('originalCardId'),
   ...timestamps,
-}, ({ projectId, id, order }) => [
+}, ({ projectId, id, order, originalProjectId, originalCardId }) => [
   primaryKey({ columns: [projectId, id] }),
   index('cards_projectId_order_index').on(projectId, order),
+  foreignKey({
+    columns: [originalProjectId, originalCardId],
+    foreignColumns: [projectId, id],
+  }).onUpdate('cascade').onDelete('set null'),
 ])
 
 export const cardsRelations = relations(cards, ({ one, many }) => ({
@@ -37,6 +43,12 @@ export const cardsRelations = relations(cards, ({ one, many }) => ({
   }),
   contents: many(contents),
   images: many(images),
+  original: one(cards, {
+    fields: [cards.originalProjectId, cards.originalCardId],
+    references: [cards.projectId, cards.id],
+    relationName: 'duplicates',
+  }),
+  duplicates: many(cards, { relationName: 'duplicates' }),
 }))
 
 export const fields = sqliteTable('fields', {

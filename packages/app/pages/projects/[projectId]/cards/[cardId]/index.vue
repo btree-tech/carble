@@ -32,10 +32,6 @@ const previousCard = computed(() => cards.value[index.value - 1])
 
 const nextCard = computed(() => cards.value[index.value + 1])
 
-const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
-  await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
-}
-
 const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
   await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
 }
@@ -68,10 +64,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
           />
         <div class="grow" />
         <StatusIcon :status="status" />
-        <DuplicateCard
-          :card-id="card.id"
-          @submitted="onDuplicated"
-        />
+        <CardViewMenu :card="card" />
       </div>
     </div>
     <div

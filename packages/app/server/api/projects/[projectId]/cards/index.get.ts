@@ -67,6 +67,14 @@ export default defineEventHandler(async (event) => {
       images: {
         orderBy: ({ createdAt }, { asc }) => asc(createdAt),
       },
+      original: true,
+      duplicates: {
+        with: {
+          project: {
+            columns: { name: true },
+          },
+        },
+      },
     }
   })
 

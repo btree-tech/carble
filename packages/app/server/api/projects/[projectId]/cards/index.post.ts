@@ -1,6 +1,6 @@
 import { cards, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
-import { eq, max } from 'drizzle-orm'
+import { eq, max, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 export default defineEventHandler(async (event) => {
@@ -12,7 +12,12 @@ export default defineEventHandler(async (event) => {
           image: imageFileSchema.optional(),
         }).parseAsync
       )
-    : {}
+    : await readValidatedBody(
+        event,
+        z.object({
+          nextToId: z.number(),
+        }).parseAsync
+      )
 
   return await useDatabase().transaction(async (tx) => {
     const [{
@@ -25,6 +30,41 @@ export default defineEventHandler(async (event) => {
       })
       .from(cards)
       .where(eq(cards.projectId, project.id))
+
+    if ('nextToId' in data) {
+      const nextTo = await tx.query.cards.findFirst({
+        where: ({ projectId, id }, { and, eq }) => and(
+          eq(projectId, project.id),
+          eq(id, data.nextToId),
+        ),
+      })
+      if (!nextTo) throw createValidationError()
+
+      await tx.insert(cards)
+        .values({
+          projectId: project.id,
+          id: (maxCardId ?? 0) + 1,
+          order: nextTo.order + 0.5,
+        })
+        .returning()
+
+      const newOrders = tx.$with('newOrders').as(
+        tx.select({
+            id: cards.id,
+            order: sql<number>`row_number() over (order by "order" asc, "id" asc)`.as('order'),
+          })
+          .from(cards)
+          .where(eq(cards.projectId, project.id))
+      )
+      await tx.with(newOrders)
+        .update(cards)
+        .set({
+          order: sql`(select ${newOrders.order} from ${newOrders} where ${cards.id} = ${newOrders.id})`,
+        })
+        .where(eq(cards.projectId, project.id))
+
+      return
+    }
 
     const [card] = await tx.insert(cards)
       .values({
