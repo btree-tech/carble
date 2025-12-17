@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { VerticalNavigationLink } from '#ui/types';
+import type { VerticalNavigationLink } from '#ui/types'
 
 const props = defineProps<{
   cards: number[]
@@ -11,41 +11,33 @@ const {
   data: projects,
 } = useFetchProjects()
 
-const toast = useToast()
+const {
+  execute,
+  status,
+  state: duplicatedCards,
+} = useCardDuplicate()
 
 const items = computed(() => [
   projects.value
     .filter(({ id }) => id !== Number(projectId))
     .map((project) => ({
       label: project.name ?? '',
-      click: () => duplicate(project.id),
+      click: async () => {
+        await execute(props.cards, { toProjectId: project.id })
+        await navigateTo(`/projects/${project.id}`)
+      },
       disabled: !!project.imports.length,
       badge: project.imports.length ? 'インポート中' : undefined,
     })),
   [{
     label: '新しいプロジェクト',
     icon: 'i-material-symbols-light-add',
-    click: () => duplicate(),
+    click: async () => {
+      await execute(props.cards)
+      await navigateTo(`/projects/${duplicatedCards.value[0].projectId}/cards/${duplicatedCards.value[0].id}`)
+    },
   }],
 ] satisfies VerticalNavigationLink[][])
-
-const {
-  executeImmediate: duplicate,
-  status,
-} = useAsyncStatus(async (to?: number) => {
-  const { id: toProjectId } = await $fetch(`/api/projects/${projectId}/cards/duplicate`, {
-    method: 'post',
-    body: {
-      id: props.cards,
-      to,
-    },
-  })
-  toast.add({
-    id: 'cards-duplicate',
-    title: '複製しました',
-  })
-  await navigateTo(`/projects/${toProjectId}`)
-}, { immediate: false })
 </script>
 
 <template>
