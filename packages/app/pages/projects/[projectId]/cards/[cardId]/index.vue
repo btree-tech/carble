@@ -10,7 +10,7 @@ const {
 
 const {
   data: cards,
-} = useCardsData()
+} = await useFetchCards()
 
 const {
   index,
@@ -23,7 +23,7 @@ const {
   status: addStatus,
 } = useCardAdd()
 
-const query = useCardsQueryString()
+const { data: query } = useCardsQueryString()
 
 const {
   statuses,

@@ -27,29 +27,59 @@ export const cardSchema = baseCardSchema.extend({
 
 export const cardsSchema = z.array(cardSchema)
 
-export const useCardsQuery = () => computed(() => String(useRoute().query.q || ''))
+export const useCardsQuery = () => {
+  const data = computed(() => String(useRoute().query.q || ''))
 
-export const useCardsSortId = () => computed<number|'id'|'order'>(() => {
-  const sortId = useRoute().query.sort
-  if (sortId === 'id') return 'id'
-  if (Number.isNaN(sortId)) return Number(sortId)
-  return 'order'
-})
+  return {
+    data,
+  }
+}
 
-export const useCardsSortDirection = () => computed(() => useRoute().query.direction || 'asc')
+export const useCardsSortId = () => {
+  const data = computed<number|'id'|'order'>(() => {
+    const sortId = useRoute().query.sort
+    if (sortId === 'id') return 'id'
+    if (Number.isNaN(sortId)) return Number(sortId)
+    return 'order'
+  })
 
-export const useCardsQueryParams = () => computed(() => {
-  const { q, sort, direction } = useRoute().query
-  return { q, sort, direction }
-})
+  return {
+    data,
+  }
+}
 
-export const useCardsQueryString = () => computed(() => {
-  return new URLSearchParams({
-    q: useCardsQuery().value,
-    sort: `${useCardsSortId().value}`,
-    direction: `${useCardsSortDirection().value}`,
-  }).toString()
-})
+export const useCardsSortDirection = () => {
+  const data = computed(() => useRoute().query.direction || 'asc')
+
+  return {
+    data,
+  }
+}
+
+export const useCardsQueryParams = () => {
+  const data = computed(() => {
+    const { q, sort, direction } = useRoute().query
+    return { q, sort, direction }
+  })
+
+  return {
+    data,
+  }
+}
+
+export const useCardsQueryString = () => {
+  const data = computed(() => {
+    return new URLSearchParams({
+      q: useCardsQuery().data.value,
+      sort: `${useCardsSortId().data.value}`,
+      direction: `${useCardsSortDirection().data.value}`,
+    }).toString()
+  })
+
+  return {
+    data,
+  }
+}
 
 export const getFetchCardsKey = (projectId: unknown) => {
   return `projects/${projectId}/cards`
@@ -62,9 +92,9 @@ export function useFetchCards() {
 
   return useFetch(`/api/projects/${projectId}/cards`, {
     query: {
-      q: useCardsQuery(),
-      sort: useCardsSortId(),
-      direction: useCardsSortDirection(),
+      q: useCardsQuery().data,
+      sort: useCardsSortId().data,
+      direction: useCardsSortDirection().data,
     },
     transform: (data) => cardsSchema.parse(data),
     default: () => cardsSchema.parse([]),

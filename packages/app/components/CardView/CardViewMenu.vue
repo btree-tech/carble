@@ -25,7 +25,7 @@ const {
   status: removeStatus,
 } = useCardRemove()
 
-const query = useCardsQueryString()
+const { data: query } = useCardsQueryString()
 
 const { projectId } = useRoute().params
 

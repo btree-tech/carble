@@ -1,10 +1,10 @@
 <script setup lang="ts">
-const query = useCardsQuery()
+const { data: query } = useCardsQuery()
 
 const input = ref(query.value)
 
 const execute = async (value = input.value) => {
-  await navigateTo(`?q=${value}&sort=${useCardsSortId().value}&direction=${useCardsSortDirection().value}`)
+  await navigateTo(`?q=${value}&sort=${useCardsSortId().data.value}&direction=${useCardsSortDirection().data.value}`)
 }
 
 watch(

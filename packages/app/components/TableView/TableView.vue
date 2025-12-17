@@ -1,12 +1,10 @@
 <script setup lang="ts">
 const {
   data: project,
-  status: fetchProjectStatus,
 } = await useFetchProject()
 
 const {
   data: cards,
-  status: fetchCardsStatus,
 } = await useFetchCards()
 
 const {
@@ -14,7 +12,7 @@ const {
   status: addStatus,
 } = useCardAdd()
 
-const queryParams = useCardsQueryParams()
+const { data: queryParams } = useCardsQueryParams()
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
 
@@ -27,7 +25,7 @@ const {
   checkedItems,
   isCheckedAll,
   isIndeterminate,
-} = useTriStateCheckbox(computed(() => cards.value.map(({ id }) => id)))
+} = useTriStateCheckbox(computed(() => (cards.value ?? []).map(({ id }) => id)))
 
 const buttonGroupCardsRef = useTemplateRef('buttonGroupCardsRef')
 
@@ -40,7 +38,7 @@ watch(
 </script>
 
 <template>
-  <div v-if="fetchProjectStatus === 'success' && fetchCardsStatus === 'success'">
+  <div v-if="project && cards">
     <HeaderMenu class="mx-4 max-w-screen-xl">
       <div class="flex items-center gap-1">
         <UButton
