@@ -21,6 +21,7 @@ const {
       order: i + 1,
     })),
   })
+  await refreshNuxtData(getFetchCardsKey(project.value.id))
 }, {
   immediate: false,
 })
