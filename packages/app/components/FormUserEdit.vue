@@ -37,7 +37,7 @@ const schema = createUpdateSchema(users, {
   username: (s) => s
     .min(3, { abort: true, message: '3文字以上30文字以下で設定してください' })
     .max(30, { abort: true, message: '3文字以上30文字以下で設定してください' })
-    .regex(/^[a-zA-Z0-9_-]+$/, { abort: true, message: '利用できない文字が含まれています' })
+    .regex(/^[a-zA-Z0-9_]+$/, { abort: true, message: '利用できない文字が含まれています' })
     .superRefine(async (_, context) => {
       await executeIsAvailable()
       if (!isAvailable.value) {
@@ -84,7 +84,7 @@ watch(
     <UFormGroup
       name="username"
       label="ユーザーID"
-      help="利用可能な文字: 半角英数およびハイフン（-）、アンダースコア（_）"
+      help="利用可能な文字: 半角英数およびハイフン（-）"
       eager-validation
     >
       <UInput
