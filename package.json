@@ -5,11 +5,10 @@
   "scripts": {
     "dev": "pnpm --filter @carble/* --parallel dev",
     "build": "pnpm --filter @carble/app build",
-    "cli": "pnpm --filter @carble/cli exec jiti"
+    "cli": "pnpm --filter @carble/cli exec jiti",
+    "auth:generate": "pnpm dlx @better-auth/cli@latest generate --output ./packages/db/lib/schema/auth.ts"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "better-sqlite3"
-    ]
+  "devDependencies": {
+    "better-auth": "^1.4.7"
   }
 }

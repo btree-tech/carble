@@ -1,10 +1,37 @@
 import { relations } from 'drizzle-orm'
 import { foreignKey, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { accounts, sessions, users } from './auth'
+
+export * from './auth'
 
 const timestamps = {
   createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 }
+
+export const usersToProjects = sqliteTable('usersToProjects', {
+  userId: text('userId').notNull().references(() => users.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
+  projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
+}, ({ userId, projectId }) => [
+  primaryKey({ columns: [userId, projectId] })
+])
+
+export const usersToProjectsRelations = relations(usersToProjects, ({ one }) => ({
+  project: one(projects, {
+    fields: [usersToProjects.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [usersToProjects.userId],
+    references: [users.id],
+  }),
+}))
+
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
+  projects: many(usersToProjects),
+}))
 
 export const projects = sqliteTable('projects', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -13,6 +40,7 @@ export const projects = sqliteTable('projects', {
 })
 
 export const projectsRelations = relations(projects, ({ many }) => ({
+  users: many(usersToProjects),
   cards: many(cards),
   fields: many(fields),
   contents: many(contents),

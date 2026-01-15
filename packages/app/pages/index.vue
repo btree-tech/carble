@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import logoImage from '../assets/logo.svg'
+import type { DropdownItem } from '#ui/types'
+import logoImage from 'assets/logo.svg'
 
 const {
   data: projects,
@@ -16,6 +17,28 @@ watch(error, async (error) => {
     createError(error)
   }
 }, { immediate: true })
+
+const session = authClient.useSession()
+
+const sessionMenu = computed(() => [
+  [
+    {
+      label: '設定',
+      icon: 'i-material-symbols-light-settings',
+      to: '/users/edit',
+    },
+  ],
+  [
+    {
+      label: 'ログアウト',
+      icon: 'i-material-symbols-light-logout',
+      click: async () => {
+        await authClient.signOut()
+        await navigateTo('/login')
+      },
+    },
+  ],
+] satisfies DropdownItem[][])
 
 const columns = [
   {
@@ -60,12 +83,20 @@ const projectsInTable = computed(() => {
 </script>
 
 <template>
-  <div class="grid row-auto gap-y-4 py-4">
-    <div class="flex items-center justify-between gap-4 px-4">
-      <logoImage class="fill-zinc-500" />
-      <ButtonProjectAdd />
+  <div class="grid row-auto gap-y-8 py-8">
+    <div class="flex items-center justify-between gap-4">
+      <h1><logoImage class="fill-zinc-500" /></h1>
+      <UDropdown :items="sessionMenu">
+        <UButton
+          :label="session.data?.user.name"
+          icon="i-material-symbols-light-person"
+        />
+      </UDropdown>
     </div>
     <div>
+      <div class="flex items-center justify-end">
+        <ButtonProjectAdd />
+      </div>
       <UTable
         v-if="projectsInTable"
         :columns="columns"

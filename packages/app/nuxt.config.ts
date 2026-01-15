@@ -20,6 +20,14 @@ export default defineNuxtConfig({
       user: '',
       password: '',
     },
+    auth: {
+      secret: process.env.BETTER_AUTH_SECRET,
+      url: process.env.BETTER_AUTH_URL,
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      },
+    },
   },
 
   nitro: {
@@ -58,6 +66,6 @@ export default defineNuxtConfig({
         port: Number(process.env.APP_HMR_PORT) || 24678,
       },
     },
-    plugins: [svgLoader()]
+    plugins: [svgLoader()],
   },
 })

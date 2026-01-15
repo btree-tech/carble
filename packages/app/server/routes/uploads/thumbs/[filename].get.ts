@@ -18,6 +18,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404 })
   }
 
+  const user = await useSessionUser()
+
+  const image = await useDatabase().query.images.findFirst({
+    where: (t, { eq }) => eq(t.filename, basename(filename, '.webp')),
+    with: {
+      project: {
+        with: {
+          users: {
+            where: ({ userId }, { eq }) => eq(userId, user.id),
+            limit: 1,
+          },
+        },
+      },
+    },
+  })
+  if (!image?.project.users.length) throw createError({ statusCode: 404 })
+
   if (!existsSync(thumbPath)) {
     await sharp(imagePath)
       .resize({

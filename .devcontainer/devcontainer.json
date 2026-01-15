@@ -19,6 +19,7 @@
 		4983
 	],
 	"remoteUser": "root",
+	"runArgs": ["--env-file",".env"],
 	"customizations": {
 		"vscode": {
 			"extensions": [

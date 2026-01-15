@@ -1,7 +1,9 @@
-import { fields, projects } from '@carble/db/schema'
+import { fields, projects, usersToProjects } from '@carble/db/schema'
 import z from 'zod'
 
 export default defineEventHandler(async (event) => {
+  const user = await useSessionUser()
+
   const data = await readValidatedBody(
     event,
     z.object({
@@ -16,6 +18,12 @@ export default defineEventHandler(async (event) => {
         name: data?.name ?? '無題のプロジェクト',
       })
       .returning()
+
+    await tx.insert(usersToProjects)
+      .values({
+        userId: user.id,
+        projectId: project.id,
+      })
 
     if (data?.fields) {
       await tx.insert(fields)

@@ -16,7 +16,7 @@
   "main": "./lib/index.ts",
   "exports": {
     ".": "./lib/index.ts",
-    "./schema": "./lib/schema.ts"
+    "./schema": "./lib/schema/index.ts"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.4"
