@@ -4,11 +4,18 @@ import type GridViewCard from '~/components/GridView/GridViewCard.vue'
 
 const { data: project } = useProjectData()
 
-const { data: cards } = useCardsData()
+const { data } = useCardsData()
 
 const {
   data: selectionState,
 } = useGridViewSelectionState()
+
+const cards = computed({
+  get: () => data.value.items,
+  set: (value) => {
+    data.value.items = value
+  },
+})
 
 const {
   execute,
@@ -21,7 +28,7 @@ const {
       order: i + 1,
     })),
   })
-  await refreshNuxtData(getFetchCardsKey(project.value.id))
+  await refreshNuxtData(getFetchCardsKey())
 }, {
   immediate: false,
 })

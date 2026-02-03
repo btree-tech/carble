@@ -19,7 +19,7 @@ const scale = computed(() => previewWidth.value / actualWidth.value)
 
 const chunkedCards = computed(() => props.cards.reduce((prev, _, i) => {
   return i % 2 ? prev : [...prev, props.cards.slice(i, i + 2)]
-}, [] as z.infer<typeof cardsSchema>[]))
+}, [] as z.infer<typeof cardSchema>[]))
 
 const print = () => {
   window.print()

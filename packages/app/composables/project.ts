@@ -28,10 +28,7 @@ export const projectSchema = z.object({
   }))
 }).omit({
   imports: true,
-}).transform((v) => ({
-  ...v,
-  totalCardSize: v.cards.length,
-}))
+})
 
 export const importsSchema = z.object({
   items: z.array(createSelectSchema(imports, {

@@ -25,7 +25,10 @@ export const cardSchema = baseCardSchema.extend({
   })),
 })
 
-export const cardsSchema = z.array(cardSchema)
+export const cardsSchema = z.object({
+  items: z.array(cardSchema),
+  total: z.number(),
+})
 
 export const useCardsQuery = () => {
   const data = computed(() => String(useRoute().query.q || ''))
@@ -81,7 +84,8 @@ export const useCardsQueryString = () => {
   }
 }
 
-export const getFetchCardsKey = (projectId: unknown) => {
+export const getFetchCardsKey = (projectId?: MaybeRefOrGetter<unknown>) => {
+  projectId = projectId ? toValue(projectId) : useRoute().params.projectId
   return `projects/${projectId}/cards`
 }
 
@@ -97,30 +101,29 @@ export function useFetchCards() {
       direction: useCardsSortDirection().data,
     },
     transform: (data) => cardsSchema.parse(data),
-    default: () => cardsSchema.parse([]),
-    key: getFetchCardsKey(projectId),
+    default: () => cardsSchema.parse({ items: [], total: 0 }),
+    key: getFetchCardsKey(),
   })
 }
 
 export function useCardsData() {
-  const { projectId } = useRoute().params
-  return useTypedNuxtData<typeof cardsSchema>(getFetchCardsKey(projectId))
+  return useTypedNuxtData<typeof cardsSchema>(getFetchCardsKey())
 }
 
 export function useCard(id: MaybeRefOrGetter) {
   const { data: cards } = useCardsData()
 
-  const index = computed(() => cards.value?.findIndex((card) => card.id === Number(toValue(id))))
+  const index = computed(() => cards.value?.items.findIndex((card) => card.id === Number(toValue(id))))
   const data = computed({
     get: () => {
-      return (cards.value ?? []).at(index.value)!
+      return (cards.value?.items ?? []).at(index.value)!
     },
     set: (value: any) => {
       if (index.value >= 0) {
         if (value) {
-          cards.value.splice(index.value, 1, value)
+          cards.value.items.splice(index.value, 1, value)
         } else {
-          cards.value.splice(index.value, 1)
+          cards.value.items.splice(index.value, 1)
         }
       }
     },
@@ -144,8 +147,7 @@ export function useCardAdd() {
       },
     })
 
-    await refreshNuxtData(getFetchCardsKey(projectId))
-    useProjectData().data.value.totalCardSize++
+    await refreshNuxtData(getFetchCardsKey())
 
     toast.add({
       id: 'cards-add',
@@ -198,8 +200,7 @@ export function useCardRemove() {
         method: 'delete',
       })
 
-      await refreshNuxtData(getFetchCardsKey(projectId))
-      useProjectData().data.value.totalCardSize--
+      await refreshNuxtData(getFetchCardsKey())
 
       toast.add({
         id: 'cards-remove',

@@ -25,7 +25,7 @@ const {
   checkedItems,
   isCheckedAll,
   isIndeterminate,
-} = useTriStateCheckbox(computed(() => (cards.value ?? []).map(({ id }) => id)))
+} = useTriStateCheckbox(computed(() => (cards.value.items ?? []).map(({ id }) => id)))
 
 const buttonGroupCardsRef = useTemplateRef('buttonGroupCardsRef')
 
@@ -150,7 +150,7 @@ watch(
         </thead>
         <tbody>
           <tr
-            v-for="card in cards"
+            v-for="card in cards.items"
             :key="card.id"
           >
             <td class="text-right p-1 pr-4">
