@@ -5,8 +5,9 @@
 NODE_ENV=productionで動作する
 
 ```sh
-# ポート番号を変更したい or basic認証を利用したい場合のみ
 $ cp .env.example .env
+# ファイル内コメントを参考に編集
+$ vim .env
 
 $ docker-compose up
 ```
@@ -27,11 +28,3 @@ $ pnpm dev
 
 URL: http://localhost:3000
 DBデータ確認: https://local.drizzle.studio
-
-## デプロイ
-1. AWS ECRにイメージをプッシュする
-  ※ 手順はAWS ECR管理画面のプライベートレジストリでリポジトリを選択 -> 「プッシュコマンドの表示」で確認可能
-2. ECSでサービスを選択→「サービスを更新」→「新しいデプロイを強制」にチェックを入れて更新
-
-### EFSの中身にアクセス
-EFSをマウントしたEC2インスタンスを立ち上げる
