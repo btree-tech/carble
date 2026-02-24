@@ -64,16 +64,13 @@ const {
       method: 'post',
       body: formData,
     })
-    cards.value.push(cardSchema.parse({
-      ...data,
-      contents: [],
-    }))
+    cards.value.items.push(cardSchema.parse(data))
     toast.add({
-      id: `card-scan-${data.id}`,
+      id: `card-scan-${data?.id}`,
       title: 'スキャン完了',
       description: '新しいカードを追加しました',
     })
-    await navigateTo(`/projects/${projectId}/cards/${data.id}`)
+    await navigateTo(`/projects/${projectId}/cards/${data?.id}`)
   }
   return file
 }, null, {

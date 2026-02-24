@@ -18,11 +18,11 @@ const baseCardSchema = createSelectSchema(cards, {
 
 export const cardSchema = baseCardSchema.extend({
   images: z.array(imageSchema),
-  contents: z.array(contentSchema),
-  original: baseCardSchema.nullable(),
+  contents: z.array(contentSchema).default([]),
+  original: baseCardSchema.nullable().default(null),
   duplicates: z.array(baseCardSchema.extend({
     project: createSelectSchema(projects).pick({ name: true }),
-  })),
+  })).default([]),
 })
 
 export const cardsSchema = z.object({
