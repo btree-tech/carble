@@ -78,8 +78,8 @@ const items = computed(() => [
       label: '削除',
       click: async () => {
         await remove(props.card.id)
-        const index = cards.value.findIndex(({ id }) => id === props.card.id)
-        const nextCard = cards.value.at(index + 1)
+        const index = cards.value.items.findIndex(({ id }) => id === props.card.id)
+        const nextCard = cards.value.items[index + 1]
         if (nextCard) {
           await navigateTo(`/projects/${projectId}/cards/${nextCard.id}?${query.value}`)
         } else {

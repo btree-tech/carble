@@ -18,9 +18,9 @@ export function useGridViewSelectionState() {
       const latestSelected = [...newData.symmetricDifference(new Set(state.value))][0]
       if (shiftKeyState.value && lastSelected.value) {
         const ids = [latestSelected, lastSelected.value]
-        const start = cards.value.findIndex(({ id }) => ids.includes(id))
-        const end = cards.value.findLastIndex(({ id }) => ids.includes(id))
-        cards.value.slice(start, end + 1).forEach(({ id }) => {
+        const start = cards.value.items.findIndex(({ id }) => ids.includes(id))
+        const end = cards.value.items.findLastIndex(({ id }) => ids.includes(id))
+        cards.value.items.slice(start, end + 1).forEach(({ id }) => {
           if (isAdded) {
             newData.add(id)
           } else {
@@ -35,7 +35,7 @@ export function useGridViewSelectionState() {
 
   watch(cards, (cards) => {
     if (!cards) return
-    state.value = state.value.filter((cardId) => cards.some(({ id }) => id === cardId))
+    state.value = state.value.filter((cardId) => cards.items.some(({ id }) => id === cardId))
   })
 
   return {
