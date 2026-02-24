@@ -32,9 +32,9 @@ const {
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
 
-const previousCard = computed(() => cards.value[index.value - 1])
+const previousCard = computed(() => cards.value.items[index.value - 1])
 
-const nextCard = computed(() => cards.value[index.value + 1])
+const nextCard = computed(() => cards.value.items[index.value + 1])
 
 const addCard = async() => {
   await add()
