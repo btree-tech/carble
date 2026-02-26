@@ -1,5 +1,9 @@
 # carble
 
+## 使い方
+下記URLを参照
+https://docs.google.com/document/d/18VwKdzSuerLUq7XTI1r-wE-zRcZRWZbmZ6IDitwr77E/edit?tab=t.0
+
 ## ローカル開発
 ### 動作確認のみ
 NODE_ENV=productionで動作する
@@ -28,3 +32,7 @@ $ pnpm dev
 
 URL: http://localhost:3000
 DBデータ確認: https://local.drizzle.studio
+
+
+## 謝辞
+本システムは「令和７年度　社会との共創によるデジタル・ヒューマニティーズ（DH）の推進」DHデータ構築補助事業の援助を受けて構築されました。
