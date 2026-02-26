@@ -7,7 +7,7 @@ const { data: cards } = await useFetchCards()
 </script>
 
 <template>
-  <PrintView :cards="cards">
+  <PrintView :cards="cards.items">
     <template #header-nav>
       <UButton
         icon="i-material-symbols-light-table-view"

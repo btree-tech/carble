@@ -1,10 +1,10 @@
 <script setup lang="ts">
-const query = useCardsQuery()
+const { data: query } = useCardsQuery()
 
 const input = ref(query.value)
 
 const execute = async (value = input.value) => {
-  await navigateTo(`?q=${value}&sort=${useCardsSortId().value}&direction=${useCardsSortDirection().value}`)
+  await navigateTo(`?q=${value}&sort=${useCardsSortId().data.value}&direction=${useCardsSortDirection().data.value}`)
 }
 
 watch(
@@ -13,8 +13,6 @@ watch(
     input.value = query.value
   }
 )
-
-const { data: project } = useProjectData()
 
 const { data: cards } = useCardsData()
 </script>
@@ -41,8 +39,8 @@ const { data: cards } = useCardsData()
       </template>
     </UInput>
     <div class="text-gray-500 dark:text-gray-400 hidden md:block">
-      <span v-if="query === ''">全 {{ project.totalCardSize }} 件</span>
-      <span v-else>{{ cards.length }} / {{ project.totalCardSize }} 件表示中</span>
+      <span v-if="query === ''">全 {{ cards.total }} 件</span>
+      <span v-else>{{ cards.items.length }} / {{ cards.total }} 件表示中</span>
     </div>
   </form>
 </template>

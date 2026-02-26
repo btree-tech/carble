@@ -1,10 +1,37 @@
 import { relations } from 'drizzle-orm'
 import { foreignKey, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { accounts, sessions, users } from './auth'
+
+export * from './auth'
 
 const timestamps = {
   createdAt: integer('createdAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 }
+
+export const usersToProjects = sqliteTable('usersToProjects', {
+  userId: text('userId').notNull().references(() => users.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
+  projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
+}, ({ userId, projectId }) => [
+  primaryKey({ columns: [userId, projectId] })
+])
+
+export const usersToProjectsRelations = relations(usersToProjects, ({ one }) => ({
+  project: one(projects, {
+    fields: [usersToProjects.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [usersToProjects.userId],
+    references: [users.id],
+  }),
+}))
+
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
+  projects: many(usersToProjects),
+}))
 
 export const projects = sqliteTable('projects', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -13,19 +40,29 @@ export const projects = sqliteTable('projects', {
 })
 
 export const projectsRelations = relations(projects, ({ many }) => ({
+  users: many(usersToProjects),
   cards: many(cards),
   fields: many(fields),
   contents: many(contents),
   images: many(images),
+  imports: many(imports),
 }))
 
 export const cards = sqliteTable('cards', {
   id: integer('id').notNull(),
   projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
-  createdAt: timestamps.createdAt,
-}, ({ projectId, id }) => ({
-  primaryKey: primaryKey({ columns: [projectId, id] }),
-}))
+  order: integer('order').notNull(),
+  originalProjectId: integer('originalProjectId'),
+  originalCardId: integer('originalCardId'),
+  ...timestamps,
+}, ({ projectId, id, order, originalProjectId, originalCardId }) => [
+  primaryKey({ columns: [projectId, id] }),
+  index('cards_projectId_order_index').on(projectId, order),
+  foreignKey({
+    columns: [originalProjectId, originalCardId],
+    foreignColumns: [projectId, id],
+  }).onUpdate('cascade').onDelete('set null'),
+])
 
 export const cardsRelations = relations(cards, ({ one, many }) => ({
   project: one(projects, {
@@ -34,6 +71,12 @@ export const cardsRelations = relations(cards, ({ one, many }) => ({
   }),
   contents: many(contents),
   images: many(images),
+  original: one(cards, {
+    fields: [cards.originalProjectId, cards.originalCardId],
+    references: [cards.projectId, cards.id],
+    relationName: 'duplicates',
+  }),
+  duplicates: many(cards, { relationName: 'duplicates' }),
 }))
 
 export const fields = sqliteTable('fields', {
@@ -43,9 +86,9 @@ export const fields = sqliteTable('fields', {
   isVisible: integer('isVisible', { mode: 'boolean' }).notNull().default(true),
   order: integer('order').notNull(),
   ...timestamps,
-}, ({ projectId, order }) => ({
-  orderIndex: index('projectId_order_index').on(projectId, order),
-}))
+}, ({ projectId, order }) => [
+  index('fields_projectId_order_index').on(projectId, order),
+])
 
 export const fieldsRelations = relations(fields, ({ one, many }) => ({
   project: one(projects, {
@@ -61,13 +104,13 @@ export const contents = sqliteTable('contents', {
   fieldId: integer('fieldId').notNull().references(() => fields.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
   body: text('body'),
   ...timestamps,
-}, ({ projectId, cardId, fieldId }) => ({
-  primaryKey: primaryKey({ columns: [projectId, cardId, fieldId] }),
-  cardIdReference: foreignKey({
+}, ({ projectId, cardId, fieldId }) => [
+  primaryKey({ columns: [projectId, cardId, fieldId] }),
+  foreignKey({
     columns: [projectId, cardId],
     foreignColumns: [cards.projectId, cards.id],
   }).onUpdate('cascade').onDelete('cascade'),
-}))
+])
 
 export const contentsRelations = relations(contents, ({ one }) => ({
   project: one(projects, {
@@ -90,12 +133,12 @@ export const images = sqliteTable('images', {
   cardId: integer('cardId').notNull(),
   filename: text('filename').notNull().unique(),
   createdAt: timestamps.createdAt,
-}, ({ projectId, cardId }) => ({
-  cardIdReference: foreignKey({
+}, ({ projectId, cardId }) => [
+  foreignKey({
     columns: [projectId, cardId],
     foreignColumns: [cards.projectId, cards.id],
   }).onUpdate('cascade').onDelete('cascade'),
-}))
+])
 
 export const imagesRelations = relations(images, ({ one }) => ({
   project: one(projects, {
@@ -105,5 +148,25 @@ export const imagesRelations = relations(images, ({ one }) => ({
   card: one(cards, {
     fields: [images.projectId, images.cardId],
     references: [cards.projectId, cards.id],
+  }),
+}))
+
+export const imports = sqliteTable('imports', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
+  filename: text('filename').notNull(),
+  originalFilename: text('originalFilename').notNull(),
+  status: text('status', { enum: ['OPEN', 'IN_PROGRESS', 'DONE', 'ABORT', 'FORMAT_ERROR', 'SYSTEM_ERROR'] }).notNull(),
+  message: text('message'),
+  notifiedAt: integer('notifiedAt', { mode: 'timestamp' }),
+  ...timestamps,
+}, ({ status }) => ({
+  statusIndex: index('status_index').on(status),
+}))
+
+export const importsRelations = relations(imports, ({ one }) => ({
+  project: one(projects, {
+    fields: [imports.projectId],
+    references: [projects.id],
   }),
 }))

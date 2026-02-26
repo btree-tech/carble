@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url'
 const rootDirURL = new URL('../../', import.meta.url)
 
 export default {
-  schema: fileURLToPath(new URL('./lib/schema.ts', import.meta.url)),
+  schema: [
+    fileURLToPath(new URL('./lib/schema/index.ts', import.meta.url)),
+  ],
   out: './migrations',
   dialect: 'sqlite',
   dbCredentials: {

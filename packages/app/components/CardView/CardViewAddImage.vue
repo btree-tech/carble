@@ -16,7 +16,9 @@ const {
 } = useCardImageAdd(cardId)
 
 onChange(async () => {
-  await execute(files.value?.item(0))
+  if (files.value?.item(0)) {
+    await execute(files.value.item(0))
+  }
 })
 </script>
 

@@ -1,12 +1,17 @@
 # carble
 
+## 使い方
+下記URLを参照
+https://docs.google.com/document/d/18VwKdzSuerLUq7XTI1r-wE-zRcZRWZbmZ6IDitwr77E/edit?tab=t.0
+
 ## ローカル開発
 ### 動作確認のみ
 NODE_ENV=productionで動作する
 
 ```sh
-# ポート番号を変更したい or basic認証を利用したい場合のみ
 $ cp .env.example .env
+# ファイル内コメントを参考に編集
+$ vim .env
 
 $ docker-compose up
 ```
@@ -28,10 +33,6 @@ $ pnpm dev
 URL: http://localhost:3000
 DBデータ確認: https://local.drizzle.studio
 
-## デプロイ
-1. AWS ECRにイメージをプッシュする
-  ※ 手順はAWS ECR管理画面のプライベートレジストリでリポジトリを選択 -> 「プッシュコマンドの表示」で確認可能
-2. ECSでサービスを選択→「サービスを更新」→「新しいデプロイを強制」にチェックを入れて更新
 
-### EFSの中身にアクセス
-EFSをマウントしたEC2インスタンスを立ち上げる
+## 謝辞
+本システムは「令和７年度　社会との共創によるデジタル・ヒューマニティーズ（DH）の推進」DHデータ構築補助事業の援助を受けて構築されました。

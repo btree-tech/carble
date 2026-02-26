@@ -1,21 +1,33 @@
 <script setup lang="ts">
-import logoImage from '../assets/logo.svg'
+import type { DropdownItem } from '#ui/types'
+import logoImage from 'assets/logo.svg'
 
 const {
   data: projects,
   refresh,
-  error,
 } = await useFetchProjects()
 
-// CESCHI-137
-watch(error, async (error) => {
-  if (!error) return
-  if (error.data.data?.redirectTo) {
-    await navigateTo(error.data.data.redirectTo)
-  } else {
-    createError(error)
-  }
-}, { immediate: true })
+const session = authClient.useSession()
+
+const sessionMenu = computed(() => [
+  [
+    {
+      label: '設定',
+      icon: 'i-material-symbols-light-settings',
+      to: '/users/edit',
+    },
+  ],
+  [
+    {
+      label: 'ログアウト',
+      icon: 'i-material-symbols-light-logout',
+      click: async () => {
+        await authClient.signOut()
+        await navigateTo('/login')
+      },
+    },
+  ],
+] satisfies DropdownItem[][])
 
 const columns = [
   {
@@ -30,23 +42,13 @@ const columns = [
   {
     key: 'updatedAt',
     label: '最終更新日時',
-    class: 'hidden md:block'
+    class: 'hidden md:table-cell'
   },
   {
     key: 'actions',
     class: 'w-32'
   }
 ]
-
-const isCreating = ref(false)
-const onClickCreateButton = async () => {
-  isCreating.value = true
-  const project = await $fetch('/api/projects', {
-    method: 'post',
-  })
-  await navigateTo(`/projects/${project.id}`)
-  isCreating.value = false
-}
 
 const isDeleting = ref(new Map<number, boolean>())
 const onClickDeleteButton = async (id: number) => {
@@ -60,30 +62,30 @@ const onClickDeleteButton = async (id: number) => {
   isDeleting.value.set(id, false)
 }
 
-const projectsInTable = (projects.value || []).map((p) => {
-  return {
+const projectsInTable = computed(() => {
+  return (projects.value || []).map((p) => ({
     ...p,
-    updatedAt: { value: new Date(p.updatedAt).toLocaleString(), class: 'hidden md:block' },
+    updatedAt: { value: p.updatedAt, class: 'hidden md:table-cell' },
     actions: { class: 'text-right' },
-  }
+  }))
 })
 </script>
 
 <template>
-  <div class="grid row-auto gap-y-4 py-4">
-    <div class="flex items-center justify-between gap-4 px-4">
-      <logoImage class="fill-zinc-500" />
-      <div>
+  <div class="grid row-auto gap-y-8 py-8">
+    <div class="flex items-center justify-between gap-4">
+      <h1><logoImage class="fill-zinc-500" /></h1>
+      <UDropdown :items="sessionMenu">
         <UButton
-          icon="i-material-symbols-light-add"
-          :loading="isCreating"
-          @click="onClickCreateButton"
-        >
-          <span class="hidden md:inline">新規プロジェクト</span>
-        </UButton>
-      </div>
+          :label="session.data?.user.name"
+          icon="i-material-symbols-light-person"
+        />
+      </UDropdown>
     </div>
     <div>
+      <div class="flex items-center justify-end">
+        <ButtonProjectAdd />
+      </div>
       <UTable
         v-if="projectsInTable"
         :columns="columns"
@@ -105,12 +107,16 @@ const projectsInTable = (projects.value || []).map((p) => {
           </span>
         </template>
         <template #updatedAt-data="{ row }">
-          {{ row.updatedAt.value }}
+          <NuxtTime
+            :datetime="row.updatedAt.value"
+            date-style="medium"
+            time-style="medium"
+          />
         </template>
         <template #actions-data="{ row }">
           <UButton
             color="red"
-            icon="i-material-symbols-delete-forever"
+            icon="i-material-symbols-light-delete-forever"
             :loading="isDeleting.get(row.id)"
             @click="onClickDeleteButton(row.id)"
           >

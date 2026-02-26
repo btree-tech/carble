@@ -1,14 +1,20 @@
 import type { RelationalQueryBuilderConfig } from '@carble/db'
+import z from 'zod'
 
 export default async function(
   withInput: RelationalQueryBuilderConfig<'projects', 'findFirst'>['with'] = {},
   extras: RelationalQueryBuilderConfig<'projects', 'findFirst'>['extras'] = {},
 ) {
-  const projectId = getRouterParam(useEvent(), 'projectId')
+  const { projectId } = await getValidatedRouterParams(
+    useEvent(),
+    z.object({
+      projectId: z.coerce.number(),
+    }).parse,
+  )
 
   const project = await useDatabase().query.projects.findFirst({
     with: withInput,
-    where: ({ id }, { eq }) => eq(id, Number(projectId)),
+    where: ({ id }, { eq }) => eq(id, projectId),
     extras,
   })
 

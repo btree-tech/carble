@@ -16,7 +16,7 @@ export default defineEventHandler(async () => {
 
   const cards = await useDatabase().query.cards.findMany({
     where: ({ projectId }, { eq }) => eq(projectId, project.id),
-    orderBy: ({ id }, { asc }) => asc(id),
+    orderBy: ({ order, id }, { asc }) => [asc(order), asc(id)],
     with: {
       contents: true,
       images: {
@@ -46,7 +46,7 @@ export default defineEventHandler(async () => {
         }
       })
 
-      const xlsxFile = new AsyncZipDeflate(`${project.name}.xlsx`)
+      const xlsxFile = new AsyncZipDeflate(`${(project.name ?? '').replace(/[\\/:*?"<>|]/, '_')}.xlsx`)
       zip.add(xlsxFile)
       xlsxFile.push(XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' }), true)
 

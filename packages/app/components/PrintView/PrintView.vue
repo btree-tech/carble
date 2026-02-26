@@ -19,7 +19,7 @@ const scale = computed(() => previewWidth.value / actualWidth.value)
 
 const chunkedCards = computed(() => props.cards.reduce((prev, _, i) => {
   return i % 2 ? prev : [...prev, props.cards.slice(i, i + 2)]
-}, [] as z.infer<typeof cardsSchema>[]))
+}, [] as z.infer<typeof cardSchema>[]))
 
 const print = () => {
   window.print()
@@ -101,7 +101,7 @@ const print = () => {
           <div
             v-for="(chunk, i) in chunkedCards"
             :key="i"
-            class="grid grid-rows-[1fr,5mm,1fr] w-full h-svh max-h-svh overflow-hidden box-border break-inside-avoid"
+            class="print-view-card-adjuster grid grid-rows-[1fr,5mm,1fr] w-full h-svh max-h-svh overflow-hidden box-border break-inside-avoid"
           >
             <PrintViewCard
               v-for="(card, j) in chunk"
@@ -120,4 +120,14 @@ const print = () => {
 @page {
   size: A4 portrait;
 }
+
+/* CESCHI-159 Chrome右の線が細くなる対策 */
+.print-view-card-adjuster {
+  padding-right: 1px;
+}
+/* CESCHI-159 Safariで崩れないようにする（Safariのみ適用ハック） */
+_::-webkit-full-page-media, _:future, :root .print-view-card-adjuster {
+  height: 92vh;
+}
+
 </style>

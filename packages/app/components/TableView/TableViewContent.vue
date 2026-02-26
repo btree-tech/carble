@@ -16,7 +16,7 @@ const {
   status,
   data: body,
   execute,
-} = useCardContentUpdate(props.cardId, props.fieldId, hasFocus)
+} = useCardContentUpdate(props.cardId, props.fieldId)
 
 const onBlur = async () => {
   execute()

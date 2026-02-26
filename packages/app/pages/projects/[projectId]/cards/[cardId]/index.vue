@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { z } from 'zod'
-
 const {
   projectId,
   cardId,
@@ -12,14 +10,20 @@ const {
 
 const {
   data: cards,
-} = useCardsData()
+} = await useFetchCards()
 
 const {
   index,
   data: card,
 } = useCard(cardId)
 
-const query = useCardsQueryString()
+const {
+  execute: add,
+  state: addedCard,
+  status: addStatus,
+} = useCardAdd()
+
+const { data: query } = useCardsQueryString()
 
 const {
   statuses,
@@ -28,16 +32,13 @@ const {
 
 const fields = computed(() => (project.value?.fields || []).filter((field) => field.isVisible))
 
-const previousCard = computed(() => cards.value[index.value - 1])
+const previousCard = computed(() => cards.value.items[index.value - 1])
 
-const nextCard = computed(() => cards.value[index.value + 1])
+const nextCard = computed(() => cards.value.items[index.value + 1])
 
-const onDuplicated = async ({ id }: z.infer<typeof cardSchema>) => {
-  await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
-}
-
-const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
-  await navigateTo(`/projects/${projectId}/cards/${id}?${query.value}`)
+const addCard = async() => {
+  await add()
+  await navigateTo(`/projects/${projectId}/cards/${addedCard.value.id}?${query.value}`)
 }
 </script>
 
@@ -68,10 +69,7 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
           />
         <div class="grow" />
         <StatusIcon :status="status" />
-        <DuplicateCard
-          :card-id="card.id"
-          @submitted="onDuplicated"
-        />
+        <CardViewMenu :card="card" />
       </div>
     </div>
     <div
@@ -88,6 +86,14 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
         >
           <div class="text-sm ml-2">
             {{ card.id }}
+          </div>
+        </UFormGroup>
+        <UFormGroup
+          label="並び順"
+          class="col-span-2 grid grid-cols-subgrid space-y-0"
+        >
+          <div class="text-sm ml-2">
+            {{ card.order }}
           </div>
         </UFormGroup>
         <template
@@ -154,13 +160,16 @@ const onAdded = async({ id }: z.infer<typeof cardSchema>) => {
       :trailing="true"
       class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
     />
-    <AddCard
+    <UButton
       v-else
+      label="追加"
+      icon="i-material-symbols-light-add"
       variant="soft"
       size="lg"
       :trailing="true"
+      :loading="addStatus === 'pending'"
       class="fixed bottom-12 right-4 md:bottom-24 md:right-8"
-      @added="onAdded"
+      @click="addCard"
     />
   </div>
 </template>

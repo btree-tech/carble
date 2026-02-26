@@ -7,11 +7,13 @@ const {
   data: project,
 } = await useFetchProject()
 
+await useFetchCards()
+
 const {
   data: card,
 } = useCard(cardId)
 
-const query = useCardsQueryString()
+const { data: query } = useCardsQueryString()
 </script>
 
 <template>

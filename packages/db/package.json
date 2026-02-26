@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "pnpm migrate && pnpm studio",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit push",
+    "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio --host 0.0.0.0"
   },
   "files": [
@@ -16,14 +16,13 @@
   "main": "./lib/index.ts",
   "exports": {
     ".": "./lib/index.ts",
-    "./schema": "./lib/schema.ts"
+    "./schema": "./lib/schema/index.ts"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.11",
-    "drizzle-kit": "^0.22.8"
+    "drizzle-kit": "^0.31.4"
   },
   "dependencies": {
-    "better-sqlite3": "^11.3.0",
-    "drizzle-orm": "^0.33.0"
+    "@libsql/client": "^0.15.15",
+    "drizzle-orm": "^0.44.5"
   }
 }

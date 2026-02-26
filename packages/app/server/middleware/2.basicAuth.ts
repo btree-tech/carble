@@ -14,29 +14,6 @@ export default defineEventHandler(async (event) => {
     const [username, password] = credentials.split(':')
 
     if (username === authData.user && password === authData.password) return
-
-    // CESCHI-137
-    if (!(await getAllUsers()).length) return
-    const user = await findUser(username, password)
-    if (user) {
-      if (event.path.startsWith('/api/projects')) {
-        if (event.path === '/api/projects') {
-          throw createError({ statusCode: 404, data: { redirectTo: `/projects/${user.username.replace('project-', '')}` } })
-        }
-        const projectId = event.path.replace(/^\/api\/projects\/([0-9]+).*$/, '$1')
-        if (event.path !== '/api/projects' && user.username === `project-${projectId}`) return
-      } else if (event.path.startsWith('/projects')) {
-        const projectId = event.path.replace(/^\/projects\/([0-9]+).*$/, '$1')
-        if (user.username === `project-${projectId}`) return
-      } else if (event.path !== '/') {
-        return
-      } else if (event.path === '/') {
-        const projectId = user.username.replace('project-', '')
-        await sendRedirect(event, `/projects/${projectId}`)
-        return
-      }
-      throw createError({ statusCode: 404 })
-    }
   }
 
   setResponseHeader(event, 'WWW-Authenticate', 'Basic realm="Authentication Required"')

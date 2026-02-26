@@ -1,35 +1,76 @@
 import { cards, images } from '@carble/db/schema'
 import { createId } from '@paralleldrive/cuid2'
-import { eq, max } from 'drizzle-orm'
+import { eq, max, sql } from 'drizzle-orm'
 import { z } from 'zod'
-import { H3Error } from 'h3'
-
-const createCardSchema = formDataSchema
-  .pipe(z.object({
-    image: imageFileSchema.optional(),
-  }))
-  .optional()
 
 export default defineEventHandler(async (event) => {
   const project = await findProject()
-
-  let data: z.infer<typeof createCardSchema>
-  try {
-    data = await validate(createCardSchema, await readFormData(event))
-  } catch (err) {
-    if (err instanceof H3Error) throw err
-  }
+  const data = getRequestHeader(event, 'content-type')?.startsWith('multipart/form-data')
+    ? await readValidatedFormData(
+        event,
+        z.object({
+          image: imageFileSchema.optional(),
+        }).parseAsync
+      )
+    : await readValidatedBody(
+        event,
+        z.object({
+          nextToId: z.number().optional(),
+        }).parseAsync
+      )
 
   return await useDatabase().transaction(async (tx) => {
-    const [result] = await tx
-      .select({ max: max(cards.id) })
+    const [{
+      maxCardId,
+      maxOrder,
+    }] = await tx
+      .select({
+        maxCardId: max(cards.id),
+        maxOrder: max(cards.order),
+      })
       .from(cards)
       .where(eq(cards.projectId, project.id))
+
+    if ('nextToId' in data && data.nextToId) {
+      const nextTo = await tx.query.cards.findFirst({
+        where: ({ projectId, id }, { and, eq }) => and(
+          eq(projectId, project.id),
+          eq(id, data.nextToId!),
+        ),
+      })
+      if (!nextTo) throw createValidationError()
+
+      await tx.insert(cards)
+        .values({
+          projectId: project.id,
+          id: (maxCardId ?? 0) + 1,
+          order: nextTo.order + 0.5,
+        })
+        .returning()
+
+      const newOrders = tx.$with('newOrders').as(
+        tx.select({
+            id: cards.id,
+            order: sql<number>`row_number() over (order by "order" asc, "id" asc)`.as('order'),
+          })
+          .from(cards)
+          .where(eq(cards.projectId, project.id))
+      )
+      await tx.with(newOrders)
+        .update(cards)
+        .set({
+          order: sql`(select ${newOrders.order} from ${newOrders} where ${cards.id} = ${newOrders.id})`,
+        })
+        .where(eq(cards.projectId, project.id))
+
+      return
+    }
 
     const [card] = await tx.insert(cards)
       .values({
         projectId: project.id,
-        id: (result.max || 0) + 1,
+        id: (maxCardId ?? 0) + 1,
+        order: (maxOrder ?? 0) + 1,
       })
       .returning()
 
@@ -46,10 +87,10 @@ export default defineEventHandler(async (event) => {
         .returning()
       cardImages.push(image)
 
-      await useStorage('uploads/public/images').setItemRaw(filename, data.image.data)
-    }
+      await useStorage('uploads/public/images').setItemRaw(filename, Buffer.from(await data.image.data.arrayBuffer()))
 
-    await touchProjectUpdatedAt()
+      await touchProjectUpdatedAt(tx)
+    }
 
     return {
       ...card,

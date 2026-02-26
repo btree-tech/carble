@@ -1,4 +1,4 @@
-import { cards, contents, images } from '@carble/db/schema'
+import { cards, contents, images, projects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -11,35 +11,81 @@ export const contentSchema = createSelectSchema(contents, {
   updatedAt: z.coerce.date(),
 })
 
-export const cardSchema = createSelectSchema(cards, {
+const baseCardSchema = createSelectSchema(cards, {
   createdAt: z.coerce.date(),
-}).extend({
+  updatedAt: z.coerce.date(),
+})
+
+export const cardSchema = baseCardSchema.extend({
   images: z.array(imageSchema),
-  contents: z.array(contentSchema),
+  contents: z.array(contentSchema).default([]),
+  original: baseCardSchema.nullable().default(null),
+  duplicates: z.array(baseCardSchema.extend({
+    project: createSelectSchema(projects).pick({ name: true }),
+  })).default([]),
 })
 
-export const cardsSchema = z.array(cardSchema)
-
-export const useCardsQuery = () => computed(() => String(useRoute().query.q || ''))
-
-export const useCardsSortId = () => computed(() => Number(useRoute().query.sort || 0))
-
-export const useCardsSortDirection = () => computed(() => useRoute().query.direction || 'asc')
-
-export const useCardsQueryParams = () => computed(() => {
-  const { q, sort, direction } = useRoute().query
-  return { q, sort, direction }
+export const cardsSchema = z.object({
+  items: z.array(cardSchema),
+  total: z.number(),
 })
 
-export const useCardsQueryString = () => computed(() => {
-  return new URLSearchParams({
-    q: useCardsQuery().value,
-    sort: `${useCardsSortId().value}`,
-    direction: `${useCardsSortDirection().value}`,
-  }).toString()
-})
+export const useCardsQuery = () => {
+  const data = computed(() => String(useRoute().query.q || ''))
 
-export const getFetchCardsKey = (projectId: unknown) => {
+  return {
+    data,
+  }
+}
+
+export const useCardsSortId = () => {
+  const data = computed<number|'id'|'order'>(() => {
+    const sortId = useRoute().query.sort
+    if (sortId === 'id') return 'id'
+    if (Number.isNaN(sortId)) return Number(sortId)
+    return 'order'
+  })
+
+  return {
+    data,
+  }
+}
+
+export const useCardsSortDirection = () => {
+  const data = computed(() => useRoute().query.direction || 'asc')
+
+  return {
+    data,
+  }
+}
+
+export const useCardsQueryParams = () => {
+  const data = computed(() => {
+    const { q, sort, direction } = useRoute().query
+    return { q, sort, direction }
+  })
+
+  return {
+    data,
+  }
+}
+
+export const useCardsQueryString = () => {
+  const data = computed(() => {
+    return new URLSearchParams({
+      q: useCardsQuery().data.value,
+      sort: `${useCardsSortId().data.value}`,
+      direction: `${useCardsSortDirection().data.value}`,
+    }).toString()
+  })
+
+  return {
+    data,
+  }
+}
+
+export const getFetchCardsKey = (projectId?: MaybeRefOrGetter<unknown>) => {
+  projectId = projectId ? toValue(projectId) : useRoute().params.projectId
   return `projects/${projectId}/cards`
 }
 
@@ -50,36 +96,34 @@ export function useFetchCards() {
 
   return useFetch(`/api/projects/${projectId}/cards`, {
     query: {
-      q: useCardsQuery(),
-      sort: useCardsSortId(),
-      direction: useCardsSortDirection(),
+      q: useCardsQuery().data,
+      sort: useCardsSortId().data,
+      direction: useCardsSortDirection().data,
     },
     transform: (data) => cardsSchema.parse(data),
-    default: () => cardsSchema.parse([]),
-    key: getFetchCardsKey(projectId),
+    default: () => cardsSchema.parse({ items: [], total: 0 }),
+    key: getFetchCardsKey(),
   })
 }
 
 export function useCardsData() {
-  const { projectId } = useRoute().params
-  return useTypedNuxtData<typeof cardsSchema>(getFetchCardsKey(projectId))
+  return useTypedNuxtData<typeof cardsSchema>(getFetchCardsKey())
 }
 
 export function useCard(id: MaybeRefOrGetter) {
   const { data: cards } = useCardsData()
 
-  const index = computed(() => cards.value?.findIndex((card) => card.id === Number(toValue(id))))
+  const index = computed(() => cards.value?.items.findIndex((card) => card.id === Number(toValue(id))))
   const data = computed({
     get: () => {
-      if (index.value < 0) throw 'invalid cardId'
-      return (cards.value || [])[index.value]
+      return (cards.value?.items ?? []).at(index.value)!
     },
     set: (value: any) => {
       if (index.value >= 0) {
         if (value) {
-          cards.value.splice(index.value, 1, value)
+          cards.value.items.splice(index.value, 1, value)
         } else {
-          cards.value.splice(index.value, 1)
+          cards.value.items.splice(index.value, 1)
         }
       }
     },
@@ -89,6 +133,84 @@ export function useCard(id: MaybeRefOrGetter) {
     index,
     data,
   }
+}
+
+export function useCardAdd() {
+  const { projectId } = useRoute().params
+  const toast = useToast()
+
+  return useAsyncStatus(async (nextToId?: number) => {
+    const newCard = await $fetch(`/api/projects/${projectId}/cards`, {
+      method: 'post',
+      body: {
+        nextToId,
+      },
+    })
+
+    await refreshNuxtData(getFetchCardsKey())
+
+    toast.add({
+      id: 'cards-add',
+      title: '追加しました',
+    })
+
+    return newCard
+  }, {
+    immediate: false,
+  })
+}
+
+export function useCardDuplicate() {
+  const { projectId: fromProjectId } = useRoute().params
+  const toast = useToast()
+
+  return useAsyncStatus<[
+    cardId: number|number[],
+    { toProjectId?: number, nextToId?: number }?
+  ]>(async (cardId, { toProjectId, nextToId } = {}) => {
+    const newCards = await $fetch(`/api/projects/${fromProjectId}/cards/duplicate`, {
+      method: 'post',
+      body: {
+        cardId: [cardId].flat(),
+        toProjectId,
+        nextToId,
+      },
+    })
+
+    await refreshNuxtData(getFetchCardsKey(toProjectId))
+
+    toast.add({
+      id: 'cards-duplicate',
+      title: '複製しました',
+    })
+
+    return newCards
+  }, { immediate: false })
+}
+
+export function useCardRemove() {
+  const { projectId } = useRoute().params
+  const toast = useToast()
+
+  return useAsyncStatus(
+    async (cardId: number) => {
+      if (!window.confirm('削除してよろしいですか？')) return
+
+      await $fetch(`/api/projects/${projectId}/cards/${cardId}`, {
+        method: 'delete',
+      })
+
+      await refreshNuxtData(getFetchCardsKey())
+
+      toast.add({
+        id: 'cards-remove',
+        title: '削除しました',
+      })
+    },
+    {
+      immediate: false,
+    }
+  )
 }
 
 export function useCardContent(cardId: MaybeRefOrGetter, fieldId: MaybeRefOrGetter) {
@@ -124,7 +246,7 @@ export function useCardContent(cardId: MaybeRefOrGetter, fieldId: MaybeRefOrGett
   }
 }
 
-export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRefOrGetter, watch: MaybeRefOrGetter = true) {
+export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRefOrGetter) {
   const { data: content } = useCardContent(cardId, fieldId)
 
   const data = computed({
@@ -136,8 +258,7 @@ export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRef
       }
     },
   })
-  const asyncData = useAsyncData(async () => {
-    if (!toValue(watch)) return
+  const asyncData = useAsyncStatus(async () => {
     const url = `/api/projects/${content.value.projectId}/cards/${content.value.cardId}/fields/${content.value.fieldId}`
     await $fetch(url, {
       method: 'put',
@@ -145,10 +266,16 @@ export function useCardContentUpdate(cardId: MaybeRefOrGetter, fieldId: MaybeRef
         body: data.value,
       },
     })
-  }, {
+  },
+  {
     immediate: false,
-    watch: [debouncedRef(data, 1000)],
   })
+
+  watchDebounced(
+    data,
+    () => asyncData.execute(),
+    { debounce: 1000 }
+  )
 
   return {
     ...asyncData,
@@ -186,20 +313,24 @@ export function useCardImageAdd(cardId: MaybeRefOrGetter) {
   const { data: card } = useCard(cardId)
 
   const imageFile = ref<File|null>()
-  const asyncData = useAsyncData(async () => {
-    const formData = new FormData()
-    formData.append('image', imageFile.value!)
+  const asyncData = useAsyncData(
+    computed(() => `post /api/projects/${card.value.projectId}/cards/${card.value.id}/images`),
+    async () => {
+      const formData = new FormData()
+      formData.append('image', imageFile.value!)
 
-    const data = await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images`, {
-      method: 'post',
-      body: formData,
-    })
-    card.value.images.push(imageSchema.parse(data))
+      const data = await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images`, {
+        method: 'post',
+        body: formData,
+      })
+      card.value.images.push(imageSchema.parse(data))
 
-    return useCardImage(cardId, data.id).data.value
-  }, {
-    immediate: false,
-  })
+      return useCardImage(cardId, data.id).data.value
+    },
+    {
+      immediate: false,
+    },
+  )
   const execute = async (file?: File|null) => {
     imageFile.value = file
     await asyncData.execute()
@@ -214,12 +345,15 @@ export function useCardImageAdd(cardId: MaybeRefOrGetter) {
 export function useCardImageRemove(cardId: MaybeRefOrGetter, imageId: MaybeRefOrGetter) {
   const { data: card } = useCard(cardId)
 
-  return useAsyncData(async () => {
-    await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images/${toValue(imageId)}`, {
-      method: 'delete',
-    })
-    card.value.images = card.value.images.filter((image) => image.id !== Number(toValue(imageId)))
-  }, {
-    immediate: false,
-  })
+  return useAsyncData(
+    computed(() => `delete /api/projects/${card.value.projectId}/cards/${card.value.id}/images/${toValue(imageId)}`),
+    async () => {
+      await $fetch(`/api/projects/${card.value.projectId}/cards/${card.value.id}/images/${toValue(imageId)}`, {
+        method: 'delete',
+      })
+      card.value.images = card.value.images.filter((image) => image.id !== Number(toValue(imageId)))
+    }, {
+      immediate: false,
+    },
+  )
 }

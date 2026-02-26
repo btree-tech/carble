@@ -1,23 +1,22 @@
 import { contents } from '@carble/db/schema'
 import { z } from 'zod'
 
-const updateContentSchema = z.object({
-  body: z.string(),
-})
-
 export default defineEventHandler(async (event) => {
-  const projectId = getRouterParam(event, 'projectId')
-  const cardId = getRouterParam(event, 'cardId')
-  const fieldId = getRouterParam(event, 'fieldId')
-
-  const data = await validate(updateContentSchema, await readBody(event))
+  const card = await findCard()
+  const field = await findField()
+  const data = await readValidatedBody(
+    event,
+    z.object({
+      body: z.string(),
+    }).parse,
+  )
 
   return await useDatabase().transaction(async (tx) => {
     const [content] = await tx.insert(contents)
       .values({
-        projectId: Number(projectId),
-        cardId: Number(cardId),
-        fieldId: Number(fieldId),
+        projectId: field.projectId,
+        cardId: card.id,
+        fieldId: field.id,
         body: data.body,
       })
       .onConflictDoUpdate({
@@ -29,7 +28,7 @@ export default defineEventHandler(async (event) => {
       })
       .returning()
 
-    await touchProjectUpdatedAt()
+    await touchProjectUpdatedAt(tx)
 
     return content
   })

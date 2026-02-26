@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url'
 import svgLoader from 'vite-svg-loader'
 
 const rootDirURL = new URL('../../', import.meta.url)
@@ -16,10 +15,18 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    dbPath: fileURLToPath(new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL)),
+    dbPath: new URL(process.env.DB_PATH || './storage/dev.db', rootDirURL).toString(),
     basicAuth: {
       user: '',
       password: '',
+    },
+    auth: {
+      secret: process.env.BETTER_AUTH_SECRET,
+      url: process.env.BETTER_AUTH_URL,
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      },
     },
   },
 
@@ -44,8 +51,12 @@ export default defineNuxtConfig({
         base: '../../storage/uploads',
       },
     },
+    scheduledTasks: {
+      '* * * * *': ['import'],
+    },
     experimental: {
       asyncContext: true,
+      tasks: true,
     },
   },
 
@@ -55,6 +66,6 @@ export default defineNuxtConfig({
         port: Number(process.env.APP_HMR_PORT) || 24678,
       },
     },
-    plugins: [svgLoader()]
+    plugins: [svgLoader()],
   },
 })

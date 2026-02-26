@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const props = defineProps<{
-  fieldId: number
+  fieldId: number|'id'|'order'
   fieldName: string|null
 }>()
 
-const sortId = useCardsSortId()
+const { data: sortId } = useCardsSortId()
 
-const direction = useCardsSortDirection()
+const { data: direction } = useCardsSortDirection()
 
 const icon = computed(() => {
   if (props.fieldId === sortId.value) {
@@ -21,7 +21,7 @@ const url = computed(() => {
   const d = (props.fieldId === sortId.value && direction.value === 'asc')
     ? 'desc'
     : 'asc'
-  return `?q=${useCardsQuery().value}&sort=${props.fieldId}&direction=${d}`
+  return `?q=${useCardsQuery().data.value}&sort=${props.fieldId}&direction=${d}`
 })
 </script>
 

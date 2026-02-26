@@ -41,11 +41,11 @@ const detect = async (file: Blob) => {
 }
 
 const {
-  execute,
-  status,
-} = useAsyncData(async () => {
+  executeImmediate,
+  isLoading,
+} = useAsyncState(async () => {
   const file = files.value?.item(0)
-  if (!file) return
+  if (!file) return null
 
   const formData = new FormData()
   formData.append('image', file)
@@ -64,23 +64,21 @@ const {
       method: 'post',
       body: formData,
     })
-    cards.value.push(cardSchema.parse({
-      ...data,
-      contents: [],
-    }))
+    cards.value.items.push(cardSchema.parse(data))
     toast.add({
-      id: `card-scan-${data.id}`,
+      id: `card-scan-${data?.id}`,
       title: 'スキャン完了',
       description: '新しいカードを追加しました',
     })
-    await navigateTo(`/projects/${projectId}/cards/${data.id}`)
+    await navigateTo(`/projects/${projectId}/cards/${data?.id}`)
   }
-}, {
+  return file
+}, null, {
   immediate: false,
 })
 
 onChange(async () => {
-  await execute()
+  await executeImmediate()
 })
 </script>
 
@@ -88,10 +86,9 @@ onChange(async () => {
   <UButton
     label="スキャン"
     icon="i-material-symbols-light-add-a-photo"
-    :loading="status === 'pending'"
+    :loading="isLoading"
     @click="open"
   >
     <span class="hidden md:inline">スキャン</span>
   </UButton>
-
 </template>
