@@ -36,3 +36,5 @@ DBデータ確認: https://local.drizzle.studio
 
 ## 謝辞
 このツールはまず科学研究費補助金（23K17486）によって開発され、その成果をひきついで「令和７年度　社会との共創によるデジタル・ヒューマニティーズ（DH）の推進」DHデータ構築補助事業の援助を受けて構築されました。
+
+Carble  © 2024 - present by Carble開発チーム is licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/
