@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
       .values({
         userId: user.id,
         projectId: project.id,
+        role: 'owner',
       })
 
     if (data?.fields) {

@@ -1,4 +1,4 @@
-import { cards, fields, imports, projects } from '@carble/db/schema'
+import { cards, fields, imports, projects, usersToProjects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -25,7 +25,10 @@ export const projectSchema = z.object({
   fields: z.array(fieldSchema),
   cards: z.array(createSelectSchema(cards).pick({
     id: true,
-  }))
+  })),
+  users: z.array(createSelectSchema(usersToProjects).pick({
+    role: true,
+  })),
 }).omit({
   imports: true,
 })
@@ -44,16 +47,20 @@ export const importsSchema = z.object({
   pageCount: 10,
 })
 
+export function useFetchProjectsKey() {
+  return 'projects'
+}
+
 export function useFetchProjects() {
   return useFetch(`/api/projects`, {
     transform: (data) => projectsSchema.parse(data),
     default: () => projectsSchema.parse([]),
-    key: 'projects',
+    key: useFetchProjectsKey(),
   })
 }
 
 export function useProjectsData() {
-  return useTypedNuxtData<typeof projectSchema>('projects')
+  return useTypedNuxtData<typeof projectSchema>(useFetchProjectsKey())
 }
 
 export const getFetchProjectKey = () => {
@@ -94,4 +101,23 @@ export function useFetchProjectImportsInProgress() {
     transform: (data) => importsSchema.parse(data).items.at(0),
     key: getFetchProjectImportsInProgressKey(),
   })
+}
+
+export function getFetchProjectsInvitedKey() {
+  return 'projects/?status=invited'
+}
+
+export function useFetchProjectsInvited() {
+  return useFetch(`/api/projects`, {
+    query: {
+      status: 'invited',
+    },
+    transform: (data) => projectsSchema.parse(data),
+    default: () => projectsSchema.parse([]),
+    key: getFetchProjectsInvitedKey(),
+  })
+}
+
+export function useProjectsInvitedData() {
+  return useTypedNuxtData<typeof projectsSchema>(getFetchProjectsInvitedKey())
 }

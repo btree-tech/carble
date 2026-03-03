@@ -7,6 +7,10 @@ const {
   refresh,
 } = await useFetchProjects()
 
+const {
+  data: invitedProjects,
+} = await useFetchProjectsInvited()
+
 const session = authClient.useSession()
 
 const sessionMenu = computed(() => [
@@ -81,6 +85,13 @@ const projectsInTable = computed(() => {
           icon="i-material-symbols-light-person"
         />
       </UDropdown>
+    </div>
+    <div class="flex flex-col gap-y-4">
+      <ProjectIndexAlertInvited
+        v-for="project in invitedProjects"
+        :key="project.id"
+        :project="project"
+      />
     </div>
     <div>
       <div class="flex items-center justify-end">

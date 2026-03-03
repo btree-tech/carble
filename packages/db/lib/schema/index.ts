@@ -12,8 +12,14 @@ const timestamps = {
 export const usersToProjects = sqliteTable('usersToProjects', {
   userId: text('userId').notNull().references(() => users.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
   projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
-}, ({ userId, projectId }) => [
-  primaryKey({ columns: [userId, projectId] })
+  role: text('role', { enum: ['owner'] }),
+  status: text('status', { enum: ['invited'] }),
+  ...timestamps,
+}, ({ userId, projectId, role, status, createdAt }) => [
+  primaryKey({ columns: [userId, projectId] }),
+  index('usersToProjects_role_index').on(role),
+  index('usersToProjects_status_index').on(status),
+  index('usersToProjects_createdAt_index').on(createdAt),
 ])
 
 export const usersToProjectsRelations = relations(usersToProjects, ({ one }) => ({

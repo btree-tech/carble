@@ -1,6 +1,8 @@
 import { fileTypeFromBlob } from 'file-type'
 import { z } from 'zod'
 
+export * from '../../utils/zod'
+
 export async function validate<Schema extends z.ZodTypeAny>(schema: Schema, data: unknown): Promise<z.infer<Schema>> {
   const result = await schema.safeParseAsync(data)
 
