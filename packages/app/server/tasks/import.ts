@@ -2,13 +2,13 @@ import type { Database, LibSQLResultSet, Transaction } from '@carble/db'
 import { cards, contents, fields, images, imports } from '@carble/db/schema'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
 import { getTableConfig, type SQLiteInsertBase, type SQLiteInsertValue, type SQLiteTable } from 'drizzle-orm/sqlite-core'
-import { AsyncUnzipInflate, Unzip } from 'fflate/node'
 import { fileTypeFromFile } from 'file-type'
 import * as fs from 'node:fs'
-import { createReadStream, createWriteStream, existsSync } from 'node:fs'
-import { copyFile, mkdir, rm } from 'node:fs/promises'
+import { createReadStream, existsSync } from 'node:fs'
+import { copyFile, mkdir, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { extname, resolve as pathResolve } from 'node:path'
+import * as unzipper from 'unzipper'
 import * as XLSX from 'xlsx'
 
 XLSX.set_fs(fs)
@@ -24,53 +24,23 @@ function getUnzippedDir(target: typeof imports.$inferSelect) {
 
 async function unzip(target: typeof imports.$inferSelect) {
   await mkdir(getUnzippedDir(target))
-  return new Promise<string[]>((resolve, reject) => {
-    const files: string[] = []
-    let writedCount = 0
-
-    const unzipper = new Unzip((file) => {
-      const toPath = pathResolve(getUnzippedDir(target), file.name.replace(/[\\/:*?"<>|]/, '_'))
-      files.push(toPath)
-
-      const writeStream = createWriteStream(toPath)
-
-      writeStream
-        .on('close', () => {
-          writedCount++
-          if (writedCount >= files.length) {
-            resolve(files)
-          }
-        })
-        .on('error', (err) => {
-          reject(err)
-        })
-
-      file.ondata = (err, data, final) => {
-        if (err) {
-          return reject(err)
-        }
-        if (final) {
-          writeStream.end(data)
-        } else {
-          writeStream.write(data)
-        }
-      }
-      file.start()
-    })
-    unzipper.register(AsyncUnzipInflate)
-
-    createReadStream(resolveStoragePath('uploads', 'imports', target.filename))
-      .on('data', (chunk) => {
-        unzipper.push(Uint8Array.from(typeof chunk === 'string' ? Buffer.from(chunk) : chunk))
-      })
-      .on('error', (err) => {
-        unzipper.push(Uint8Array.from([]), true)
-        reject(err)
-      })
-      .on('end', () => {
-        unzipper.push(Uint8Array.from([]), true)
-      })
+  const directory = await unzipper.Open.custom({
+    stream: (offset, length) => {
+      return createReadStream(
+        resolveStoragePath('uploads', 'imports', target.filename),
+        {
+          start: offset,
+          end: length && offset + length,
+        },
+      )
+    },
+    size: async () => {
+      const stats = await stat(resolveStoragePath('uploads', 'imports', target.filename))
+      return stats.size
+    },
   })
+  await directory.extract({ path: getUnzippedDir(target) })
+  return directory.files.map((file) => pathResolve(getUnzippedDir(target), file.path))
 }
 
 async function toWorkbook(target: typeof imports.$inferSelect) {
