@@ -2,13 +2,13 @@ import type { Database, LibSQLResultSet, Transaction } from '@carble/db'
 import { cards, contents, fields, images, imports } from '@carble/db/schema'
 import { and, eq, inArray, max, sql } from 'drizzle-orm'
 import { getTableConfig, type SQLiteInsertBase, type SQLiteInsertValue, type SQLiteTable } from 'drizzle-orm/sqlite-core'
-import { AsyncUnzipInflate, Unzip } from 'fflate/node'
 import { fileTypeFromFile } from 'file-type'
 import * as fs from 'node:fs'
-import { createReadStream, createWriteStream, existsSync } from 'node:fs'
-import { copyFile, mkdir, rm } from 'node:fs/promises'
+import { createReadStream, existsSync } from 'node:fs'
+import { copyFile, mkdir, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { extname, resolve as pathResolve } from 'node:path'
+import * as unzipper from 'unzipper'
 import * as XLSX from 'xlsx'
 
 XLSX.set_fs(fs)
@@ -24,53 +24,23 @@ function getUnzippedDir(target: typeof imports.$inferSelect) {
 
 async function unzip(target: typeof imports.$inferSelect) {
   await mkdir(getUnzippedDir(target))
-  return new Promise<string[]>((resolve, reject) => {
-    const files: string[] = []
-    let writedCount = 0
-
-    const unzipper = new Unzip((file) => {
-      const toPath = pathResolve(getUnzippedDir(target), file.name.replace(/[\\/:*?"<>|]/, '_'))
-      files.push(toPath)
-
-      const writeStream = createWriteStream(toPath)
-
-      writeStream
-        .on('close', () => {
-          writedCount++
-          if (writedCount >= files.length) {
-            resolve(files)
-          }
-        })
-        .on('error', (err) => {
-          reject(err)
-        })
-
-      file.ondata = (err, data, final) => {
-        if (err) {
-          return reject(err)
-        }
-        if (final) {
-          writeStream.end(data)
-        } else {
-          writeStream.write(data)
-        }
-      }
-      file.start()
-    })
-    unzipper.register(AsyncUnzipInflate)
-
-    createReadStream(resolveStoragePath('uploads', 'imports', target.filename))
-      .on('data', (chunk) => {
-        unzipper.push(Uint8Array.from(typeof chunk === 'string' ? Buffer.from(chunk) : chunk))
-      })
-      .on('error', (err) => {
-        unzipper.push(Uint8Array.from([]), true)
-        reject(err)
-      })
-      .on('end', () => {
-        unzipper.push(Uint8Array.from([]), true)
-      })
+  const directory = await unzipper.Open.custom({
+    stream: (offset, length) => {
+      return createReadStream(
+        resolveStoragePath('uploads', 'imports', target.filename),
+        {
+          start: offset,
+          end: length && offset + length,
+        },
+      )
+    },
+    size: async () => {
+      const stats = await stat(resolveStoragePath('uploads', 'imports', target.filename))
+      return stats.size
+    },
   })
+  await directory.extract({ path: getUnzippedDir(target) })
+  return directory.files.map((file) => pathResolve(getUnzippedDir(target), file.path))
 }
 
 async function toWorkbook(target: typeof imports.$inferSelect) {
@@ -190,120 +160,119 @@ export default defineTask({
       if (errors.length) throw new FormatError(errors.join('\n'))
 
       // save
-      await useDatabase().transaction(async (tx) => {
-        const project = target.project
-        const [{ currentMaxCardId, currentMaxOrder }] = await tx
-          .select({
-            currentMaxCardId: max(cards.id),
-            currentMaxOrder: max(cards.order),
-          })
-          .from(cards)
-          .where(eq(cards.projectId, project.id))
+      const db = useDatabase()
+      const project = target.project
+      const [{ currentMaxCardId, currentMaxOrder }] = await db
+        .select({
+          currentMaxCardId: max(cards.id),
+          currentMaxOrder: max(cards.order),
+        })
+        .from(cards)
+        .where(eq(cards.projectId, project.id))
 
-        let maxOrder = Math.max(0, ...project.fields.map((f) => f.order))
-        const insertFieldValues = fieldNames
-          .filter((name) => project.fields.every((f) => f.name !== name))
-          .map((name) => ({
-            name,
-            projectId: project.id,
-            order: ++maxOrder,
-          }))
-        if (insertFieldValues.length) {
-          project.fields = [
-            ...project.fields,
-            ...await tx.insert(fields)
-              .values(insertFieldValues)
-              .returning(),
-          ]
-        }
+      let maxOrder = Math.max(0, ...project.fields.map((f) => f.order))
+      const insertFieldValues = fieldNames
+        .filter((name) => project.fields.every((f) => f.name !== name))
+        .map((name) => ({
+          name,
+          projectId: project.id,
+          order: ++maxOrder,
+        }))
+      if (insertFieldValues.length) {
+        project.fields = [
+          ...project.fields,
+          ...await db.insert(fields)
+            .values(insertFieldValues)
+            .returning(),
+        ]
+      }
 
-        let maxCardId = Math.max(0, Number(currentMaxCardId), ...importData.map((raw) => Number(raw[idIndex] || 0)))
-        const insertCardValues: typeof cards.$inferInsert[] = []
-        const insertContentValues: typeof contents.$inferInsert[] = []
-        const insertImageValues: typeof images.$inferInsert[] = []
-        const imagePaths: { from: string, to: string }[] = []
-        importData.forEach((raw, i) => {
-          const cardId = raw[idIndex] ? Number(raw[idIndex]) : ++maxCardId
+      let maxCardId = Math.max(0, Number(currentMaxCardId), ...importData.map((raw) => Number(raw[idIndex] || 0)))
+      const insertCardValues: typeof cards.$inferInsert[] = []
+      const insertContentValues: typeof contents.$inferInsert[] = []
+      const insertImageValues: typeof images.$inferInsert[] = []
+      const imagePaths: { from: string, to: string }[] = []
+      importData.forEach((raw, i) => {
+        const cardId = raw[idIndex] ? Number(raw[idIndex]) : ++maxCardId
 
-          insertCardValues.push({
-            id: cardId,
-            projectId: project.id,
-            order: (currentMaxOrder ?? 0) + i + 1,
-          })
-
-          header.forEach((fieldName, i) => {
-            if (i === idIndex || i === imageIndex) return
-
-            project.fields
-              .filter((field) => field.name === fieldName)
-              .forEach((field) => {
-                insertContentValues.push({
-                  projectId: project.id,
-                  cardId,
-                  fieldId: field.id,
-                  body: raw[i] || '',
-                })
-              })
-          })
-
-          if (hasImageField && raw[imageIndex]) {
-            raw[imageIndex].split(/\s/).forEach((image) => {
-              const from = pathResolve(getUnzippedDir(target), image)
-              const {
-                name: filename,
-                path: to,
-              } = getUniqueFile(resolveStoragePath('uploads', 'public/images'), `${extname(from)}`)
-              insertImageValues.push({
-                projectId: project.id,
-                cardId,
-                filename,
-              })
-              imagePaths.push({
-                from,
-                to,
-              })
-            })
-          }
+        insertCardValues.push({
+          id: cardId,
+          projectId: project.id,
+          order: (currentMaxOrder ?? 0) + i + 1,
         })
 
-        await chunkInsert(cards, insertCardValues, (query) => {
-          return query.onConflictDoNothing({ target: [cards.projectId, cards.id] })
-        }, undefined, tx)
+        header.forEach((fieldName, i) => {
+          if (i === idIndex || i === imageIndex) return
 
-        await chunkInsert(contents, insertContentValues, (query) => {
-          return query.onConflictDoUpdate({
-            target: [contents.projectId, contents.cardId, contents.fieldId],
-            set: {
-              body: sql`excluded.body`,
-              updatedAt: new Date(),
-            },
+          project.fields
+            .filter((field) => field.name === fieldName)
+            .forEach((field) => {
+              insertContentValues.push({
+                projectId: project.id,
+                cardId,
+                fieldId: field.id,
+                body: raw[i] || '',
+              })
+            })
+        })
+
+        if (hasImageField && raw[imageIndex]) {
+          raw[imageIndex].split(/\s/).forEach((image) => {
+            const from = pathResolve(getUnzippedDir(target), image)
+            const {
+              name: filename,
+              path: to,
+            } = getUniqueFile(resolveStoragePath('uploads', 'public/images'), `${extname(from)}`)
+            insertImageValues.push({
+              projectId: project.id,
+              cardId,
+              filename,
+            })
+            imagePaths.push({
+              from,
+              to,
+            })
           })
-        }, undefined, tx)
-
-        // 「画像ファイル列」が存在する場合のみ画像データを置き換え
-        if (hasImageField) {
-          const deleteImages = await tx.delete(images)
-            .where(and(
-              eq(images.projectId, project.id),
-              inArray(images.cardId, insertCardValues.map((card) => card.id as number)),
-            ))
-            .returning()
-
-          if (insertImageValues.length) {
-            await tx.insert(images)
-              .values(insertImageValues)
-              .returning()
-          }
-
-          await Promise.all(
-            imagePaths.map(({ from, to }) => copyFile(from, to))
-          )
-
-          await Promise.all(
-            deleteImages.map(({ filename }) => useStorage('uploads/public/images').removeItem(filename))
-          )
         }
       })
+
+      await chunkInsert(cards, insertCardValues, (query) => {
+        return query.onConflictDoNothing({ target: [cards.projectId, cards.id] })
+      }, undefined, db)
+
+      await chunkInsert(contents, insertContentValues, (query) => {
+        return query.onConflictDoUpdate({
+          target: [contents.projectId, contents.cardId, contents.fieldId],
+          set: {
+            body: sql`excluded.body`,
+            updatedAt: new Date(),
+          },
+        })
+      }, undefined, db)
+
+      // 「画像ファイル列」が存在する場合のみ画像データを置き換え
+      if (hasImageField) {
+        const deleteImages = await db.delete(images)
+          .where(and(
+            eq(images.projectId, project.id),
+            inArray(images.cardId, insertCardValues.map((card) => card.id as number)),
+          ))
+          .returning()
+
+        if (insertImageValues.length) {
+          await db.insert(images)
+            .values(insertImageValues)
+            .returning()
+        }
+
+        await Promise.all(
+          imagePaths.map(({ from, to }) => copyFile(from, to))
+        )
+
+        await Promise.all(
+          deleteImages.map(({ filename }) => useStorage('uploads/public/images').removeItem(filename))
+        )
+      }
 
       await touchProjectUpdatedAt(undefined, target.projectId)
 
