@@ -47,7 +47,13 @@ const statusMap = markRaw(new Map<z.infer<typeof projectUserSchema>['status'], s
         {{ roleMap.get(row.role) }}
       </template>
       <template #status-data="{ row }">
-        {{ statusMap.get(row.status) }}
+        <UBadge
+          v-if="row.status"
+          :label="statusMap.get(row.status)"
+          size="sm"
+          color="gray"
+          variant="subtle"
+        />
       </template>
       <template #actions-data="{ row }">
         <ProjectSettingsUserDelete
@@ -56,6 +62,6 @@ const statusMap = markRaw(new Map<z.infer<typeof projectUserSchema>['status'], s
         />
       </template>
     </UTable>
-    <ProjectSettingsUserAdd />
+    <ProjectSettingsUserAdd class="m-4" />
   </div>
 </template>

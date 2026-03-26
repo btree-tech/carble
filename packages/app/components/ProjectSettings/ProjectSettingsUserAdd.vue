@@ -4,7 +4,7 @@ import type { Form } from '#ui/types'
 import type z from 'zod'
 
 const schema = createUpdateSchema(users, {
-  username: (s) => s.min(3).max(30),
+  username: (s) => s.min(3, { error: '' }).max(30, { error: '' }),
 }).pick({
   username: true,
 })
