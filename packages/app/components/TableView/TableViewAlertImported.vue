@@ -33,14 +33,14 @@ onMounted(async () => {
     <UAlert
       v-if="importedData.status === 'DONE'"
       title="インポートが完了しました"
-      :actions="[{ label: '詳細', to: `/projects/${projectId}/imports` }]"
+      :actions="[{ label: '詳細', to: `/projects/${projectId}/settings` }]"
       color="primary"
       variant="subtle"
     />
     <UAlert
       v-else
       title="インポートに失敗しました"
-      :actions="[{ label: '詳細', to: `/projects/${projectId}/imports`, color: 'red' }]"
+      :actions="[{ label: '詳細', to: `/projects/${projectId}/settings`, color: 'red' }]"
       color="red"
       variant="subtle"
     />

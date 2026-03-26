@@ -4,8 +4,11 @@ import logoImage from 'assets/logo.svg'
 
 const {
   data: projects,
-  refresh,
 } = await useFetchProjects()
+
+const {
+  data: invitedProjects,
+} = await useFetchProjectsInvited()
 
 const session = authClient.useSession()
 
@@ -50,23 +53,10 @@ const columns = [
   }
 ]
 
-const isDeleting = ref(new Map<number, boolean>())
-const onClickDeleteButton = async (id: number) => {
-  if (!window.confirm('削除してよろしいですか？')) return
-
-  isDeleting.value.set(id, true)
-  await $fetch(`/api/projects/${id}`, {
-    method: 'delete',
-  })
-  await refresh()
-  isDeleting.value.set(id, false)
-}
-
 const projectsInTable = computed(() => {
   return (projects.value || []).map((p) => ({
     ...p,
     updatedAt: { value: p.updatedAt, class: 'hidden md:table-cell' },
-    actions: { class: 'text-right' },
   }))
 })
 </script>
@@ -81,6 +71,13 @@ const projectsInTable = computed(() => {
           icon="i-material-symbols-light-person"
         />
       </UDropdown>
+    </div>
+    <div class="flex flex-col gap-y-4">
+      <ProjectIndexAlertInvited
+        v-for="project in invitedProjects"
+        :key="project.id"
+        :project="project"
+      />
     </div>
     <div>
       <div class="flex items-center justify-end">
@@ -112,16 +109,6 @@ const projectsInTable = computed(() => {
             date-style="medium"
             time-style="medium"
           />
-        </template>
-        <template #actions-data="{ row }">
-          <UButton
-            color="red"
-            icon="i-material-symbols-light-delete-forever"
-            :loading="isDeleting.get(row.id)"
-            @click="onClickDeleteButton(row.id)"
-          >
-            <span class="hidden md:inline">削除</span>
-          </UButton>
         </template>
       </UTable>
     </div>

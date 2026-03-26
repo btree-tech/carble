@@ -79,7 +79,13 @@ watch(
         <TableViewFilter />
         <div class="grow" />
         <StatusIcon :status="status" />
-        <TableViewMenu />
+        <UButton
+          icon="i-material-symbols-light-settings"
+          :to="`/projects/${project?.id}/settings`"
+          variant="outline"
+        >
+          <span class="hidden md:inline">プロジェクト設定</span>
+        </UButton>
       </div>
       <TableViewAlertImported />
     </HeaderMenu>

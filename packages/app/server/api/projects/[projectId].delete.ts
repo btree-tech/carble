@@ -2,7 +2,17 @@ import { projects } from '@carble/db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async () => {
-  const project = await findProject()
+  const sessionUser = await useSessionUser()
+  const project = await findProject({
+    users: {
+      where: ({ userId, role }, { and, eq }) => and(
+        eq(userId, sessionUser.id),
+        eq(role, 'owner'),
+      ),
+      limit: 1,
+    },
+  })
+  if (!project.users.length) throw createError({ statusCode: 404 })
 
   return await useDatabase().transaction(async (tx) => {
     const images = await tx.query.images.findMany({
