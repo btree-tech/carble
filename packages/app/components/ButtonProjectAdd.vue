@@ -29,9 +29,7 @@ const {
   await navigateTo(`/projects/${project.id}`)
 }, { immediate: false })
 
-const onUploaded = async (projectId: number) => {
-  await navigateTo(`/projects/${projectId}`)
-}
+const isUploading = ref(false)
 </script>
 
 <template>
@@ -44,9 +42,19 @@ const onUploaded = async (projectId: number) => {
         <span class="hidden md:inline">新規プロジェクト</span>
       </UButton>
     </UDropdown>
-    <ModalImport
+    <UModal
       v-model="importModalIsOpen"
-      @uploaded="onUploaded"
-    />
+      :prevent-close="status === 'pending'"
+    >
+      <UCard>
+        <template #header>インポート</template>
+
+        <FormImport
+          v-model="importModalIsOpen"
+          class="grid grid-cols-1 gap-y-4 prose dark:prose-invert"
+          @upload="isUploading = true"
+        />
+      </UCard>
+    </UModal>
   </div>
 </template>
