@@ -18,16 +18,16 @@ watch(
     if (!layout) return
 
     const unreservedAreaId = layout.areas.find(({ isReserved }) => !isReserved)?.id
-    let hasReserved = false
+    const reservedAreaIds: number[] = []
     setting.value.data.fields.forEach((field) => {
       const area = layout.areas.find(({ id }) => id === field.areaId)
       if (!area) {
         field.areaId = unreservedAreaId ?? 0
       } else if (area.isReserved) {
-        if (!hasReserved) {
-          hasReserved = true
-        } else {
+        if (reservedAreaIds.includes(area.id)) {
           field.areaId = unreservedAreaId ?? 0
+        } else {
+          reservedAreaIds.push(area.id)
         }
       }
     })
