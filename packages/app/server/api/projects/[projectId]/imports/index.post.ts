@@ -36,7 +36,16 @@ async function getRequestFileStream() {
 }
 
 export default defineEventHandler(async () => {
-  const project = await findProject()
+  const sessionUser = await useSessionUser()
+  const project = await findProject({
+    users: {
+      where: ({ userId, role }, { and, eq }) => and(
+        eq(userId, sessionUser.id),
+        eq(role, 'owner'),
+      ),
+      limit: 1,
+    },
+  })
 
   const {
     stream,
