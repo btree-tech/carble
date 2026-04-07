@@ -49,11 +49,17 @@ const {
     <UFormGroup
       name="username"
       eager-validation
+      class="grow"
     >
       <UInput
         v-model="input.username"
         placeholder="ユーザーIDを入力して招待"
       />
+
+      <template #help>
+        これから他のメンバーを招待して共同編集を行えるようにします。<br>
+        現状のプロジェクトの状態を残しておきたい場合はバックアップを残しておくこと（プロジェクトデータの「エクスポート」）をお勧めします。
+      </template>
     </UFormGroup>
     <UButton
       type="submit"

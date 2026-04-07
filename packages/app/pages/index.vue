@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DropdownItem } from '#ui/types'
+import type { DropdownItem, TableRow } from '#ui/types'
 import logoImage from 'assets/logo.svg'
 
 const {
@@ -35,29 +35,27 @@ const sessionMenu = computed(() => [
 const columns = [
   {
     key: 'view',
-    class: 'w-12 md:w-28'
   },
   {
     key: 'name',
     label: 'プロジェクト名',
-    class: 'w-3/5'
+  },
+  {
+    key: 'owner',
+    label: 'オーナー',
   },
   {
     key: 'updatedAt',
     label: '最終更新日時',
     class: 'hidden md:table-cell'
   },
-  {
-    key: 'actions',
-    class: 'w-32'
-  }
 ]
 
 const projectsInTable = computed(() => {
   return (projects.value || []).map((p) => ({
     ...p,
     updatedAt: { value: p.updatedAt, class: 'hidden md:table-cell' },
-  }))
+  })) satisfies TableRow[]
 })
 </script>
 
@@ -87,7 +85,10 @@ const projectsInTable = computed(() => {
         v-if="projectsInTable"
         :columns="columns"
         :rows="projectsInTable"
-        :ui="{ base: 'w-full', td: { base: '' } }"
+        :ui="{
+          base: 'table-auto w-full',
+          td: { base: '[&:nth-child(2)]:whitespace-normal' }
+        }"
       >
         <template #view-data="{ row }">
           <UButton
@@ -102,6 +103,9 @@ const projectsInTable = computed(() => {
           <span>
             {{ row.name }}
           </span>
+        </template>
+        <template #owner-data="{ row }">
+          {{ row.users[0].user.name }}
         </template>
         <template #updatedAt-data="{ row }">
           <NuxtTime

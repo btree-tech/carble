@@ -1,4 +1,4 @@
-import { cards, fields, imports, projects, usersToProjects } from '@carble/db/schema'
+import { cards, fields, imports, projects, users, usersToProjects } from '@carble/db/schema'
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -7,6 +7,11 @@ export const projectsSchema = z.array(
     createdAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
   }).extend({
+    users: z.array(z.object({
+      user: createSelectSchema(users).pick({
+        name: true,
+      }),
+    })),
     imports: z.array(createSelectSchema(imports, {
       createdAt: z.coerce.date(),
       updatedAt: z.coerce.date(),

@@ -13,6 +13,10 @@ const links = computed(() => [
     ? []
     : [
       {
+        label: 'インポート',
+        to: `/projects/${project.value?.id}/settings/import`,
+      },
+      {
         label: 'ユーザー管理',
         to: `/projects/${project.value?.id}/settings/users`,
       },

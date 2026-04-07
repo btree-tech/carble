@@ -24,8 +24,20 @@ export default defineEventHandler(async (event) => {
       where: ({ id }, { inArray }) => inArray(id, projetIds.map(({ projectId }) => projectId)),
       orderBy: ({ updatedAt }, { desc }) => desc(updatedAt),
       with: {
+        users: {
+          where: ({ role }, { eq }) => eq(role, 'owner'),
+          limit: 1,
+          with: {
+            user: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+        },
         imports: {
           where: ({ status }, { inArray }) => inArray(status, ['OPEN', 'IN_PROGRESS']),
+          limit: 1,
         },
       },
     })
