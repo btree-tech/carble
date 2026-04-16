@@ -29,7 +29,7 @@ const links = computed(() => [
 </script>
 
 <template>
-  <div>
+  <div class="!col-start-1 col-span-3 max-w-screen-xl px-4">
     <HeaderMenu>
       <div class="flex items-center gap-x-4">
         <div class="grow truncate">
