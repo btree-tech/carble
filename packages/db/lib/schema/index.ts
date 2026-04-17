@@ -158,17 +158,18 @@ export const imagesRelations = relations(images, ({ one }) => ({
 }))
 
 export const imports = sqliteTable('imports', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  id: integer('id').notNull().primaryKey({ autoIncrement: true }),
   projectId: integer('projectId').notNull().references(() => projects.id, { onUpdate: 'cascade', onDelete: 'cascade' }),
   filename: text('filename').notNull(),
   originalFilename: text('originalFilename').notNull(),
   status: text('status', { enum: ['OPEN', 'IN_PROGRESS', 'DONE', 'ABORT', 'FORMAT_ERROR', 'SYSTEM_ERROR'] }).notNull(),
   message: text('message'),
   notifiedAt: integer('notifiedAt', { mode: 'timestamp' }),
+  options: text('options', { mode: 'json' }).$type<{ update?: boolean }>().notNull().default({}),
   ...timestamps,
-}, ({ status }) => ({
-  statusIndex: index('status_index').on(status),
-}))
+}, ({ status }) => [
+  index('status_index').on(status),
+])
 
 export const importsRelations = relations(imports, ({ one }) => ({
   project: one(projects, {

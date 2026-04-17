@@ -193,7 +193,7 @@ export default defineTask({
       const insertImageValues: typeof images.$inferInsert[] = []
       const imagePaths: { from: string, to: string }[] = []
       importData.forEach((raw, i) => {
-        const cardId = raw[idIndex] ? Number(raw[idIndex]) : ++maxCardId
+        const cardId = (target.options.update && raw[idIndex]) ? Number(raw[idIndex]) : ++maxCardId
 
         insertCardValues.push({
           id: cardId,

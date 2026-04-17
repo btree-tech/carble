@@ -3,7 +3,7 @@ const emit = defineEmits<{
   upload: []
 }>()
 
-const { files, open, reset, onChange } = useFileDialog({
+const { files, open } = useFileDialog({
   accept: [
     'application/zip',
     'text/csv',
@@ -11,6 +11,8 @@ const { files, open, reset, onChange } = useFileDialog({
   ].join(','),
   multiple: false,
 })
+
+const update = ref(false)
 
 const {
   execute,
@@ -32,6 +34,7 @@ const {
 
   const formData = new FormData()
   formData.append('file', file)
+  formData.append('update', `${update.value}`)
 
   await $fetch(`/api/projects/${projectId}/imports`, {
     method: 'post',
@@ -45,30 +48,60 @@ const {
   immediate: false,
 })
 
-onChange(async (files) => {
-  if (files?.length) {
-    await execute()
-    reset()
-  }
-})
+const updateModalIsOpen = ref(false)
 </script>
 
 <template>
   <div>
-    <div>
-      <p>xlsx,csv,zipファイルのいずれか（600MBまで）を選択してください。</p>
-      <ul>
-        <li><var>ID</var>列に入力された数値と同IDのカードが存在する場合、そのカードの内容を上書きします</li>
-        <li>zipファイルを選択し、かつ<var>画像ファイル</var>列が存在する場合、列で指定された画像ファイルを取り込みます</li>
-      </ul>
+    <div class="not-prose flex flex-col items-start gap-6">
+      <UFormGroup>
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+          <UButton
+            label="ファイルを選択"
+            color="gray"
+            @click="open"
+          />
+          <span>
+            {{ files?.item(0)?.name }}
+          </span>
+        </label>
+
+        <template #help>
+          <div>xlsx,csv,zipファイルのいずれか（600MBまで）を選択してください</div>
+          <div>zipファイルを選択し、かつ<var>画像ファイル</var>列が存在する場合、列で指定された画像ファイルを取り込みます</div>
+        </template>
+      </UFormGroup>
+      <UFormGroup>
+        <UCheckbox
+          v-model="update"
+          label="同じIDのカードを上書きする"
+          @change="updateModalIsOpen = true"
+        />
+      </UFormGroup>
+      <UButton
+        label="インポート"
+        icon="i-material-symbols-light-upload"
+        :disabled="!files?.length"
+        :loading="status === 'pending'"
+        @click="execute"
+      />
     </div>
-    <UButton
-      label="ファイルを選択"
-      icon="i-material-symbols-light-upload"
-      size="xl"
-      :loading="status === 'pending'"
-      class="mx-auto"
-      @click="open"
-    />
+
+    <UModal
+      v-if="update"
+      v-model="updateModalIsOpen"
+    >
+      <UCard :ui="{ footer: { base: 'text-right' } }">
+        ID列に入力された数値と同IDのカードが存在する場合、そのカードの内容を上書きします。<br>
+        これからデータの更新を行います。現状のプロジェクトの状態を残しておきたい場合はバックアップを残しておくこと（プロジェクトデータの「エクスポート」）をお勧めします。
+
+        <template #footer>
+          <UButton
+            label="OK"
+            class="mx-auto"
+          />
+        </template>
+      </UCard>
+    </UModal>
   </div>
 </template>
