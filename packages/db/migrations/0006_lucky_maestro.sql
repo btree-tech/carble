@@ -1,0 +1,1 @@
+ALTER TABLE `imports` ADD `options` text DEFAULT '{}' NOT NULL;
