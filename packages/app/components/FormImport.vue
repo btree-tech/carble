@@ -99,6 +99,7 @@ const updateModalIsOpen = ref(false)
           <UButton
             label="OK"
             class="mx-auto"
+            @click="updateModalIsOpen = false"
           />
         </template>
       </UCard>
