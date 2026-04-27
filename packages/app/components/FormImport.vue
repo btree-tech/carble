@@ -71,7 +71,7 @@ const updateModalIsOpen = ref(false)
           <div>zipファイルを選択し、かつ<var>画像ファイル</var>列が存在する場合、列で指定された画像ファイルを取り込みます</div>
         </template>
       </UFormGroup>
-      <UFormGroup>
+      <UFormGroup v-if="$route.params.projectId">
         <UCheckbox
           v-model="update"
           label="同じIDのカードを上書きする"
