@@ -79,9 +79,15 @@ watch(
         <TableViewFilter />
         <div class="grow" />
         <StatusIcon :status="status" />
-        <TableViewMenu />
+        <UButton
+          icon="i-material-symbols-light-settings"
+          :to="`/projects/${project?.id}/settings`"
+          variant="outline"
+        >
+          <span class="hidden md:inline">プロジェクト設定</span>
+        </UButton>
       </div>
-      <TableViewAlertImported />
+      <TableViewAlertImported v-if="project.users[0].role === 'owner'" />
     </HeaderMenu>
     <div class="relative col-span-3 overflow-auto p-4 landscape:px-8">
       <ButtonGroupCards

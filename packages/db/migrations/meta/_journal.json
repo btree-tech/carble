@@ -36,6 +36,20 @@
       "when": 1767939759047,
       "tag": "0004_worthless_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1770334760806,
+      "tag": "0005_yellow_sabra",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1776127061821,
+      "tag": "0006_lucky_maestro",
+      "breakpoints": true
     }
   ]
 }

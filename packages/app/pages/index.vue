@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import type { DropdownItem } from '#ui/types'
+import type { DropdownItem, TableRow } from '#ui/types'
 import logoImage from 'assets/logo.svg'
 
 const {
   data: projects,
-  refresh,
 } = await useFetchProjects()
+
+const {
+  data: invitedProjects,
+} = await useFetchProjectsInvited()
 
 const session = authClient.useSession()
 
@@ -32,42 +35,27 @@ const sessionMenu = computed(() => [
 const columns = [
   {
     key: 'view',
-    class: 'w-12 md:w-28'
   },
   {
     key: 'name',
     label: 'プロジェクト名',
-    class: 'w-3/5'
+  },
+  {
+    key: 'owner',
+    label: 'オーナー',
   },
   {
     key: 'updatedAt',
     label: '最終更新日時',
     class: 'hidden md:table-cell'
   },
-  {
-    key: 'actions',
-    class: 'w-32'
-  }
 ]
-
-const isDeleting = ref(new Map<number, boolean>())
-const onClickDeleteButton = async (id: number) => {
-  if (!window.confirm('削除してよろしいですか？')) return
-
-  isDeleting.value.set(id, true)
-  await $fetch(`/api/projects/${id}`, {
-    method: 'delete',
-  })
-  await refresh()
-  isDeleting.value.set(id, false)
-}
 
 const projectsInTable = computed(() => {
   return (projects.value || []).map((p) => ({
     ...p,
     updatedAt: { value: p.updatedAt, class: 'hidden md:table-cell' },
-    actions: { class: 'text-right' },
-  }))
+  })) satisfies TableRow[]
 })
 </script>
 
@@ -82,6 +70,13 @@ const projectsInTable = computed(() => {
         />
       </UDropdown>
     </div>
+    <div class="flex flex-col gap-y-4">
+      <ProjectIndexAlertInvited
+        v-for="project in invitedProjects"
+        :key="project.id"
+        :project="project"
+      />
+    </div>
     <div>
       <div class="flex items-center justify-end">
         <ButtonProjectAdd />
@@ -90,7 +85,10 @@ const projectsInTable = computed(() => {
         v-if="projectsInTable"
         :columns="columns"
         :rows="projectsInTable"
-        :ui="{ base: 'w-full', td: { base: '' } }"
+        :ui="{
+          base: 'table-auto w-full',
+          td: { base: '[&:nth-child(2)]:whitespace-normal' }
+        }"
       >
         <template #view-data="{ row }">
           <UButton
@@ -106,22 +104,15 @@ const projectsInTable = computed(() => {
             {{ row.name }}
           </span>
         </template>
+        <template #owner-data="{ row }">
+          {{ row.users[0].user.name }}
+        </template>
         <template #updatedAt-data="{ row }">
           <NuxtTime
             :datetime="row.updatedAt.value"
             date-style="medium"
             time-style="medium"
           />
-        </template>
-        <template #actions-data="{ row }">
-          <UButton
-            color="red"
-            icon="i-material-symbols-light-delete-forever"
-            :loading="isDeleting.get(row.id)"
-            @click="onClickDeleteButton(row.id)"
-          >
-            <span class="hidden md:inline">削除</span>
-          </UButton>
         </template>
       </UTable>
     </div>
