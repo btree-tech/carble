@@ -1,7 +1,7 @@
 {
 	"name": "carble",
 	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
-	"postStartCommand": "pnpm install",
+	"postStartCommand": "pnpm install --frozen-lockfile",
 	"mounts": [
 		{
 			"type": "volume",
