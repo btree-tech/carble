@@ -9,7 +9,7 @@ const { projectId } = useRoute().params
 
 const {
   data: projects,
-} = useFetchProjects()
+} = useProjectsData()
 
 const {
   execute,
