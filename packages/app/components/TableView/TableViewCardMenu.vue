@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const {
   data: projects,
-} = useFetchProjects()
+} = useProjectsData()
 
 const {
   execute: add,

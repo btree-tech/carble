@@ -252,17 +252,22 @@ export default defineTask({
 
       // 「画像ファイル列」が存在する場合のみ画像データを置き換え
       if (hasImageField) {
-        const deleteImages = await db.delete(images)
-          .where(and(
-            eq(images.projectId, project.id),
-            inArray(images.cardId, insertCardValues.map((card) => card.id as number)),
-          ))
-          .returning()
+        const chunked = Map.groupBy(insertCardValues.map(({ id }) => id), (_, i) => Math.floor(i / 100)).values()
+        const deleteImages = [] as typeof images.$inferSelect[]
+        for (const chunk of chunked) {
+          deleteImages.push(
+            ...(await db.delete(images)
+              .where(and(
+                eq(images.projectId, project.id),
+                inArray(images.cardId, chunk),
+              ))
+              .returning())
+          )
+        }
 
         if (insertImageValues.length) {
           await db.insert(images)
             .values(insertImageValues)
-            .returning()
         }
 
         await Promise.all(

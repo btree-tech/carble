@@ -11,8 +11,8 @@ FROM base AS build
 COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm build
-RUN pnpm --filter @carble/db deploy ./db
-RUN pnpm --filter @carble/cli deploy ./cli
+RUN pnpm --filter @carble/db deploy ./db --legacy
+RUN pnpm --filter @carble/cli deploy ./cli --legacy
 
 FROM base AS app
 ENV NODE_ENV="production"

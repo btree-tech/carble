@@ -7,6 +7,8 @@ const {
   data: cards,
 } = await useFetchCards()
 
+await useFetchProjects()
+
 const {
   execute: add,
   status: addStatus,
