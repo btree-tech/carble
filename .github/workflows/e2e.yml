@@ -56,6 +56,27 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # API の仕様（docs/product-spec/api/）が、各ハンドラーの defineRouteMeta から書き出したものとずれていないか（pnpm openapi --check）
+  openapi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm の版は package.json の packageManager に従う
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: 依存を入れる
+        run: pnpm install --frozen-lockfile
+
+      - name: API の仕様のずれを確かめる
+        run: pnpm openapi --check
+
   # カバレッジ。上の e2e と並べて流す。app はソースマップ付きの別のイメージ（docker-compose.e2e.coverage.yml）なので、
   # 本番と同じイメージで確かめる e2e とは分ける。要約は実行のページの Summary に、レポートは artifact の e2e-coverage に出す
   coverage:

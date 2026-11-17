@@ -8,6 +8,7 @@
     "build": "pnpm --filter @carble/app build",
     "cli": "pnpm --filter @carble/cli exec jiti",
     "test:e2e": "bash tests/e2e/scripts/run.sh",
+    "openapi": "node packages/app/scripts/openapi.mjs",
     "auth:generate": "pnpm dlx @better-auth/cli@latest generate --output ./packages/db/lib/schema/auth.ts"
   },
   "devDependencies": {

@@ -30,6 +30,7 @@
 | `pnpm --filter @carble/app lint` | ESLint（`lint:fix` で直せるものを直す） |
 | `pnpm --filter @carble/db generate` | テーブル定義の変更からマイグレーションを作る |
 | `pnpm --filter @carble/db migrate` | マイグレーションを適用する |
+| `pnpm openapi` | API の仕様（`docs/product-spec/api/`）を、各ハンドラーの `defineRouteMeta` から書き出す（ビルドする）。API を足した・変えたときに流してコミットする。`--check` でずれだけを確かめる（CI） |
 | `pnpm auth:generate` | Better Auth のテーブル定義（`packages/db/lib/schema/auth.ts`）を作り直す。Better Auth の版を上げたときやプラグインを変えたとき |
 | `pnpm cli basicAuthUser.ts <generate\|clean>` | 管理用のコマンド（[CLI](#cli)） |
 

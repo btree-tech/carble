@@ -75,6 +75,7 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 | 場所 | 内容 |
 |---|---|
 | `specs/pages/*.spec.ts`、`specs/features/*.spec.ts` | テスト。仕様書（`docs/product-spec/pages`、`features`）1 本につき 1 本 |
+| `specs/api/*.api.spec.ts` | API の仕様（`docs/product-spec/api/`。各 API の処理・出力・エラー）のテスト。仕様書 1 本につき 1 本 |
 | `*.mobile.spec.ts` | スマホ幅（Pixel 7）で流すテスト |
 | `*.api.spec.ts` | API E2E（テスト設計の層 `API E2E`）。ブラウザを使わず、fixture の `requestAs`（Playwright の `APIRequestContext`）で製品の API・ファイルの URL を直接呼び、状態コードと要求の後のデータを確かめる |
 | `*.import.spec.ts` | インポートを待つテスト。毎分の定期タスクを待つので、別のプロジェクトにして順に流す |
@@ -82,6 +83,7 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 | `support/db.ts` | ログインの仕込み（DB にユーザーとセッションを作り、Better Auth と同じ方式で署名した Cookie を返す） |
 | `support/api.ts` | 製品の API を呼ぶ（前提データの作成） |
 | `support/navigation.ts` | 画面を開き、ハイドレーションを待つ |
+| `support/apiSpec.ts` | API の仕様のテストの道具（状態コードの確認、最終更新日時の更新の確認、取り込み中のインポートがある間の確認） |
 | `support/spec.ts` | 既知の問題の注記（`knownIssue()`） |
 | `support/imports.ts` | インポートの取り込みを待つ時間の上限 |
 | `fixtures/index.ts` | テスト専用のユーザー・ログイン済みの画面・API を呼ぶ文脈（`apiAs`・`requestAs`）・オーナーとプロジェクト |

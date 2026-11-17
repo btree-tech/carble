@@ -7,6 +7,33 @@ import * as XLSX from 'xlsx'
 const IdFieldName = 'ID' as const
 const ImageFieldName = '画像ファイル' as const
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['projects'],
+    summary: 'エクスポート',
+    // 入力: [場所, 名前, 型, 必須, 内容]
+    'x-input': [
+      ['パス', 'projectId', '整数', '必須', 'プロジェクトの ID'],
+    ],
+    // 処理: [条件, 処理]
+    'x-process': [
+      ['（常に）', '項目とカードをエクセルのファイルにし、画像のファイルとともに zip にする（中身はインポート・エクスポートの仕様）'],
+    ],
+    // 出力: [状態, 条件, 本文]
+    'x-output': [
+      ['200', '（常に）', 'zip のファイル'],
+    ],
+    // エラー: [状態, 条件]（ログイン・メンバー・ロールによるものは docs/product-spec/features/roles.md）
+    'x-errors': [
+      ['409', 'プロジェクトに取り込み待ち・取り込み中のインポートがある'],
+    ],
+    // 実装との乖離
+    'x-implementation-gap': [
+      ['エクスポートは、サーバーがエラー（500）を返して失敗する（[ISSUES.md](../../ISSUES.md#エクスポートが失敗する)）'],
+    ],
+  },
+})
+
 export default defineEventHandler(async () => {
   const project = await findProject({
     fields: {

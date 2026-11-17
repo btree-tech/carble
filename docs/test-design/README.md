@@ -137,6 +137,7 @@ Carble で足した決まり（参考にした別のプロジェクトは仕様�
 - セルは仕様のセルを写す。太字・リンク・コードの記法は外してよい
 - 仕様の表の 1 行を 1 行にする。行を分けたりまとめたりしない
 - 検査は、仕様の表のどの行にもテスト設計の行があることと、テスト設計の表の行が仕様の表のどれかの行と一致することを照らす。行は、同じ `###` の見出しの下の表の行と照らす
+- API の仕様（`api/`）は、API ごとに「入力」「処理」「出力」「エラー」の表を持つ。「処理」「出力」「エラー」を写し、見出し（`###`）ごとに種別を 1 つ決めて、3 つの表を通して番号を振る。「入力」の表（列が 場所・名前・型・必須・内容）は形の定義で振る舞いを定めないので、写さない（検査も照らさない）。入力の誤りは「エラー」の表の行で確かめる
 
 ### 境界値
 
@@ -178,6 +179,7 @@ Carble で足した決まり（参考にした別のプロジェクトは仕様�
 | `API E2E` | 画面を通さない要求へのサーバーの応答（状態コード・要求の後のデータ）。権限の確認など、画面では観測できないもの | ブラウザを使わず、製品の API・ファイルの URL を直接呼ぶ（`*.api.spec.ts`） |
 
 - 画面で確かめられるものは `ブラウザ E2E` にする。`API E2E` は、画面を通さない要求でしか起きない振る舞いだけに使う
+- API の仕様（`api/`。各 API への応答を定める）のルールは、`API E2E` にする（`tests/e2e/specs/api/`）
 
 ## 対象外・備考・仕様の不足
 
@@ -246,6 +248,7 @@ product-spec のディレクトリごとに決める。`info/` は参考情報�
 |---|---|
 | `pages/` | `PG` |
 | `features/` | `FT` |
+| `api/` | `AP` |
 
 領域は ID を振ったときのディレクトリで決まり、あとで仕様のファイルを別のディレクトリへ移しても変えない。
 
@@ -331,6 +334,13 @@ product-spec のファイルと 1 対 1 で、同じパスに置く（`docs/prod
 
 | 仕様 | 領域 | 接頭辞 | 備考 |
 |---|---|---|---|
+| [api/cards.md](/docs/product-spec/api/cards.md) | `AP` | `CARD` |  |
+| [api/fields.md](/docs/product-spec/api/fields.md) | `AP` | `FIELD` |  |
+| [api/images.md](/docs/product-spec/api/images.md) | `AP` | `IMAGE` |  |
+| [api/imports.md](/docs/product-spec/api/imports.md) | `AP` | `IMPORT` |  |
+| [api/members.md](/docs/product-spec/api/members.md) | `AP` | `MEMBER` |  |
+| [api/projects.md](/docs/product-spec/api/projects.md) | `AP` | `PROJ` |  |
+| [api/system.md](/docs/product-spec/api/system.md) | `AP` | `SYS` |  |
 | [features/card-duplicate.md](/docs/product-spec/features/card-duplicate.md) | `FT` | `DUP` |  |
 | [features/card-selection.md](/docs/product-spec/features/card-selection.md) | `FT` | `SELECT` |  |
 | [features/common-layout.md](/docs/product-spec/features/common-layout.md) | `FT` | `LAYOUT` |  |

@@ -11,6 +11,7 @@ const PREFIX_PATTERN = /^[A-Z][A-Z0-9]{1,8}$/
 export const AREA_BY_DIR = {
   pages: 'PG',
   features: 'FT',
+  api: 'AP',
 }
 export const LAYERS = ['ブラウザ E2E', 'API E2E']
 const STORY_TYPE = 'US'
@@ -765,6 +766,12 @@ function tableKey(table, header, cells) {
   return JSON.stringify([normalizeSentence(heading || ''), header.map(normalizeSentence), cells.map(normalizeSentence)])
 }
 
+/**
+ * API の仕様（docs/product-spec/api/）の「入力」の表の列。形の定義で振る舞いを定めないので、ルールにしない
+ * （packages/app/scripts/openapi.mjs が書き出す。docs/test-design/README.md の「仕様の表」）
+ */
+const INPUT_TABLE_HEADER = ['場所', '名前', '型', '必須', '内容']
+
 function headerKey(header) {
   return JSON.stringify(header.map(normalizeSentence))
 }
@@ -777,6 +784,7 @@ export function listSpecTableRows(markdown) {
   const { tables } = parseMarkdown(markdown)
   return tables
     .filter((table) => table.h2 in SECTION_HEADING_BY_SPEC)
+    .filter((table) => headerKey(table.header) !== headerKey(INPUT_TABLE_HEADER))
     .flatMap((table) => table.rows.map((cells, index) => ({
       // 見出し行と区切り行の後ろから数える
       line: table.line + 2 + index,

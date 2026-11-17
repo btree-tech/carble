@@ -8,6 +8,7 @@ Carble（カード型の研究データ蓄積・共有ツール）の外部仕�
 |---|---|
 | [pages/](pages/) | 画面単位の仕様 |
 | [features/](features/) | 画面をまたぐ機能・共通事項・非機能要件 |
+| [api/](api/) | 画面が裏で使う API（OpenAPI と、タグごとの仕様）。`pnpm openapi` で各ハンドラーの `defineRouteMeta` から生成する |
 | [info/](info/) | 理解の助けとなる参考情報（用語・利用フロー・データモデルなど） |
 
 ## 記載ルール
@@ -51,6 +52,21 @@ Carble（カード型の研究データ蓄積・共有ツール）の外部仕�
 | インポート・エクスポート | [import-export.md](features/import-export.md) |
 | スキャン（QR コード） | [scan.md](features/scan.md) |
 | 非機能要件 | [non-functional.md](features/non-functional.md) |
+
+### api（API）
+
+`pnpm openapi` で生成する。直すときは、各ハンドラー（`packages/app/server/`）の `defineRouteMeta` を直して生成し直す。
+
+| 内容 | 仕様書 |
+|---|---|
+| OpenAPI（全 API） | [openapi.json](api/openapi.json) |
+| プロジェクト | [projects.md](api/projects.md) |
+| カード | [cards.md](api/cards.md) |
+| 項目 | [fields.md](api/fields.md) |
+| 画像 | [images.md](api/images.md) |
+| インポート | [imports.md](api/imports.md) |
+| メンバー | [members.md](api/members.md) |
+| その他（稼働の確認・印刷のレイアウト・認証） | [system.md](api/system.md) |
 
 ### info（参考情報）
 

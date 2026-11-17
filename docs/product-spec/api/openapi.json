@@ -1,0 +1,843 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Carble API"
+  },
+  "servers": [
+    {
+      "url": "http://localhost",
+      "description": "Local Development Server",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/api/auth/{all}": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "parameters": [
+          {
+            "name": "all",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "認証",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | all | 文字列 | 必須 | 認証のライブラリ（Better Auth）の経路 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 認証のライブラリが、ログイン・ログアウト・ユーザーの登録と削除を処理する（ログイン・ユーザー登録・設定（ユーザー）の仕様） |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| （ライブラリが決める） | （常に） | （ライブラリが決める） |\n\nエラー\n\n無し"
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "稼働の確認",
+        "description": "入力\n\n無し\n\n処理\n\n無し\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | ok |\n\nエラー\n\n無し"
+      }
+    },
+    "/api/print_layouts": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "印刷のレイアウトの一覧",
+        "description": "入力\n\n無し\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | カード印刷ビューのレイアウトの定義をすべて取得する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | レイアウトの定義の配列 |\n\nエラー\n\n無し"
+      }
+    },
+    "/api/print_layouts/{layoutId}": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "parameters": [
+          {
+            "name": "layoutId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "印刷のレイアウトの取得",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | layoutId | 整数 | 必須 | レイアウトの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | layoutId のレイアウトの定義を取得する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | レイアウトの定義 |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | layoutId のレイアウトが無い |"
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "プロジェクトの一覧",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| クエリ | status | invited | 任意 | 自分を招待しているプロジェクトを返す |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| status が無い | 自分がメンバー（招待中を除く）のプロジェクトを取得する |\n| status が invited | 自分を招待しているプロジェクトを取得する |\n| （常に） | 最終更新日時の新しい順に並べる |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | プロジェクトの配列。各プロジェクトに、オーナーの名前（users）と、取り込み待ち・取り込み中のインポート（imports。あれば 1 件）を付ける |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | status が invited 以外 |"
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "プロジェクトの作成",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| 本文（JSON） | name | 文字列 | 任意 | プロジェクトの名前 |\n| 本文（JSON） | fields | 真偽値 | 任意 | true なら初期の項目を作る |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトを作り、自分をオーナーにする |\n| name がある | 名前を name にする |\n| name が無い | 名前を「無題のプロジェクト」にする |\n| fields が true | 項目「みだし」「メモ」をこの順に作る |\n| fields が無い | 項目を作らない |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 作ったプロジェクト |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |"
+      }
+    },
+    "/api/projects/{projectId}": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "プロジェクトの取得",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトを取得する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | プロジェクト。項目（fields。並び順）・カードの ID の一覧（cards）・自分のロール（users）を付ける |\n\nエラー\n\n無し"
+      },
+      "put": {
+        "tags": [
+          "projects"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "プロジェクトの名前の変更",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | name | 文字列 | 必須 | 新しい名前 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトの名前を name にする |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 変えたプロジェクト |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |"
+      },
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "プロジェクトの削除",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトを、カード・項目・値・画像とともに削除する |\n| （常に） | 画像のファイルと縮小した画像のファイルを消す |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n無し"
+      }
+    },
+    "/api/projects/{projectId}/cards": {
+      "get": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの一覧",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| クエリ | q | 文字列 | 任意 | 値で絞り込む文字列 |\n| クエリ | sort | id・order・項目の ID | 任意 | 並べる基準（既定は id） |\n| クエリ | direction | asc・desc | 任意 | 並べる向き（既定は asc） |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトのカードを取得する |\n| q がある | 値に q を含むカードだけにする |\n| sort が無いか id | ID の順に並べる |\n| sort が order | 並び順の順に並べ、並び順が同じなら ID の順にする |\n| sort が項目の ID | その項目の値の順に並べ、値が同じなら ID の順にする |\n| direction が無いか asc | 昇順に並べる |\n| direction が desc | 降順に並べる |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | カードの配列（items）と、プロジェクトのカードの総数（total。q で絞り込む前の数）。各カードに、値（contents）・画像（images。追加した順）・複製元のカード（original）・複製先のカード（duplicates。複製先のプロジェクトの名前つき）を付ける |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | sort・direction が入力の形に合わない |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "post": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの追加",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | nextToId | 整数 | 任意 | このカードのすぐ下に追加する |\n| 本文（multipart） | image | 画像のファイル | 任意 | 追加するカードに付ける画像 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | カードの ID を、プロジェクトの中でいちばん大きい ID の次にする |\n| nextToId が無い | 並び順の末尾に追加する |\n| nextToId がある | そのカードのすぐ下に追加し、プロジェクトのカードの並び順を 1 から振り直す |\n| image がある | 画像を保存し、カードに付ける |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | nextToId が無い | 追加したカード。画像（images）を付ける |\n| 204 | nextToId がある | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 400 | nextToId のカードがプロジェクトに無い |\n| 400 | image が画像のファイルでない |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "put": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの並び替え",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | （配列） | id・order の組の配列 | 必須 | プロジェクトの全カードの ID と並び順 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 各カードの並び順を送った値にする |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 400 | 送ったカードの数がプロジェクトのカードの数と違う |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "delete": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの一括削除",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | ids | 整数の配列 | 必須 | 削除するカードの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | カードを、値・画像とともに削除する |\n| （常に） | 画像のファイルと縮小した画像のファイルを消す |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 400 | ids にプロジェクトに無いカードの ID がある |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/cards/duplicate": {
+      "post": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの複製",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | cardId | 整数の配列 | 必須 | 複製するカードの ID（1 つ以上） |\n| 本文（JSON） | toProjectId | 整数 | 任意 | 複製先のプロジェクトの ID |\n| 本文（JSON） | nextToId | 整数 | 任意 | このカード（複製するカードのどれか）のすぐ下に複製する |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | カードを、値・画像（ファイルも）とともに複製する |\n| （常に） | 複製したカードに、複製元のカードを覚えさせる |\n| （常に） | 複製先に無い名前の項目を、複製先の項目の末尾に作る |\n| toProjectId がある | そのプロジェクトの末尾に、元の並び順で複製する |\n| toProjectId が無い | 「無題のプロジェクト」を作り、そこに複製する |\n| nextToId がある | そのカードのすぐ下に複製し、複製先のカードの並び順を 1 から振り直す |\n| （常に） | 複製先のプロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 複製したカードの配列 |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 400 | toProjectId のプロジェクトが無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/cards/{cardId}": {
+      "get": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの取得",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | cardId | 整数 | 必須 | カードの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | カードを取得する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | カード。値（contents）と画像（images。追加した順）を付ける |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | cardId のカードがプロジェクトに無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "delete": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "カードの削除",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | cardId | 整数 | 必須 | カードの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | カードを、値・画像とともに削除する |\n| （常に） | 画像のファイルと縮小した画像のファイルを消す |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | cardId のカードがプロジェクトに無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/cards/{cardId}/fields/{fieldId}": {
+      "put": {
+        "tags": [
+          "cards"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fieldId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "値の保存",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | cardId | 整数 | 必須 | カードの ID |\n| パス | fieldId | 整数 | 必須 | 項目の ID |\n| 本文（JSON） | body | 文字列 | 必須 | 値 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| 値がまだ無い | 値を作る |\n| 値がある | 値を書き換える |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 保存した値 |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 404 | cardId のカードがプロジェクトに無い |\n| 404 | fieldId の項目がプロジェクトに無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/cards/{cardId}/images": {
+      "post": {
+        "tags": [
+          "images"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "画像の追加",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | cardId | 整数 | 必須 | カードの ID |\n| 本文（multipart） | image | 画像のファイル | 必須 | 追加する画像 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 画像を保存し、カードに付ける |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 追加した画像 |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | image が無いか、画像のファイルでない |\n| 404 | cardId のカードがプロジェクトに無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/cards/{cardId}/images/{imageId}": {
+      "delete": {
+        "tags": [
+          "images"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "画像の削除",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | cardId | 整数 | 必須 | カードの ID |\n| パス | imageId | 整数 | 必須 | 画像の ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 画像を削除する |\n| （常に） | 画像のファイルと縮小した画像のファイルを消す |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | cardId のカードがプロジェクトに無い |\n| 404 | imageId の画像が無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/export": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "エクスポート",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 項目とカードをエクセルのファイルにし、画像のファイルとともに zip にする（中身はインポート・エクスポートの仕様） |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | zip のファイル |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/fields": {
+      "post": {
+        "tags": [
+          "fields"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "項目の追加",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | name | 文字列 | 必須 | 項目名 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 項目を項目の末尾に追加する |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 追加した項目 |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "put": {
+        "tags": [
+          "fields"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "項目の並び替え",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | （配列） | id・order の組の配列 | 必須 | プロジェクトの全項目の ID と並び順 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 各項目の並び順を送った値にする |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 400 | 送った項目の数がプロジェクトの項目の数と違う |\n| 400 | 送った並び順が重なっている |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/fields/{fieldId}": {
+      "put": {
+        "tags": [
+          "fields"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fieldId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "項目の変更",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | fieldId | 整数 | 必須 | 項目の ID |\n| 本文（JSON） | name | 文字列 | name・isVisible のどちらか | 新しい項目名 |\n| 本文（JSON） | isVisible | 真偽値 | name・isVisible のどちらか | 項目を表示するか |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| name がある | 項目名を name にする |\n| isVisible がある | 項目の表示・非表示を isVisible にする |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 404 | fieldId の項目がプロジェクトに無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "delete": {
+        "tags": [
+          "fields"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fieldId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "項目の削除",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | fieldId | 整数 | 必須 | 項目の ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 項目を、各カードのその項目の値とともに削除する |\n| （常に） | プロジェクトの最終更新日時を更新する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | fieldId の項目がプロジェクトに無い |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/imports": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "インポートの一覧",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| クエリ | status | OPEN・IN_PROGRESS・DONE・ABORT・FORMAT_ERROR・SYSTEM_ERROR から 2 つ以上 | 任意 | そのどれかの状態のインポートに絞り込む |\n| クエリ | unnotified | 真偽値 | 任意 | true なら結果を知らせていないインポートに絞り込む |\n| クエリ | page | 整数 | 任意 | ページ（既定は 1） |\n| クエリ | pageCount | 整数 | 任意 | 1 ページの件数（既定は 10） |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトのインポートを取得する |\n| status がある | そのどれかの状態のインポートだけにする |\n| unnotified が true | 結果を知らせていないインポートだけにする |\n| （常に） | 登録の新しい順に並べ、page のページの pageCount 件を取る |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | インポートの配列（items）、絞り込んだインポートの総数（total）、1 ページの件数（pageCount） |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | クエリが入力の形に合わない |"
+      },
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "インポートの登録",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（multipart） | file | zip・CSV・エクセルのファイル | 必須 | インポートするファイル |\n| 本文（multipart） | update | true・false | 任意 | true なら同じ ID のカードを上書きする |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | ファイルを保存し、インポートを取り込み待ち（OPEN）として登録する（取り込みはインポート・エクスポートの仕様） |\n| update が true | 同じ ID のカードを上書きするインポートにする |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 登録したインポート |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 422 | file が無いか、zip・CSV・エクセルのファイルでない |"
+      }
+    },
+    "/api/projects/{projectId}/imports/{importId}": {
+      "put": {
+        "tags": [
+          "imports"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "importId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "インポートの結果を知らせたことの記録",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | importId | 整数 | 必須 | インポートの ID |\n| 本文（JSON） | notified | true | 必須 | 結果を知らせたこと |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | インポートに、結果を知らせた日時を記録する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 記録したインポート |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | importId のインポートがプロジェクトに無い |\n| 400 | 本文が入力の形に合わない |"
+      }
+    },
+    "/api/projects/{projectId}/users": {
+      "get": {
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "メンバーの一覧",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | プロジェクトのメンバーを、プロジェクトに加わった順に取得する |\n| 自分がオーナー | 招待中のユーザーも含める |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | メンバーの配列。各メンバーに、ユーザーの ID（id）・ユーザーID（username）・名前（name）・ロール（role）・招待の状態（status）を付ける |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "post": {
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "ユーザーの招待",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| 本文（JSON） | username | 文字列 | 必須 | 招待するユーザーのユーザーID |\n| 本文（JSON） | status | invited | 必須 | 招待すること |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | username のユーザーを、プロジェクトに招待中のユーザーとして加える |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 400 | username のユーザーがいない |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/api/projects/{projectId}/users/{userId}": {
+      "put": {
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "招待の承認",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | userId | 文字列 | 必須 | 自分のユーザーの ID |\n| 本文（JSON） | status | null | 必須 | 招待を承認すること |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 招待を承認し、プロジェクトの編集者にする |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 400 | 本文が入力の形に合わない |\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      },
+      "delete": {
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "メンバーを外す・招待の取り消し・招待の拒否",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | projectId | 整数 | 必須 | プロジェクトの ID |\n| パス | userId | 文字列 | 必須 | 外すユーザーの ID |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| 自分がオーナーで、userId が編集者 | そのユーザーをプロジェクトから外す |\n| 自分がオーナーで、userId が招待中のユーザー | 招待を取り消す |\n| userId が自分で、自分が招待中 | 招待を拒否する |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 204 | （常に） | なし |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 409 | プロジェクトに取り込み待ち・取り込み中のインポートがある |"
+      }
+    },
+    "/uploads/images/{filename}": {
+      "get": {
+        "tags": [
+          "images"
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "画像のファイル",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | filename | 文字列 | 必須 | 画像のファイル名 |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| （常に） | 画像のファイルを読む |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 画像のファイル |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | filename のファイルが無い |"
+      }
+    },
+    "/uploads/thumbs/{filename}": {
+      "get": {
+        "tags": [
+          "images"
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "縮小した画像のファイル",
+        "description": "入力\n\n| 場所 | 名前 | 型 | 必須 | 内容 |\n|---|---|---|---|---|\n| パス | filename | 文字列 | 必須 | 画像のファイル名に .webp を付けたもの |\n\n処理\n\n| 条件 | 処理 |\n|---|---|\n| 縮小した画像がまだ無い | 長辺 640px 以内に縮小した画像（WebP）を作る。元の画像より大きくはしない |\n| 縮小した画像がある | 作った縮小した画像を使う |\n\n出力\n\n| 状態 | 条件 | 本文 |\n|---|---|---|\n| 200 | （常に） | 縮小した画像のファイル（WebP） |\n\nエラー\n\n| 状態 | 条件 |\n|---|---|\n| 404 | 元の画像のファイルが無い |"
+      }
+    }
+  }
+}
