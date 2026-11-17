@@ -34,13 +34,18 @@ export default defineConfig({
     {
       name: 'desktop',
       testMatch: /specs\/.*\.spec\.ts/,
-      testIgnore: /\.(mobile|import)\.spec\.ts$/,
+      testIgnore: /\.(mobile|import|api)\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'], ...browserLocale },
     },
     {
       name: 'mobile',
       testMatch: /specs\/.*\.mobile\.spec\.ts/,
       use: { ...devices['Pixel 7'], ...browserLocale },
+    },
+    {
+      // API E2E（*.api.spec.ts）。ブラウザを使わず、製品の API・ファイルの URL を直接呼んで応答を確かめる
+      name: 'api',
+      testMatch: /specs\/.*\.api\.spec\.ts/,
     },
     {
       // インポートは全プロジェクトを通じて 1 件ずつ、毎分の定期タスクで取り込まれる。

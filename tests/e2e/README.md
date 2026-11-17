@@ -2,6 +2,8 @@
 
 `docs/product-spec` の外部仕様のうち、画面に現れるもの（表示・操作・遷移）を、本番と同じイメージで動かしたアプリで確かめる Playwright のテスト。
 
+画面で観測できないサーバーの応答（権限の確認など）は、ブラウザを使わずに API を直接呼ぶテスト（`*.api.spec.ts`。テスト設計の層 `API E2E`）で確かめる。
+
 ## 動かし方
 
 Docker だけあれば動く。手元の Node は使わない。
@@ -74,6 +76,7 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 |---|---|
 | `specs/pages/*.spec.ts`、`specs/features/*.spec.ts` | テスト。仕様書（`docs/product-spec/pages`、`features`）1 本につき 1 本 |
 | `*.mobile.spec.ts` | スマホ幅（Pixel 7）で流すテスト |
+| `*.api.spec.ts` | API E2E（テスト設計の層 `API E2E`）。ブラウザを使わず、fixture の `requestAs`（Playwright の `APIRequestContext`）で製品の API・ファイルの URL を直接呼び、状態コードと要求の後のデータを確かめる |
 | `*.import.spec.ts` | インポートを待つテスト。毎分の定期タスクを待つので、別のプロジェクトにして順に流す |
 | `pages/` | ページオブジェクト。ロケータと操作はここに置く |
 | `support/db.ts` | ログインの仕込み（DB にユーザーとセッションを作り、Better Auth と同じ方式で署名した Cookie を返す） |
@@ -81,7 +84,7 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 | `support/navigation.ts` | 画面を開き、ハイドレーションを待つ |
 | `support/spec.ts` | 既知の問題の注記（`knownIssue()`） |
 | `support/imports.ts` | インポートの取り込みを待つ時間の上限 |
-| `fixtures/index.ts` | テスト専用のユーザー・ログイン済みの画面・オーナーとプロジェクト |
+| `fixtures/index.ts` | テスト専用のユーザー・ログイン済みの画面・API を呼ぶ文脈（`apiAs`・`requestAs`）・オーナーとプロジェクト |
 | `files/` | インポートなどで使うファイル |
 | `scripts/check-test-design.mjs` | 外部仕様・テスト設計・テストの対応を確かめる（[docs/test-design/README.md](../../docs/test-design/README.md) の「検査」） |
 

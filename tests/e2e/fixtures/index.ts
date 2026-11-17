@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { test as base, type Page } from '@playwright/test'
+import { request, test as base, type APIRequestContext, type Page } from '@playwright/test'
 import { ProductApi, type Project } from '../support/api'
 import { saveCoverage, startCoverage } from '../support/coverage'
 import { createAccount, deleteOpenImports, SESSION_COOKIE, type Account } from '../support/db'
@@ -16,6 +16,11 @@ type Fixtures = {
   pageAs: (account: Account | 'guest') => Promise<Page>
   /** ユーザーのログイン状態で製品の API を呼ぶ（前提データの作成） */
   apiAs: (account: Account) => Promise<ProductApi>
+  /**
+   * ユーザーのログイン状態（guest はログインしていない状態）の Playwright の APIRequestContext（API E2E）
+   * apiAs と違い、2xx 以外もエラーにしないので、応答の状態コードを確かめられる
+   */
+  requestAs: (account: Account | 'guest') => Promise<APIRequestContext>
   /** このテストのオーナー（ユーザーID登録済み）と、そのプロジェクト */
   owner: Account
   ownerPage: Page
@@ -72,6 +77,19 @@ export const test = base.extend<Fixtures>({
       return api
     })
     for (const api of apis) await api.dispose()
+  },
+
+  requestAs: async ({}, use) => {
+    const contexts: APIRequestContext[] = []
+    await use(async (account) => {
+      const context = await request.newContext({
+        baseURL: process.env.BASE_URL,
+        extraHTTPHeaders: account === 'guest' ? {} : { cookie: `${SESSION_COOKIE}=${account.sessionCookie}` },
+      })
+      contexts.push(context)
+      return context
+    })
+    for (const context of contexts) await context.dispose()
   },
 
   owner: async ({ newAccount }, use) => {

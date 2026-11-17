@@ -1,6 +1,6 @@
 // docs/test-design のルール ID と、テストのタグの対応を確かめる判定の部分。
 // 書き方の決まりの正は docs/test-design/README.md。ファイルの読み書きと Playwright の実行は check-test-design.mjs が行う。
-// 参考にした別のプロジェクトの検査を Carble 向けに移した（層はブラウザ E2E だけ。Red の annotation は求めない）
+// 参考にした別のプロジェクトの検査を Carble 向けに移した（層はブラウザ E2E と API E2E。Red の annotation は求めない）
 
 import path from 'node:path'
 
@@ -12,7 +12,7 @@ export const AREA_BY_DIR = {
   pages: 'PG',
   features: 'FT',
 }
-export const LAYERS = ['ブラウザ E2E']
+export const LAYERS = ['ブラウザ E2E', 'API E2E']
 const STORY_TYPE = 'US'
 const FORBIDDEN_TYPES = ['S', 'T']
 // 仕様書のユーザーストーリーの章を見分ける語（仕様書の章は「ユーザーストーリー（Why）」）
