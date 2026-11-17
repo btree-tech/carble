@@ -588,13 +588,17 @@ test.describe('カードの追加', () => {
     await expect(tv.idCells).toHaveText(['1', '3'])
 
     // 検索結果の最後のカード（ID 3）のカード入力ビューで「追加」を押す
+    // URL はすぐ変わるが、テーブルビューの「追加」も非表示で残るため、カード入力ビューが出てから見えている「追加」を押す
+    const view = new CardViewPage(ownerPage)
     await tv.cardInputLink(3).click()
     await expect(ownerPage).toHaveURL(`/projects/${project.id}/cards/3?q=ap&sort=order&direction=asc`)
-    await ownerPage.getByRole('button', { name: '追加', exact: true }).click()
+    await expect(view.idValue).toHaveText('ID3')
+    await view.addCardButton.click()
 
     // ID 4 のカードに遷移するが、表示するのは検索結果の最後のカード（ID 3、値 apricot）
     await expect(ownerPage).toHaveURL(`/projects/${project.id}/cards/4?q=ap&sort=order&direction=asc`)
-    await expect(ownerPage.getByRole('textbox').filter({ visible: true }).first()).toHaveValue('apricot')
+    await expect(view.idValue).toHaveText('ID3')
+    await expect(view.fieldInputs.first()).toHaveValue('apricot')
   })
 })
 
