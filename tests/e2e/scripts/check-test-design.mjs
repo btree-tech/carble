@@ -14,6 +14,8 @@ const E2E_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const ROOT_DIR = resolve(E2E_DIR, '../..')
 const SPEC_DIR = join(ROOT_DIR, 'docs/product-spec')
 const DESIGN_DIR = join(ROOT_DIR, 'docs/test-design')
+// VRT の正解の画像（playwright.config.ts の snapshotPathTemplate）
+const SNAPSHOT_DIR = join(E2E_DIR, 'snapshots')
 
 function listMarkdown(dir, base = dir) {
   if (!existsSync(dir)) return []
@@ -67,6 +69,7 @@ function main() {
     specSources,
     designSources: Object.fromEntries(designFiles.map((file) => [file, readFileSync(join(DESIGN_DIR, file), 'utf8')])),
     browserTests,
+    snapshots: existsSync(SNAPSHOT_DIR) ? readdirSync(SNAPSHOT_DIR).filter((file) => !file.startsWith('.')).sort() : [],
   })
   errors.push(...checkKnownIssues(browserTests, {
     issuesSource: readFileSync(join(ROOT_DIR, 'docs/ISSUES.md'), 'utf8'),
@@ -74,7 +77,8 @@ function main() {
   }))
 
   const stories = definitions.filter((definition) => definition.isStoryTable)
-  console.log(`テスト設計のファイル: ${designFiles.length} / ルール: ${definitions.length}（うちユーザーストーリー ${stories.length}）/ 対象外: ${outOfScopeIds.size} / テスト未作成: ${pendingIds.length}`)
+  const visuals = definitions.filter((definition) => definition.isVisualTable)
+  console.log(`テスト設計のファイル: ${designFiles.length} / ルール: ${definitions.length}（うちユーザーストーリー ${stories.length}・VRT ${visuals.length}）/ 対象外: ${outOfScopeIds.size} / テスト未作成: ${pendingIds.length}`)
 
   if (errors.length) {
     console.error(`\n${errors.length}件の問題:`)

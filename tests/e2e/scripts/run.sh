@@ -9,6 +9,7 @@
 # - E2E_COVERAGE=1: カバレッジを取り、tests/e2e/coverage/ にレポートを作る（docker-compose.e2e.coverage.yml を重ねる。
 #   app はソースマップ付きの別のイメージになる。最後に app を止めてサーバー側の結果を書き出させる。
 #   E2E_KEEP で残した環境を止めるときは、E2E_DOWN=1 にも E2E_COVERAGE=1 を付ける）
+# - E2E_RUNNER_AMD64=1: runner を x64 で動かす（docker-compose.e2e.amd64.yml を重ねる。VRT の正解の画像を CI と同じ環境で撮り直すとき）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -18,6 +19,9 @@ unset DOCKER_DEFAULT_PLATFORM
 COMPOSE=(docker compose -p "${E2E_PROJECT:-carble-e2e}" -f "$ROOT/docker-compose.e2e.yml")
 if [ "${E2E_COVERAGE:-0}" = "1" ]; then
   COMPOSE+=(-f "$ROOT/docker-compose.e2e.coverage.yml")
+fi
+if [ "${E2E_RUNNER_AMD64:-0}" = "1" ]; then
+  COMPOSE+=(-f "$ROOT/docker-compose.e2e.amd64.yml")
 fi
 
 if [ "${E2E_DOWN:-0}" = "1" ]; then

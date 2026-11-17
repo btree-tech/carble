@@ -4,6 +4,8 @@
 
 画面で観測できないサーバーの応答（権限の確認など）は、ブラウザを使わずに API を直接呼ぶテスト（`*.api.spec.ts`。テスト設計の層 `API E2E`）で確かめる。
 
+画面の見た目は、画面を撮って正解の画像と比べるテスト（VRT。`*.visual.spec.ts`。テスト設計の層 `VRT`）で見張る。
+
 ## 動かし方
 
 Docker だけあれば動く。手元の Node は使わない。
@@ -40,6 +42,26 @@ E2E_COVERAGE=1 pnpm test:e2e specs/features/card-duplicate.spec.ts
 - 画面のコードは、ブラウザで動いた分とサーバーで描いた分（SSR）を合わせて数える
 - ソースマップに本文が無いファイル（サーバーの API など）は、リポジトリのファイルで補う。製品のコードを変えたら `E2E_SKIP_BUILD` を付けずに流す（古いイメージだと行がずれる）
 
+### VRT
+
+```bash
+pnpm test:e2e --project=visual --project=visual-mobile                       # VRT だけを流す
+pnpm test:e2e --project=visual --project=visual-mobile --update-snapshots    # 違いの出た画像を、撮った画像で置き換える
+pnpm test:e2e specs/pages/card-view.visual.spec.ts --update-snapshots=all    # 違いが無くても撮り直す
+
+# 正解の画像は、CI と同じ x64 の runner で撮る（Apple シリコンの Mac で撮るとき）
+E2E_RUNNER_AMD64=1 pnpm test:e2e --project=visual --project=visual-mobile --update-snapshots
+```
+
+- 撮る画面は、テスト設計の `## 見た目` の表で決める（[docs/test-design/README.md](../../docs/test-design/README.md) の「見た目（VRT）」）。1 行が 1 枚で、画像は `snapshots/<ID>.png`
+- 正解の画像はリポジトリに入れる。見た目を変えたら、撮り直した画像を製品のコードと同じコミットに入れる。差分の画像（期待・実際・差分）は html レポートで見られる
+- テストは `fixtures/visual.ts` の `test` を使い、最後に `support/visual.ts` の `expectScreen(page)` で撮る。画像の名前はテストの VRT のタグの ID になる
+- 画面に写る名前・値は固定する（`VISUAL_NAMES`・見本のプロジェクトの `sample`）。実行ごとに変わるもの（日時・ユーザーID・インポートの日時）は `mask` で塗り、親の要素で切り取られるもの（カード印刷ビューの QR コード）は `blackout` で黒く塗る。ユーザーID は列の幅が変わらないよう、変わる部分を数字だけにする（`visualUsername`）
+- 文字の描かれ方は CPU の種類で少し変わる（arm64 と x64 で、文字の縁の色が 1 段違う画素が出る）。正解の画像は、CI（x64）と同じになるよう x64 の runner で撮る（`E2E_RUNNER_AMD64=1`。`docker-compose.e2e.amd64.yml` を重ねる）
+- 比べるだけなら arm64 の runner でよい。比べるときの許し幅は Playwright の既定（画素ごとの色の差 0.2、違う画素は 0）のままで、上の違いはこれに収まる（全画面で確かめた）
+- x64 の runner は Apple シリコンの Mac では模倣して動くので遅く、Chromium がときどき落ちる（「Target crashed」）。全テストは x64 で流さず、画像を撮り直すときだけ使う。落ちたテストは流し直す
+- 確認のダイアログ（ブラウザの `confirm`）・完了メッセージ（数秒で消える）・カメラ・印刷のダイアログは撮らない
+
 ### 環境（docker-compose.e2e.yml）
 
 ```
@@ -50,7 +72,7 @@ runner（Playwright）─→ app（本番と同じ Dockerfile の app ステー�
 | サービス | 役割 |
 |---|---|
 | app | 本番と同じイメージ。起動時にマイグレーションする。DB とファイルはボリューム（毎回まっさら）。環境変数 `CARBLE_E2E=1` で、DB の接続だけ、ロックで失敗しないよう手を入れたもの（`packages/db/lib/e2e.ts`）に切り替える（本番の接続のままだと、並列で流すとほとんど落ちる。`docs/ISSUES.md`「同時に保存すると失敗し、DB がロックされたままになることがある」） |
-| runner | テストを流す。依存は `tests/e2e/package.json` に分けてあり、このコンテナの中だけで入れる |
+| runner | テストを流す。依存は `tests/e2e/package.json` に分けてあり、このコンテナの中だけで入れる。手元の CPU の形式で動かす（VRT の正解の画像を撮るときだけ x64。上の「VRT」） |
 
 ホストにはポートを公開しない。ブラウザからは `http://carble:3000` で開く（サービス名の `app` は、Chrome が `.app` のドメインとして https に切り替えてしまうため使わない）。
 
@@ -69,7 +91,8 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 - 結果（`playwright-report/`・`test-results/`・`compose-logs/`）は、実行のページの artifact `e2e-report` に 14 日残す
 - カバレッジの要約を実行のページの Summary に表で出し、レポート（`coverage/`）を artifact `e2e-coverage` に 14 日残す
 - 別のジョブ（`openapi`）で、API の仕様（`docs/product-spec/api/`）がコードとずれていないかを確かめる（`pnpm openapi --check`）
-- ランナーは x64 なので、app は模倣せずに動く。全体の時間は、インポートのテストの待ちでほぼ決まる
+- ランナーは x64 なので、app と runner は模倣せずに動く（VRT の正解の画像と同じ形式）。全体の時間は、インポートのテストの待ちでほぼ決まる
+- VRT で画像に違いが出ると失敗にする。期待・実際・差分の画像は artifact `e2e-report` の html レポートで見る
 
 ## 構成
 
@@ -80,6 +103,8 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 | `*.mobile.spec.ts` | スマホ幅（Pixel 7）で流すテスト |
 | `*.api.spec.ts` | API E2E（テスト設計の層 `API E2E`）。ブラウザを使わず、fixture の `requestAs`（Playwright の `APIRequestContext`）で製品の API・ファイルの URL を直接呼び、状態コードと要求の後のデータを確かめる |
 | `*.import.spec.ts` | インポートを待つテスト。毎分の定期タスクを待つので、別のプロジェクトにして順に流す |
+| `*.visual.spec.ts`、`*.mobile.visual.spec.ts` | VRT（テスト設計の層 `VRT`）。PC 幅とスマホ幅（Pixel 7）で画面を撮り、`snapshots/` の正解の画像と比べる（上の「VRT」） |
+| `snapshots/` | VRT の正解の画像（`<ID>.png`） |
 | `pages/` | ページオブジェクト。ロケータと操作はここに置く |
 | `support/db.ts` | ログインの仕込み（DB にユーザーとセッションを作り、Better Auth と同じ方式で署名した Cookie を返す） |
 | `support/api.ts` | 製品の API を呼ぶ（前提データの作成） |
@@ -87,7 +112,9 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 | `support/apiSpec.ts` | API の仕様のテストの道具（状態コードの確認、最終更新日時の更新の確認、取り込み中のインポートがある間の確認） |
 | `support/spec.ts` | 既知の問題の注記（`knownIssue()`） |
 | `support/imports.ts` | インポートの取り込みを待つ時間の上限 |
+| `support/visual.ts` | VRT の撮影（`expectScreen`）と、画面に写る前提データ（見本のプロジェクトなど） |
 | `fixtures/index.ts` | テスト専用のユーザー・ログイン済みの画面・API を呼ぶ文脈（`apiAs`・`requestAs`）・オーナーとプロジェクト |
+| `fixtures/visual.ts` | VRT のテスト。名前を固定したオーナー（`visualOwner`・`visualPage`・`visualApi`）と見本のプロジェクト（`sample`） |
 | `files/` | インポートなどで使うファイル |
 | `scripts/check-test-design.mjs` | 外部仕様・テスト設計・テストの対応を確かめる（[docs/test-design/README.md](../../docs/test-design/README.md) の「検査」） |
 

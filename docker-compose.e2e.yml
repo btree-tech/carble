@@ -38,6 +38,8 @@ services:
 
   runner:
     image: carble-e2e-runner
+    # Chromium は共有メモリ（/dev/shm）を多く使う。Docker の既定（64MB）では、大きな画面を撮るときにページが落ちる
+    shm_size: 1gb
     build:
       context: tests/e2e
       dockerfile: docker/runner.Dockerfile

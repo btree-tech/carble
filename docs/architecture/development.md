@@ -36,7 +36,7 @@
 
 ## テスト
 
-自動テストは、画面の E2E テスト（[tests/e2e](../../tests/e2e/README.md)）だけ。Docker で本番と同じイメージのアプリを動かし、Playwright で確かめる。
+自動テストは、画面の E2E テスト（[tests/e2e](../../tests/e2e/README.md)）だけ。Docker で本番と同じイメージのアプリを動かし、Playwright で確かめる。画面の見た目は、画面を撮って正解の画像（`tests/e2e/snapshots/`）と比べる VRT で見張る（[tests/e2e/README.md](../../tests/e2e/README.md) の「VRT」）。
 
 ```bash
 pnpm test:e2e                            # 環境を起動し、全テストを流し、後片付けまで行う
@@ -45,6 +45,7 @@ pnpm test:e2e specs/pages/login.spec.ts  # 引数は playwright test にその�
 
 - 外部仕様（[product-spec/](../product-spec/README.md)）→ テスト設計（[test-design/](../test-design/README.md)）→ 画面の E2E テストの順に対応させる。テスト設計のルールの ID をテストのタグで付け、対応は検査（runner の中で `pnpm run check:test-design`。[tests/e2e/README.md](../../tests/e2e/README.md) の「その他のコマンド」）で確かめる
 - GitHub Actions（[.github/workflows/e2e.yml](../../.github/workflows/e2e.yml)）が、プルリクエストと `master`・`develop` への push のたびに、検査と全テストを、カバレッジを取って流す（手元では `E2E_COVERAGE=1 pnpm test:e2e`。[tests/e2e/README.md](../../tests/e2e/README.md) の「カバレッジ」）
+- 画面の見た目を変えたら、`E2E_RUNNER_AMD64=1 pnpm test:e2e --project=visual --project=visual-mobile --update-snapshots` で正解の画像を撮り直し（CI と同じ x64 で撮る）、製品のコードと同じコミットに入れる
 - 既知の問題（[ISSUES.md](../ISSUES.md)）は「【既知の問題】」のテストで今の挙動を確かめる。直したら期待値を変え、テスト設計の対象外の行を消してタグを付ける
 
 ## DB のマイグレーション

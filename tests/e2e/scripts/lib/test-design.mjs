@@ -13,7 +13,14 @@ export const AREA_BY_DIR = {
   features: 'FT',
   api: 'AP',
 }
-export const LAYERS = ['ブラウザ E2E', 'API E2E']
+export const LAYERS = ['ブラウザ E2E', 'API E2E', 'VRT']
+// VRT（見た目）。「## 見た目」の章の表だけで使う層・種別（docs/test-design/README.md の「見た目」）
+const VISUAL_LAYER = 'VRT'
+const VISUAL_TYPE = 'VRT'
+const VISUAL_HEADING = '見た目'
+const VISUAL_HEADER = ['ID', '画面の状態', '幅', '層']
+// 幅 → テストのファイルの形（playwright.config.ts の visual・visual-mobile のプロジェクト）
+const VISUAL_WIDTHS = { PC: /(?<!\.mobile)\.visual\.spec\.ts$/, スマホ: /\.mobile\.visual\.spec\.ts$/ }
 const STORY_TYPE = 'US'
 const FORBIDDEN_TYPES = ['S', 'T']
 // 仕様書のユーザーストーリーの章を見分ける語（仕様書の章は「ユーザーストーリー（Why）」）
@@ -28,7 +35,7 @@ const DESIGN_SECTION_HEADINGS = [...new Set(Object.values(SECTION_HEADING_BY_SPE
 // 仕様書に無い、テスト設計だけの章。見出しの突き合わせから外す
 const COMBINATION_HEADING = '組み合わせ'
 const LACK_HEADING = '仕様の不足'
-const RESERVED_HEADINGS = [STORY_HEADING, COMBINATION_HEADING, LACK_HEADING, ABOLISHED_HEADING]
+const RESERVED_HEADINGS = [STORY_HEADING, VISUAL_HEADING, COMBINATION_HEADING, LACK_HEADING, ABOLISHED_HEADING]
 const STORY_TAG = '@story'
 // テストを後から足すファイルの印。最初の章より前（仕様のリンクの下）に置く（docs/test-design/README.md の「テストを後から足すとき」）
 const PENDING_TESTS_LINE = 'テスト: 一部未作成'
@@ -283,7 +290,12 @@ export function parseDesign(file, markdown) {
 
   for (const table of tables) {
     const isStoryTable = table.h2 === STORY_HEADING
+    const isVisualTable = table.h2 === VISUAL_HEADING
     const header = table.header.map(stripCode)
+    if (isVisualTable && header.join('|') !== VISUAL_HEADER.join('|')) {
+      malformed.push({ text: table.header.join(' | '), problem: `「## ${VISUAL_HEADING}」の表の列は ${VISUAL_HEADER.join('・')}`, where: `${file}:${table.line}` })
+    }
+    const widthColumn = isVisualTable ? header.indexOf('幅') : -1
     const layerColumn = header.indexOf('層')
     const storyColumn = header.indexOf('ストーリー')
     const layerRow = table.rows.find((cells) => stripCode(cells[0]) === '層')
@@ -300,6 +312,7 @@ export function parseDesign(file, markdown) {
         heading: table.heading,
         h2: table.h2,
         isStoryTable,
+        isVisualTable,
         layer: layerRow ? stripCode(layerRow[column] || '') : '',
       })
     })
@@ -314,7 +327,9 @@ export function parseDesign(file, markdown) {
           heading: table.heading,
           h2: table.h2,
           isStoryTable,
+          isVisualTable,
           layer: layerColumn === -1 ? '' : stripCode(cells[layerColumn] || ''),
+          width: widthColumn === -1 ? undefined : stripCode(cells[widthColumn] || ''),
           story: isStoryTable && storyColumn !== -1 ? cells[storyColumn] || '' : undefined,
         })
       } else {
@@ -422,9 +437,10 @@ function checkReadme(readme, specFiles) {
  * @param {Record<string, string>} input.specSources 仕様ファイル → 中身
  * @param {Record<string, string>} input.designSources テスト設計のファイル（docs/test-design からの相対パス） → 中身
  * @param {ReturnType<typeof listPlaywrightTests>} input.browserTests
+ * @param {string[]} [input.snapshots] VRT の正解の画像のファイル名（tests/e2e/snapshots/。<ID>.png）
  */
 export function checkTestDesign(input) {
-  const { readme, specFiles, specSources, designSources, browserTests } = input
+  const { readme, specFiles, specSources, designSources, browserTests, snapshots = [] } = input
   const errors = [...checkReadme(readme, specFiles)]
   const rowByFile = new Map(readme.rows.map((row) => [row.file, row]))
 
@@ -463,6 +479,12 @@ export function checkTestDesign(input) {
       }
       if (type !== STORY_TYPE && definition.isStoryTable) {
         errors.push(`ユーザーストーリーの表では種別 US だけを使う: ${definition.id}（${where}）`)
+      }
+      if ((type === VISUAL_TYPE) !== Boolean(definition.isVisualTable) || (definition.layer === VISUAL_LAYER) !== Boolean(definition.isVisualTable)) {
+        errors.push(`種別 ${VISUAL_TYPE}・層 ${VISUAL_LAYER} は「## ${VISUAL_HEADING}」の表だけで、その表では両方を使う: ${definition.id}（${where}）`)
+      }
+      if (definition.isVisualTable && !(definition.width in VISUAL_WIDTHS)) {
+        errors.push(`幅の値が決まった名前でない: ${definition.id} の「${definition.width}」（${where}。${Object.keys(VISUAL_WIDTHS).join('・')}）`)
       }
       if (definitionById.has(definition.id)) {
         errors.push(`ID が重なる: ${definition.id}（${definitionById.get(definition.id).file} と ${definition.file}）`)
@@ -513,6 +535,7 @@ export function checkTestDesign(input) {
   const pendingFiles = new Set(designs.filter(({ design }) => design.pendingTests).map(({ design }) => design.file))
   const tests = checkTests({ definitionById, abolishedIds, outOfScopeIds, browserTests, pendingFiles })
   errors.push(...tests.errors)
+  errors.push(...checkVisual({ definitionById, browserTests, snapshots }))
 
   return { errors, definitions: [...definitionById.values()], outOfScopeIds, pendingIds: tests.pendingIds }
 }
@@ -944,6 +967,38 @@ export function checkKnownIssues(browserTests, { issuesSource, specFiles }) {
         errors.push(`既知の問題の注記の仕様書が無い: ${file}（${test.file}:${test.title}）`)
       }
     }
+  }
+  return errors
+}
+
+/**
+ * VRT のルールと、テストのファイル・正解の画像を突き合わせる。
+ * 幅は、テストのファイルの形（PC は *.visual.spec.ts、スマホは *.mobile.visual.spec.ts）で決まる。
+ * 画像は support/visual.ts の expectScreen が、テストの VRT のタグの ID の名前で撮る
+ */
+function checkVisual({ definitionById, browserTests, snapshots }) {
+  const errors = []
+  const visualIds = [...definitionById.values()].filter((definition) => definition.isVisualTable)
+  for (const test of browserTests) {
+    const ids = test.tags.map((tag) => tag.slice(1)).filter((id) => definitionById.get(id)?.isVisualTable)
+    const isVisualFile = /\.visual\.spec\.ts$/.test(test.file)
+    if (isVisualFile && ids.length !== 1) errors.push(`VRT のテストには、種別 ${VISUAL_TYPE} のタグを 1 つだけ付ける: ${test.file}:${test.title}`)
+    if (!isVisualFile && ids.length) errors.push(`種別 ${VISUAL_TYPE} のタグは *.visual.spec.ts のテストだけに付ける: ${test.file}:${test.title}`)
+    if (isVisualFile && test.tags.some((tag) => /^@TC-/.test(tag) && !ids.includes(tag.slice(1)))) {
+      errors.push(`VRT のテストには、VRT 以外のルールのタグを付けない: ${test.file}:${test.title}`)
+    }
+    for (const id of ids) {
+      const pattern = VISUAL_WIDTHS[definitionById.get(id).width]
+      if (pattern && !pattern.test(test.file)) errors.push(`幅とテストのファイルが合わない: ${id}（${definitionById.get(id).width}。${test.file}）`)
+    }
+  }
+  const snapshotSet = new Set(snapshots)
+  for (const definition of visualIds) {
+    if (!snapshotSet.has(`${definition.id}.png`)) errors.push(`VRT の正解の画像が無い: tests/e2e/snapshots/${definition.id}.png（--update-snapshots で作ってコミットする）`)
+  }
+  for (const snapshot of snapshots) {
+    const id = snapshot.replace(/\.png$/, '')
+    if (!definitionById.get(id)?.isVisualTable) errors.push(`VRT のルールに無い正解の画像: tests/e2e/snapshots/${snapshot}（ルールを廃止したら画像も消す）`)
   }
   return errors
 }
