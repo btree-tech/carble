@@ -3,17 +3,25 @@
 #
 #   runner（Playwright）─→ app（本番と同じ Dockerfile の app ステージ）
 #          └─ ログインの仕込みだけ、共有のボリュームの SQLite に直接書く
+#
+# 環境変数で動かし方を切り替える（scripts/run.sh・GitHub Actions がそのまま渡す。tests/e2e/README.md）
+# - E2E_COVERAGE=1: カバレッジを取る。app をソースマップ付きの別のイメージにし、サーバー側のカバレッジを書き出す
+# - E2E_RUNNER_AMD64=1: runner を x64 で動かす（VRT の正解の画像を、CI と同じ x64 で撮るとき）
 
 services:
   app:
-    # プロジェクト名（E2E_PROJECT）を分けて同時に動かしても、ビルドしたイメージを共有する
-    image: carble-e2e-app
+    # プロジェクト名（E2E_PROJECT）を分けて同時に動かしても、ビルドしたイメージを共有する。
+    # カバレッジを取るイメージは名前を分け、通常のイメージ（本番と同じビルド）を上書きしない
+    image: carble-e2e-app${E2E_COVERAGE:+-coverage}
     # 本番と同じ x64 で動かす。arm64（Apple シリコンの Mac など）でビルドすると、libsql のネイティブモジュールを
     # Nitro の依存の追跡が .output に入れず、起動時に落ちる（Mac では x64 の動作を模倣して動くので、ビルドと起動が遅くなる）
     platform: linux/amd64
     build:
       context: .
       target: app
+      args:
+        # 1 のときだけ、ソースマップを出してビルドする（packages/app/nuxt.config.ts）
+        E2E_COVERAGE: ${E2E_COVERAGE:-}
     environment:
       NITRO_PORT: 3000
       BETTER_AUTH_SECRET: e2e-better-auth-secret-0123456789abcdef
@@ -23,8 +31,23 @@ services:
       GOOGLE_CLIENT_SECRET: e2e-google-client-secret
       # DB の接続を、ロックで失敗しないよう手を入れたものにする（packages/db/lib/e2e.ts。本番は使わない）
       CARBLE_E2E: "1"
+      # カバレッジを取るときだけ、サーバー側のカバレッジを書き出す（空のときは書き出さない）
+      NODE_V8_COVERAGE: ${E2E_COVERAGE:+/coverage/server}
+    # カバレッジを取らないときは、イメージの起動（run.sh）と同じ。
+    # カバレッジを取るときは、Nitro がプロセスの終わりに書き出す（docker compose stop の SIGTERM で終了処理をする）。
+    # 前の結果を消し、レポートで元のソースに対応づけるためにビルドしたファイル（スクリプト・ソースマップ）を共有のボリュームに写す。
+    # マイグレーションは別のプロセスにして（NODE_V8_COVERAGE を外す）、node を sh の子ではなく PID 1 にして SIGTERM を受け取らせる
+    command:
+      - /bin/sh
+      - -c
+      - |
+        if [ -z "$$NODE_V8_COVERAGE" ]; then exec /bin/sh ./run.sh; fi
+        rm -rf /coverage/* && cp -r /carble/app /coverage/app \
+          && cd ./db && env -u NODE_V8_COVERAGE npm run migrate && cd - && exec node ./app/server/index.mjs
+    stop_grace_period: 60s
     volumes:
       - e2e-storage:/carble/storage
+      - e2e-coverage:/coverage
     networks:
       default:
         # ブラウザからはこの名前で開く。サービス名の app は Chrome が .app の HSTS で https に切り替えてしまう
@@ -37,7 +60,10 @@ services:
       retries: 60
 
   runner:
-    image: carble-e2e-runner
+    # E2E_RUNNER_AMD64=1 のときだけ x64 で動かす（tests/e2e/README.md の「VRT」）。付けないときは手元の CPU の形式で動かす（Apple シリコンの Mac で x64 を模倣すると遅く、Chromium がときどき落ちる）。
+    # 形式ごとにイメージの名前を分け、E2E_SKIP_BUILD で違う形式のイメージを使わないようにする
+    image: carble-e2e-runner${E2E_RUNNER_AMD64:+-amd64}
+    platform: ${E2E_RUNNER_AMD64:+linux/amd64}
     # Chromium は共有メモリ（/dev/shm）を多く使う。Docker の既定（64MB）では、大きな画面を撮るときにページが落ちる
     shm_size: 1gb
     build:
@@ -49,8 +75,11 @@ services:
       # イメージに入れた依存を使う
       - /work/tests/e2e/node_modules
       - e2e-storage:/storage
+      # カバレッジ（ブラウザ側を書き、最後に scripts/coverage-report.mjs がレポートを作る）
+      - e2e-coverage:/coverage
     environment:
       CI: ${CI:-}
+      E2E_COVERAGE: ${E2E_COVERAGE:-}
       BASE_URL: http://carble:3000
       DB_PATH: /storage/prod.db
       UPLOADS_PATH: /storage/uploads
@@ -62,3 +91,4 @@ services:
 
 volumes:
   e2e-storage:
+  e2e-coverage:

@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   # 全テストを、カバレッジを取って流す（tests/e2e/README.md の「カバレッジ」）。
-  # app は、本番と同じ Dockerfile に、ソースマップを出す設定だけを足したイメージ（docker-compose.e2e.coverage.yml）
+  # app は、本番と同じ Dockerfile に、ソースマップを出す設定だけを足したイメージ（docker-compose.e2e.yml が E2E_COVERAGE を読む）
   e2e:
     runs-on: ubuntu-latest
     # 全体で 20〜30 分ほど（インポートのテストが毎分 0 秒の取り込みを順に待つ）
@@ -27,9 +27,9 @@ jobs:
     env:
       # playwright.config.ts が見る（リトライ・test.only の禁止・レポートの形）
       CI: "true"
-      # scripts/run.sh が見る（カバレッジを取り、tests/e2e/coverage/ にレポートを作る）
+      # scripts/run.sh と docker-compose.e2e.yml が見る（カバレッジを取り、tests/e2e/coverage/ にレポートを作る）
       E2E_COVERAGE: "1"
-      COMPOSE: docker compose -p carble-e2e -f docker-compose.e2e.yml -f docker-compose.e2e.coverage.yml --profile runner
+      COMPOSE: docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner
     steps:
       - uses: actions/checkout@v4
 

@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
-  // E2E でカバレッジを取るイメージ（docker-compose.e2e.coverage.yml）だけ、元のソースの行に対応づけるためにソースマップを出す
+  // E2E でカバレッジを取るイメージ（docker-compose.e2e.yml の E2E_COVERAGE=1）だけ、元のソースの行に対応づけるためにソースマップを出す
   sourcemap: process.env.E2E_COVERAGE === '1' ? { server: true, client: true } : undefined,
 
   modules: [

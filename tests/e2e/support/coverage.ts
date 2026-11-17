@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import type { Page } from '@playwright/test'
 
 /**
- * ブラウザ側のカバレッジ（E2E_COVERAGE=1 のときだけ。docker-compose.e2e.coverage.yml）
+ * ブラウザ側のカバレッジ（E2E_COVERAGE=1 のときだけ。docker-compose.e2e.yml）
  *
  * 画面ごとに Chromium の V8 カバレッジを集め、共有のボリュームに書く。レポートは最後に scripts/coverage-report.mjs が作る。
  * スクリプトの本文は大きく、どの画面でも同じなので、URL ごとに 1 回だけ sources/ に書き、entries/ には実行した範囲だけを書く

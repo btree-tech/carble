@@ -2,14 +2,13 @@
 # 画面の E2E テストを Docker で動かす（pnpm test:e2e）
 # 環境を起動し、テストを流し、後片付けまで行う。引数はそのまま playwright test に渡す
 #
-# 環境変数
+# 環境変数（E2E_COVERAGE・E2E_RUNNER_AMD64 は docker-compose.e2e.yml も読む）
 # - E2E_SKIP_BUILD=1: ビルド済みのイメージを使う（テストだけ直したとき用。製品のコードを変えたら付けない）
 # - E2E_KEEP=1: 終わっても環境を止めない（続けて流すとき用。止めるときは E2E_DOWN=1 で実行する）
 # - E2E_PROJECT: Docker Compose のプロジェクト名（既定 carble-e2e）。分けると、別の環境として同時に動かせる
-# - E2E_COVERAGE=1: カバレッジを取り、tests/e2e/coverage/ にレポートを作る（docker-compose.e2e.coverage.yml を重ねる。
-#   app はソースマップ付きの別のイメージになる。最後に app を止めてサーバー側の結果を書き出させる。
-#   E2E_KEEP で残した環境を止めるときは、E2E_DOWN=1 にも E2E_COVERAGE=1 を付ける）
-# - E2E_RUNNER_AMD64=1: runner を x64 で動かす（docker-compose.e2e.amd64.yml を重ねる。VRT の正解の画像を CI と同じ環境で撮り直すとき）
+# - E2E_COVERAGE=1: カバレッジを取り、tests/e2e/coverage/ にレポートを作る（app はソースマップ付きの別のイメージになる。
+#   最後に app を止めてサーバー側の結果を書き出させる）
+# - E2E_RUNNER_AMD64=1: runner を x64 で動かす（VRT の正解の画像を CI と同じ x64 で撮り直すとき）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -17,12 +16,6 @@ ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 # DOCKER_DEFAULT_PLATFORM が設定されていると、それと食い違ってビルドできないので、このスクリプトの中では外す
 unset DOCKER_DEFAULT_PLATFORM
 COMPOSE=(docker compose -p "${E2E_PROJECT:-carble-e2e}" -f "$ROOT/docker-compose.e2e.yml")
-if [ "${E2E_COVERAGE:-0}" = "1" ]; then
-  COMPOSE+=(-f "$ROOT/docker-compose.e2e.coverage.yml")
-fi
-if [ "${E2E_RUNNER_AMD64:-0}" = "1" ]; then
-  COMPOSE+=(-f "$ROOT/docker-compose.e2e.amd64.yml")
-fi
 
 if [ "${E2E_DOWN:-0}" = "1" ]; then
   "${COMPOSE[@]}" --profile runner down -v --remove-orphans

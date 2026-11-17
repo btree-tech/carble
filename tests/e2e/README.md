@@ -33,7 +33,7 @@ E2E_COVERAGE=1 pnpm test:e2e                   # 全テストを流し、tests/e
 E2E_COVERAGE=1 pnpm test:e2e specs/features/card-duplicate.spec.ts
 ```
 
-- `docker-compose.e2e.coverage.yml` を重ね、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にする。付けないときは、本番と同じイメージで流す
+- `docker-compose.e2e.yml` が `E2E_COVERAGE` を読み、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にして、サーバー側のカバレッジを書き出す起動の仕方にする。付けないときは、本番と同じイメージ・同じ起動の仕方で流す
 - GitHub Actions は、カバレッジを取って全テストを流す（下の「GitHub Actions」）。本番と同じイメージとの違いは、ビルドでソースマップを出すことと、カバレッジを書き出すための起動の仕方だけ
 - ブラウザ側は、fixture の `pageAs` で開いた画面ごとに Chromium のカバレッジを集める（`support/coverage.ts`）。サーバー側は app の `NODE_V8_COVERAGE` で集め、テストの後に app を止めて書き出させる
 - `scripts/coverage-report.mjs` が両方を合わせ、ソースマップで `packages/app` のファイルの行に対応づける（`lcov.info` も出す）
@@ -57,7 +57,7 @@ E2E_RUNNER_AMD64=1 pnpm test:e2e --project=visual --project=visual-mobile --upda
 - 正解の画像はリポジトリに入れる。見た目を変えたら、撮り直した画像を製品のコードと同じコミットに入れる。差分の画像（期待・実際・差分）は html レポートで見られる
 - テストは `fixtures/visual.ts` の `test` を使い、最後に `support/visual.ts` の `expectScreen(page)` で撮る。画像の名前はテストの VRT のタグの ID になる
 - 画面に写る名前・値は固定する（`VISUAL_NAMES`・見本のプロジェクトの `sample`）。実行ごとに変わるもの（日時・ユーザーID・インポートの日時）は `mask` で塗り、親の要素で切り取られるもの（カード印刷ビューの QR コード）は `blackout` で黒く塗る。ユーザーID は列の幅が変わらないよう、変わる部分を数字だけにする（`visualUsername`）
-- 文字の描かれ方は CPU の種類で少し変わる（arm64 と x64 で、文字の縁の色が 1 段違う画素が出る）。正解の画像は、CI（x64）と同じになるよう x64 の runner で撮る（`E2E_RUNNER_AMD64=1`。`docker-compose.e2e.amd64.yml` を重ねる）
+- 文字の描かれ方は CPU の種類で少し変わる（arm64 と x64 で、文字の縁の色が 1 段違う画素が出る）。正解の画像は、CI（x64）と同じになるよう x64 の runner で撮る（`E2E_RUNNER_AMD64=1`。`docker-compose.e2e.yml` の runner が、この変数で x64 になり、イメージの名前も `carble-e2e-runner-amd64` に分かれる）
 - 比べるだけなら arm64 の runner でよい。比べるときの許し幅は Playwright の既定（画素ごとの色の差 0.2、違う画素は 0）のままで、上の違いはこれに収まる（全画面で確かめた）
 - x64 の runner は Apple シリコンの Mac では模倣して動くので遅く、Chromium がときどき落ちる（「Target crashed」）。全テストは x64 で流さず、画像を撮り直すときだけ使う。落ちたテストは流し直す
 - 確認のダイアログ（ブラウザの `confirm`）・完了メッセージ（数秒で消える）・カメラ・印刷のダイアログは撮らない

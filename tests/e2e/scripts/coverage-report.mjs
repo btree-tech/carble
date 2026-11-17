@@ -1,6 +1,6 @@
 // E2E のカバレッジのレポートを作る（E2E_COVERAGE=1 pnpm test:e2e の最後に、scripts/run.sh が runner の中で動かす）
 //
-// 読むもの（共有のボリューム /coverage。docker-compose.e2e.coverage.yml）
+// 読むもの（共有のボリューム /coverage。docker-compose.e2e.yml）
 // - client/: ブラウザ側（support/coverage.ts が書く）
 // - server/: サーバー側（app の NODE_V8_COVERAGE。app を止めたときに書き出される）
 // - app/: app がビルドしたファイル（.output）。スクリプトの本文とソースマップをここから読む

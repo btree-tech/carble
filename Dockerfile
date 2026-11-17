@@ -10,7 +10,7 @@ ENV DB_PATH="/carble/storage/prod.db"
 FROM base AS build
 COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-# E2E でカバレッジを取るイメージだけ 1 にする（docker-compose.e2e.coverage.yml。ソースマップを出す）
+# E2E でカバレッジを取るイメージだけ 1 にする（docker-compose.e2e.yml が E2E_COVERAGE を渡す。ソースマップを出す）
 ARG E2E_COVERAGE
 RUN pnpm build
 RUN pnpm --filter @carble/db deploy ./db --legacy
