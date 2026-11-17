@@ -19,10 +19,10 @@
     "./schema": "./lib/schema/index.ts"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.4"
+    "drizzle-kit": "^0.31.11"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
-    "drizzle-orm": "^0.44.5"
+    "drizzle-orm": "^0.45.4"
   }
 }

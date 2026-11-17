@@ -25,6 +25,14 @@ export const auth = betterAuth({
       enabled: true,
     },
   },
+  advanced: {
+    ipAddress: {
+      // 直接公開していてプロキシの X-Forwarded-For が届かないため、クライアントの IP は判定できない。
+      // 判定できないままだと全ユーザーが 1 つのレート制限の枠を共有し、通常の利用でも 429 になるので、
+      // IP の判定を止める（IP で数えるレート制限はかからない。1.4 系で IP が取れないときと同じ動き）
+      disableIpTracking: true,
+    },
+  },
 })
 
 export async function useSessionUser() {
