@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { test as base, type Page } from '@playwright/test'
 import { ProductApi, type Project } from '../support/api'
+import { saveCoverage, startCoverage } from '../support/coverage'
 import { createAccount, deleteOpenImports, SESSION_COOKIE, type Account } from '../support/db'
 
 type Fixtures = {
@@ -46,6 +47,7 @@ export const test = base.extend<Fixtures>({
 
   pageAs: async ({ browser }, use) => {
     const contexts: Awaited<ReturnType<typeof browser.newContext>>[] = []
+    const pages: Page[] = []
     await use(async (account) => {
       // テストの中の browser.newContext は、use の設定（baseURL・locale・timezoneId・画面幅）を引き継ぐ
       const context = await browser.newContext()
@@ -53,8 +55,12 @@ export const test = base.extend<Fixtures>({
         await context.addCookies([{ name: SESSION_COOKIE, value: account.sessionCookie, url: process.env.BASE_URL! }])
       }
       contexts.push(context)
-      return await context.newPage()
+      const page = await context.newPage()
+      await startCoverage(page)
+      pages.push(page)
+      return page
     })
+    for (const page of pages) await saveCoverage(page)
     for (const context of contexts) await context.close()
   },
 

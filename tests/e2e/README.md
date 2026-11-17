@@ -22,6 +22,21 @@ E2E_PROJECT=carble-e2e-a E2E_SKIP_BUILD=1 pnpm test:e2e specs/pages/table-view.s
 
 結果は `tests/e2e/playwright-report/`（html）と `tests/e2e/test-results/`（失敗したテストのスクリーンショット・動画・trace・画面の内容）に、app のログは `tests/e2e/compose-logs/compose.log` に出る。
 
+### カバレッジ
+
+```bash
+E2E_COVERAGE=1 pnpm test:e2e                   # 全テストを流し、tests/e2e/coverage/index.html にレポートを作る
+E2E_COVERAGE=1 pnpm test:e2e specs/features/card-duplicate.spec.ts
+```
+
+- `docker-compose.e2e.coverage.yml` を重ね、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にする。普段の実行と CI は、今までどおり本番と同じイメージで流す
+- ブラウザ側は、fixture の `pageAs` で開いた画面ごとに Chromium のカバレッジを集める（`support/coverage.ts`）。サーバー側は app の `NODE_V8_COVERAGE` で集め、テストの後に app を止めて書き出させる
+- `scripts/coverage-report.mjs` が両方を合わせ、ソースマップで `packages/app` のファイルの行に対応づける（`lcov.info` も出す）
+- テストの中で別に開いたタブ（印刷の確認用など）は数えない
+- 一度も読み込まれなかったファイル（開かなかった画面・呼ばなかった API など）も、ビルドしたファイルから 0% としてレポートに出す。どこからも使われずビルドに入らなかったファイルは出ない
+- 画面のコードは、ブラウザで動いた分とサーバーで描いた分（SSR）を合わせて数える
+- ソースマップに本文が無いファイル（サーバーの API など）は、リポジトリのファイルで補う。製品のコードを変えたら `E2E_SKIP_BUILD` を付けずに流す（古いイメージだと行がずれる）
+
 ### 環境（docker-compose.e2e.yml）
 
 ```

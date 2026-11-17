@@ -1,0 +1,36 @@
+# 画面の E2E テストでカバレッジを取るときに、docker-compose.e2e.yml に重ねる（E2E_COVERAGE=1 pnpm test:e2e）
+#
+# - app: ソースマップ付きでビルドした別のイメージにし、NODE_V8_COVERAGE でサーバー側のカバレッジを書き出す。
+#   書き出すのはプロセスが終わるとき（Nitro は SIGTERM で終了処理をする）。レポートで元のソースに対応づけるため、
+#   起動時にビルドしたファイルを共有のボリュームに写す
+# - runner: ブラウザ側のカバレッジを共有のボリュームに書き、最後にレポートを作る（scripts/coverage-report.mjs）
+
+services:
+  app:
+    # 通常のイメージ（carble-e2e-app）を上書きしない
+    image: carble-e2e-app-coverage
+    build:
+      args:
+        E2E_COVERAGE: "1"
+    environment:
+      NODE_V8_COVERAGE: /coverage/server
+    # 起動のたびに前の結果を消し、ビルドしたファイル（サーバーとブラウザのスクリプト・ソースマップ）を写す。
+    # マイグレーションは別のプロセスにして（NODE_V8_COVERAGE を外す）、node を sh の子ではなく PID 1 にして、
+    # docker compose stop の SIGTERM を Nitro が受け取れるようにする
+    command:
+      - /bin/sh
+      - -c
+      - rm -rf /coverage/* && cp -r /carble/app /coverage/app
+        && cd ./db && env -u NODE_V8_COVERAGE npm run migrate && cd - && exec node ./app/server/index.mjs
+    stop_grace_period: 60s
+    volumes:
+      - e2e-coverage:/coverage
+
+  runner:
+    environment:
+      E2E_COVERAGE: "1"
+    volumes:
+      - e2e-coverage:/coverage
+
+volumes:
+  e2e-coverage:
