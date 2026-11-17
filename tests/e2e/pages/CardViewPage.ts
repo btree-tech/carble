@@ -91,9 +91,17 @@ export class CardViewPage {
     return this.page.getByRole('menuitem', { name })
   }
 
+  /**
+   * 別のプロジェクトのカード入力ビューから移ったあと、移った先の画面が出るのを待つ。
+   * URL はすぐ変わるが、移った先のデータを読み込むまでは移る前の画面が残る。複製したカードは値が同じなので、値ではなくプロジェクト名で見分ける
+   */
+  async waitForProject(name: string, previousName: string) {
+    await expect(this.text(name)).toBeVisible()
+    await expect(this.text(previousName)).toHaveCount(0)
+  }
+
   async openMenu() {
-    // 別のプロジェクトのカード入力ビューから移った直後は、移る前のメニューの開閉の状態が残り、1 回押しても開かないことがある
-    // （docs/ISSUES.md「別のプロジェクトのカード入力ビューから移ると、カードのメニューが移る前のカードのままになる」）ので、開くまで押し直す
+    // 画面を移った直後は、1 回押しても開かないことがあるので、開くまで押し直す
     await expect(async () => {
       await this.menuButton.click()
       await expect(this.menuItem('削除')).toBeVisible({ timeout: 1_000 })

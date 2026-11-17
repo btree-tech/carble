@@ -260,9 +260,7 @@ test.describe('複製元と複製先', () => {
     await expect(ownerPage).toHaveURL(`/projects/${project.id}/cards/2`)
   })
 
-  test('【既知の問題】別のプロジェクトのカード入力ビューから「複製元カードを表示」で移ると、カードのメニューが移る前のカードのままになる（あるべき: 移った先のカードのメニューにする）', {
-    annotation: [knownIssue('docs/ISSUES.md', '別のプロジェクトのカード入力ビューから移ると、カードのメニューが移る前のカードのままになる')],
-  }, async ({ ownerPage, ownerApi, project, tag }) => {
+  test('別のプロジェクトのカード入力ビューから「複製元カードを表示」で移ると、移った先のカードのメニューになる', { tag: ['@TC-FT-DUP-SRC2', '@TC-FT-DUP-SRC4'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     // 複製元（複製先がある・複製元が無い）と、別のプロジェクトの複製（複製元がある・複製先が無い）
     await ownerApi.addCard(project.id, { みだし: '複製元' })
     const target = await ownerApi.createProject(`複製先${tag}`)
@@ -273,16 +271,8 @@ test.describe('複製元と複製先', () => {
     await view.openMenu()
     await view.menuItem('複製元カードを表示').click()
     await expect(ownerPage).toHaveURL(`/projects/${project.id}/cards/1`)
-    await expect(view.field('みだし')).toHaveValue('複製元')
+    await view.waitForProject(project.name, target.name)
 
-    // 値は移った先のカードだが、メニューは移る前の複製のまま
-    await view.openMenu()
-    await expect(view.menuItem('複製元カードを表示')).toBeEnabled()
-    await expect(view.menuItem('複製先カードを表示')).toBeDisabled()
-    await ownerPage.keyboard.press('Escape')
-
-    // 読み込み直すと、移った先のカードのメニューになる
-    await open(ownerPage, `/projects/${project.id}/cards/1`)
     await view.openMenu()
     await expect(view.menuItem('複製元カードを表示')).toBeDisabled()
     await expect(view.menuItem('複製先カードを表示')).toBeEnabled()
@@ -512,10 +502,7 @@ test.describe('ユーザーストーリー', () => {
     await view.openMenu()
     await view.menuItem('複製元カードを表示').click()
     await expect(ownerPage).toHaveURL(`/projects/${project.id}/cards/1`)
-    // 別のプロジェクトのカード入力ビューから移ると、カードのメニューが移る前のカードのままになる（docs/ISSUES.md「別のプロジェクトのカード入力ビューから移ると、カードのメニューが移る前のカードのままになる」）。
-    // 読み込み直して避ける
-    await expect(view.field('みだし')).toHaveValue('土器')
-    await open(ownerPage, `/projects/${project.id}/cards/1`)
+    await view.waitForProject(project.name, other.name)
     await view.openMenu()
     await view.menuItem('複製先カードを表示').click()
     await view.dialog('複製先カード').getByText(`${project.name} - ID: 2`, { exact: true }).click()
