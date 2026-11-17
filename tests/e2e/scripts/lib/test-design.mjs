@@ -1,10 +1,10 @@
 // docs/test-design のルール ID と、テストのタグの対応を確かめる判定の部分。
 // 書き方の決まりの正は docs/test-design/README.md。ファイルの読み書きと Playwright の実行は check-test-design.mjs が行う。
-//参考にした別のプロジェクトの検査を Carble 向けに移した（層はブラウザ E2E だけ。Red の annotation は求めない）
+// 参考にした別のプロジェクトの検査を Carble 向けに移した（層はブラウザ E2E だけ。Red の annotation は求めない）
 
 import path from 'node:path'
 
-const ID_PATTERN = /TC-[A-Z]{2}-[A-Z][A-Z0-9]{1,8}-[A-Z]{1,4}[0-9]+/g
+const ID_PATTERN = /TC-[A-Z]{2}-[A-Z][A-Z0-9]{1,8}-[A-Z]{1,4}[0-9]+(?![A-Za-z0-9])/g
 const ID_EXACT = /^TC-([A-Z]{2})-([A-Z][A-Z0-9]{1,8})-([A-Z]{1,4})([0-9]+)$/
 const PREFIX_PATTERN = /^[A-Z][A-Z0-9]{1,8}$/
 export const AREA_BY_DIR = {
@@ -622,7 +622,7 @@ const EARS_CLAUSE_PATTERN = /^(WHEN|WHILE|IF|WHERE) (.+?(?:と、|(?:中|間)は
 // 結果の文頭と句点の直後（2 つ目の文）は、つなぎの語が記載ルールに無い形（「〜したら」「〜とき、」）でも拾う。
 // 文の途中は区切り（空白・読点・コロン）の後で英字が続かず、後ろにつなぎの語が続くものだけを拾う
 const EARS_CONNECTOR_SOURCE = '(?:と、|(?:中|間)は、|場合(?:（[^（）]*）)?も?、)'
-const EARS_STRAY_SENTENCE_START_PATTERN = /(?:^|[。．]\s*)(?:WHEN|WHILE|IF|WHERE)/
+const EARS_STRAY_SENTENCE_START_PATTERN = /(?:^|[。．]\s*)(?:WHEN|WHILE|IF|WHERE)(?![A-Za-z])/
 const EARS_STRAY_INSIDE_PATTERN = new RegExp(`[\\s。．、:：](?:WHEN|WHILE|IF|WHERE)(?![A-Za-z]).*?${EARS_CONNECTOR_SOURCE}`)
 const hasStrayKeyword = (text) => EARS_STRAY_SENTENCE_START_PATTERN.test(text) || EARS_STRAY_INSIDE_PATTERN.test(text)
 const EARS_ORDER = ['WHERE', 'WHILE', 'WHEN', 'IF']
@@ -744,6 +744,10 @@ function tableKey(header, cells) {
   return JSON.stringify([header.map(normalizeSentence), cells.map(normalizeSentence)])
 }
 
+function headerKey(header) {
+  return JSON.stringify(header.map(normalizeSentence))
+}
+
 /**
  * 仕様書の振る舞いの章の表を、行ごとの照合のキーにする（Carble で足した検査。参考にした別のプロジェクトは表を照合しない）。
  * 見出し行と区切り行は行に数えない。キーは列の名前と、行のセルの組。
@@ -763,8 +767,12 @@ export function listSpecTableRows(markdown) {
     })))
 }
 
-/** テスト設計の振る舞いの章から、仕様の表を写した表（結果の列も EARS の列も無い表）の行を照合のキーにする。 */
-function listDesignTableRows(markdown) {
+/**
+ * テスト設計の振る舞いの章から、仕様の表を写した表の行を照合のキーにする。
+ * 写した表は、テスト設計だけの列（ID・層・代表値）を除いた列が、仕様のどれかの表の列と同じ表とする
+ * （決定表・直交表・状態遷移の表は列が違うので、照合に入れない）。
+ */
+function listDesignTableRows(markdown, specHeaders) {
   const { tables } = parseMarkdown(markdown)
   const rows = []
   for (const table of tables) {
@@ -772,6 +780,7 @@ function listDesignTableRows(markdown) {
     const header = table.header.map(stripCode)
     if (header.includes(RESULT_COLUMN) || header.some((name) => name in EARS_COLUMNS)) continue
     const columns = header.flatMap((name, index) => (DESIGN_ONLY_COLUMNS.includes(name) ? [] : [index]))
+    if (!specHeaders.has(headerKey(columns.map((index) => table.header[index])))) continue
     for (const cells of table.rows) {
       rows.push({
         id: stripCode(cells[0] || ''),
@@ -845,7 +854,7 @@ function checkSentences(designs, specSources, designSources) {
 
     // 仕様の表は、同じ列の表をテスト設計に写す。行ごとに照らす
     const specTableRows = listSpecTableRows(specSources[row.file] || '')
-    const designTableRows = listDesignTableRows(designSources[row.file])
+    const designTableRows = listDesignTableRows(designSources[row.file], new Set(specTableRows.map((specRow) => headerKey(specRow.header))))
     const designTableKeys = new Set(designTableRows.map((designRow) => designRow.key))
     const specTableKeys = new Set(specTableRows.map((specRow) => specRow.key))
     for (const specRow of specTableRows) {
