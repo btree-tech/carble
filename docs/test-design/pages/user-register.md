@@ -31,3 +31,11 @@
 | TC-PG-REGISTER-GEN16 |  | 「保存」を押すと |  | ユーザーID の英字の大文字は、小文字にして保存する | ブラウザ E2E |
 
 - `対象外` `参照` TC-PG-REGISTER-GEN7: 子の文のルール（TC-PG-REGISTER-GEN8・TC-PG-REGISTER-GEN9・TC-PG-REGISTER-GEN10・TC-PG-REGISTER-GEN12）で確かめる
+
+## 見た目
+
+| ID | 画面の状態 | 幅 | 層 |
+|---|---|---|---|
+| TC-PG-REGISTER-VRT1 | 初めてログインした（ユーザーID は空、名前は Google アカウントの名前） | PC | VRT |
+| TC-PG-REGISTER-VRT2 | 入力に問題がある（ユーザーID が 3 文字未満、名前が空） | PC | VRT |
+| TC-PG-REGISTER-VRT3 | 初めてログインした（ユーザーID は空、名前は Google アカウントの名前） | スマホ | VRT |
