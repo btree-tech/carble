@@ -263,9 +263,6 @@ test.describe('複製元と複製先', () => {
   test('【既知の問題】別のプロジェクトのカード入力ビューから「複製元カードを表示」で移ると、カードのメニューが移る前のカードのままになる（あるべき: 移った先のカードのメニューにする）', {
     annotation: [knownIssue('docs/ISSUES.md', '別のプロジェクトのカード入力ビューから移ると、カードのメニューが移る前のカードのままになる')],
   }, async ({ ownerPage, ownerApi, project, tag }) => {
-    // 起きるかどうかはタイミングによる。手元（Mac で app の x64 を模倣して動かす、遅い環境）では毎回起きるが、
-    // GitHub Actions（x64 のまま動く、速い環境）では起きなかった（docs/ISSUES.md）。CI では流さない
-    test.skip(!!process.env.CI, 'タイミングで起きたり起きなかったりする（GitHub Actions では起きない）')
     // 複製元（複製先がある・複製元が無い）と、別のプロジェクトの複製（複製元がある・複製先が無い）
     await ownerApi.addCard(project.id, { みだし: '複製元' })
     const target = await ownerApi.createProject(`複製先${tag}`)
