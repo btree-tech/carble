@@ -29,7 +29,8 @@ E2E_COVERAGE=1 pnpm test:e2e                   # 全テストを流し、tests/e
 E2E_COVERAGE=1 pnpm test:e2e specs/features/card-duplicate.spec.ts
 ```
 
-- `docker-compose.e2e.coverage.yml` を重ね、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にする。普段の実行と CI は、今までどおり本番と同じイメージで流す
+- `docker-compose.e2e.coverage.yml` を重ね、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にする。付けないときは、今までどおり本番と同じイメージで流す
+- GitHub Actions では、本番と同じイメージで流すジョブ（`e2e`）と並べて、カバレッジのジョブ（`coverage`）を流す（下の「GitHub Actions」）
 - ブラウザ側は、fixture の `pageAs` で開いた画面ごとに Chromium のカバレッジを集める（`support/coverage.ts`）。サーバー側は app の `NODE_V8_COVERAGE` で集め、テストの後に app を止めて書き出させる
 - `scripts/coverage-report.mjs` が両方を合わせ、ソースマップで `packages/app` のファイルの行に対応づける（`lcov.info` も出す）
 - テストの中で別に開いたタブ（印刷の確認用など）は数えない
@@ -64,6 +65,7 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 
 - `CI=true` で流すので、失敗したテストは 2 回までやり直し、`test.only` が残っていると失敗にする（`playwright.config.ts`）
 - 結果（`playwright-report/`・`test-results/`・`compose-logs/`）は、実行のページの artifact `e2e-report` に 14 日残す
+- 並べて、カバレッジを取るジョブ（`coverage`）も流す。要約を実行のページの Summary に表で出し、レポート（`coverage/`）を artifact `e2e-coverage` に 14 日残す
 - ランナーは x64 なので、app は模倣せずに動く。全体の時間は、インポートのテストの待ちでほぼ決まる
 
 ## 構成

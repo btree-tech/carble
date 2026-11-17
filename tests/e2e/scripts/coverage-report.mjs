@@ -5,7 +5,7 @@
 // - server/: サーバー側（app の NODE_V8_COVERAGE。app を止めたときに書き出される）
 // - app/: app がビルドしたファイル（.output）。スクリプトの本文とソースマップをここから読む
 //
-// 書くもの: tests/e2e/coverage/（index.html と、ほかのツールで読める lcov.info）
+// 書くもの: tests/e2e/coverage/（index.html と、ほかのツールで読める lcov.info、要約の coverage-summary.md）
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -58,7 +58,8 @@ rmSync('coverage', { recursive: true, force: true })
 const mcr = MCR({
   name: 'Carble E2E カバレッジ',
   outputDir: 'coverage',
-  reports: ['v8', 'lcovonly', 'console-summary'],
+  // markdown-summary（coverage-summary.md）は、GitHub Actions の実行のページの Summary に出す
+  reports: ['v8', 'lcovonly', 'console-summary', 'markdown-summary'],
   cleanCache: true,
   // ソースマップで元に戻したファイルのうち、製品のコード（packages/app。Nuxt が作るファイルを除く）だけを残す
   sourceFilter: isAppSource,

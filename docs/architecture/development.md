@@ -43,7 +43,7 @@ pnpm test:e2e specs/pages/login.spec.ts  # 引数は playwright test にその�
 ```
 
 - 外部仕様（[product-spec/](../product-spec/README.md)）→ テスト設計（[test-design/](../test-design/README.md)）→ 画面の E2E テストの順に対応させる。テスト設計のルールの ID をテストのタグで付け、対応は検査（runner の中で `pnpm run check:test-design`。[tests/e2e/README.md](../../tests/e2e/README.md) の「その他のコマンド」）で確かめる
-- GitHub Actions（[.github/workflows/e2e.yml](../../.github/workflows/e2e.yml)）が、プルリクエストと `master`・`develop` への push のたびに、検査と全テストを流す
+- GitHub Actions（[.github/workflows/e2e.yml](../../.github/workflows/e2e.yml)）が、プルリクエストと `master`・`develop` への push のたびに、検査と全テストを流す。並べてカバレッジも取る（手元では `E2E_COVERAGE=1 pnpm test:e2e`。[tests/e2e/README.md](../../tests/e2e/README.md) の「カバレッジ」）
 - 既知の問題（[ISSUES.md](../ISSUES.md)）は「【既知の問題】」のテストで今の挙動を確かめる。直したら期待値を変え、テスト設計の対象外の行を消してタグを付ける
 
 ## DB のマイグレーション
