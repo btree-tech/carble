@@ -14,15 +14,15 @@
 
 | 項目 | 決めたこと | 理由 |
 |---|---|---|
-| ドキュメントの置き場所 |参考にした別のプロジェクトと同じく `docs/product.md`・`docs/architecture/`・`docs/product-spec/`・`docs/ISSUES.md`・`docs/plans/` に分ける | チーム内で同じ構成にそろえ、読む場所を迷わないようにする |
-| 外部仕様の書き方 |参考にした別のプロジェクトの `writing-rules.md` を引き継ぐ（ユーザーストーリー＋EARS 記法＋補足情報）。ロール名などは Carble に合わせる | E2E の `spec()` と仕様の項目を対応づける仕組みもそのまま使える |
+| ドキュメントの置き場所 | 参考にした別のプロジェクトと同じく `docs/product.md`・`docs/architecture/`・`docs/product-spec/`・`docs/ISSUES.md`・`docs/plans/` に分ける | チーム内で同じ構成にそろえ、読む場所を迷わないようにする |
+| 外部仕様の書き方 | 参考にした別のプロジェクトの `writing-rules.md` を引き継ぐ（ユーザーストーリー＋EARS 記法＋補足情報）。ロール名などは Carble に合わせる | E2E の `spec()` と仕様の項目を対応づける仕組みもそのまま使える |
 | 仕様の出典 | Confluence「仕様」（2026-02-22）＋ JIRA CESCHI の解決済み課題＋ソースコード（master `6751466`） | Confluence 以降の改修はコードと JIRA でしか分からない |
 | E2E のツール | Playwright ＋ `@nuxt/test-utils/playwright`（`goto` のハイドレーション待ち） | Nuxt はサーバーで描いた HTML の上でハイドレーションするため、その前に操作すると入力が消える（参考にした別のプロジェクトでのハマりどころ）。Nuxt 公式のテスト用ユーティリティで待てる |
 | E2E の環境 | Docker Compose（`docker-compose.e2e.yml`）。app は本番と同じ `Dockerfile` の `app` ステージ、runner は Playwright の公式イメージ | 本番に近い形（`NODE_ENV=production`、`.output` を `node` で起動）で確かめる。手元の Node を使わずに動かせる |
 | ログイン | Google OAuth は通さない。テストが SQLite にユーザーとセッションを直接作り、Better Auth と同じ方式（HMAC-SHA256）で署名した Cookie をブラウザに渡す | Google の画面をテストから操作できない。製品のコードにテスト専用のログイン経路を足さずに済む |
 | 前提データ | ログイン（上記）だけ DB に直接書く。それ以外は画面か製品の API で作る | 製品の振る舞いを通して作ったデータで確かめる（参考にした別のプロジェクトの原則） |
 | インポートの待ち合わせ | 製品の定期タスク（毎分 0 秒）が動くのを待つ（最大 70 秒程度） | テストのために製品のタスク起動の経路を増やさない |
-| 既知の問題 | 今の挙動を期待値にし、テスト名に【既知の問題】／【実装との乖離】と書いて `knownIssue()` を付ける |参考にした別のプロジェクトと同じ。直すときにテストの期待値を先に変える |
+| 既知の問題 | 今の挙動を期待値にし、テスト名に【既知の問題】／【実装との乖離】と書いて `knownIssue()` を付ける | 参考にした別のプロジェクトと同じ。直すときにテストの期待値を先に変える |
 
 ## 進め方
 
@@ -120,3 +120,4 @@
   - 本番の問題として ISSUES.md に「同時に保存すると失敗し、DB がロックされたままになることがある」を戻した（libsql が失敗した文を片付けない件を含めて書き直した）。本番に入れるなら e2e.ts の中身を `connect` に移す
   - 方針の変更: 本番のコードと Dockerfile になるべく触らない。Dockerfile の libsql のネイティブモジュールのコピーは戻し、代わりに `docker-compose.e2e.yml` の app を `platform: linux/amd64`（本番と同じ x64）で動かす。Mac では x64 の動作を模倣するので遅くなる。`DOCKER_DEFAULT_PLATFORM` は runner（Playwright）にも効いてしまうので使わない
   - `package.json` の `packageManager`（pnpm@11.2.2）は残す。指定が無いと、今の最新の pnpm では本番の Dockerfile のビルド自体が通らない
+- 2026-11-17 方針の変更: 仕様の項目とテストの対応は、`spec()`・対象外のリスト・`coverage:spec` をやめ、テスト設計（`docs/test-design/`）のルールの ID をテストのタグで付け、`check:test-design` で確かめる形に置き換えた（[test-design/plan.md](../test-design/plan.md)）。上の「方針」「進め方」の `spec()` の記述は当時のもの

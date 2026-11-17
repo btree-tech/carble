@@ -12,7 +12,7 @@
 
 ## 計画
 
-1.参考にした別のプロジェクトの検査を Carble 向けに移す（`tests/e2e/scripts/`）
+1. 参考にした別のプロジェクトの検査を Carble 向けに移す（`tests/e2e/scripts/`）
 2. 検査で仕様書を確かめ、記述ルール（出典注記・EARS の節）に合わない箇所を直す。記述ルール（`writing-rules.md`）を参考にした別のプロジェクトに合わせる
 3. 仕様書からテスト設計の表をスクリプトで起こす（`docs/test-design/pages/`・`features/`）
 4. 今の `spec()` の annotation と対象外の定義（`spec-out-of-scope.mjs`）を、テスト設計の ID のタグと `対象外` の行に移す
