@@ -756,8 +756,13 @@ export function listSpecSentences(markdown) {
 // テスト設計の表のうち、仕様の表を写した表で、仕様の列でない列（docs/test-design/README.md の「仕様の表」）
 const DESIGN_ONLY_COLUMNS = ['ID', '層', '代表値']
 
-function tableKey(header, cells) {
-  return JSON.stringify([header.map(normalizeSentence), cells.map(normalizeSentence)])
+/**
+ * 仕様の表の行の照合のキー。同じ行が別の見出しの下にも出る（API の仕様のエラーの表など）ので、`###` 以下の見出しも入れる。
+ * 章（`##`）の直下の表は、章の名前が仕様とテスト設計で違うので、見出しを空にする
+ */
+function tableKey(table, header, cells) {
+  const heading = table.heading === table.h2 ? '' : table.heading
+  return JSON.stringify([normalizeSentence(heading || ''), header.map(normalizeSentence), cells.map(normalizeSentence)])
 }
 
 function headerKey(header) {
@@ -779,7 +784,7 @@ export function listSpecTableRows(markdown) {
       header: table.header,
       cells,
       text: cells.map(normalizeSentence).join(' | '),
-      key: tableKey(table.header, cells),
+      key: tableKey(table, table.header, cells),
     })))
 }
 
@@ -801,7 +806,7 @@ function listDesignTableRows(markdown, specHeaders) {
       rows.push({
         id: stripCode(cells[0] || ''),
         line: table.line,
-        key: tableKey(columns.map((index) => table.header[index]), columns.map((index) => cells[index] || '')),
+        key: tableKey(table, columns.map((index) => table.header[index]), columns.map((index) => cells[index] || '')),
       })
     }
   }
