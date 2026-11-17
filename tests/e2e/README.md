@@ -1,7 +1,6 @@
 # 画面の E2E テスト（tests/e2e）
 
 `docs/product-spec` の外部仕様のうち、画面に現れるもの（表示・操作・遷移）を、本番と同じイメージで動かしたアプリで確かめる Playwright のテスト。
-導入の経緯と決めたことは [docs/plans/e2e-test/plan.md](../../docs/plans/e2e-test/plan.md) にある。
 
 ## 動かし方
 

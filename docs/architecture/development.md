@@ -17,6 +17,7 @@
 - アプリ: http://localhost:3000
 - DB の中身を見る（Drizzle Studio）: https://local.drizzle.studio （ポート 4983）
 - DB は `storage/dev.db`、ファイルは `storage/uploads/`（`DB_PATH` で DB の場所を変えられる）
+- pnpm の版は、ルートの `package.json` の `packageManager`（`pnpm@11.2.2`）で固定している。新しい pnpm は、xlsx（SheetJS の CDN の tarball）に `integrity` が無いロックファイルを拒否し、`Dockerfile` の `pnpm install --frozen-lockfile` が失敗する（11.15.0 以降で確かめた）
 
 ## よく使うコマンド
 
@@ -34,7 +35,7 @@
 
 ## テスト
 
-自動テストは、画面の E2E テスト（[tests/e2e](../../tests/e2e/README.md)）だけ。Docker で本番と同じイメージのアプリを動かし、Playwright で確かめる。導入の経緯は [plans/e2e-test](../plans/e2e-test/plan.md) にある。
+自動テストは、画面の E2E テスト（[tests/e2e](../../tests/e2e/README.md)）だけ。Docker で本番と同じイメージのアプリを動かし、Playwright で確かめる。
 
 ```bash
 pnpm test:e2e                            # 環境を起動し、全テストを流し、後片付けまで行う
