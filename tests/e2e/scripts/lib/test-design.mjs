@@ -5,6 +5,7 @@
 import path from 'node:path'
 
 const ID_PATTERN = /TC-[A-Z]{2}-[A-Z][A-Z0-9]{1,8}-[A-Z]{1,4}[0-9]+(?![A-Za-z0-9])/g
+const LOOSE_ID_PATTERN = /(?<![A-Za-z0-9])TC-[A-Za-z0-9-]*[A-Za-z0-9]/gi
 const ID_EXACT = /^TC-([A-Z]{2})-([A-Z][A-Z0-9]{1,8})-([A-Z]{1,4})([0-9]+)$/
 const PREFIX_PATTERN = /^[A-Z][A-Z0-9]{1,8}$/
 export const AREA_BY_DIR = {
@@ -274,8 +275,9 @@ export function parseDesign(file, markdown) {
   const notes = []
   const malformed = []
 
+  // ID らしい文字列は緩く拾い、形が違うもの（後ろに英字が続く・接頭辞が長い・小文字など）も知らせる
   const pushReferences = (text, where) => {
-    for (const id of text.match(ID_PATTERN) || []) references.push({ id, where })
+    for (const id of text.match(LOOSE_ID_PATTERN) || []) references.push({ id, where, badShape: !ID_EXACT.test(id) })
   }
 
   for (const table of tables) {
@@ -489,7 +491,8 @@ export function checkTestDesign(input) {
       errors.push(`印の行の形が違う: ${bad.text.slice(0, 40)}（${bad.where}。${bad.problem}）`)
     }
     for (const reference of design.references) {
-      if (abolishedIds.has(reference.id)) errors.push(`廃止した ID を参照している: ${reference.id}（${reference.where}）`)
+      if (reference.badShape) errors.push(`ID の形が違う参照: ${reference.id}（${reference.where}。TC-{PG|FT}-{接頭辞}-{種別}{番号}）`)
+      else if (abolishedIds.has(reference.id)) errors.push(`廃止した ID を参照している: ${reference.id}（${reference.where}）`)
       else if (!definitionById.has(reference.id)) errors.push(`定義されていない ID を参照している: ${reference.id}（${reference.where}）`)
     }
     for (const out of design.outOfScope) {
@@ -504,6 +507,7 @@ export function checkTestDesign(input) {
 
   errors.push(...checkStories(designs, specSources))
   errors.push(...checkHeadings(designs, specSources, designSources))
+  errors.push(...checkEarsSplit(Object.fromEntries(specFiles.map((file) => [file, specSources[file] || '']))))
   errors.push(...checkSentences(designs, specSources, designSources))
   const pendingFiles = new Set(designs.filter(({ design }) => design.pendingTests).map(({ design }) => design.file))
   const tests = checkTests({ definitionById, abolishedIds, outOfScopeIds, browserTests, pendingFiles })
@@ -517,12 +521,24 @@ export function checkSpecWriting(specSources) {
   const errors = []
   for (const [file, markdown] of Object.entries(specSources)) {
     for (const problem of findSourceNoteProblems(markdown)) errors.push(`${problem}（${file}）`)
+  }
+  errors.push(...checkEarsSplit(specSources))
+  return errors
+}
+
+/**
+ * 仕様書の振る舞いの文が EARS の節に分けられるかを確かめる。
+ * テスト設計の有無に関係なく、すべての仕様書を見る（ユーザーストーリーの表しかないテスト設計でも見落とさない）
+ */
+function checkEarsSplit(specSources) {
+  const errors = []
+  for (const [file, markdown] of Object.entries(specSources)) {
     const reported = new Set()
     for (const sentence of listSpecSentences(markdown)) {
       for (const text of sentence.unsplittable) {
         if (reported.has(text)) continue
         reported.add(text)
-        errors.push(`EARS の節に分けられない仕様の文: ${text}（${file}）`)
+        errors.push(`EARS の節に分けられない仕様の文: ${text}（${file}。キーワードとつなぎの語を記載ルールに合わせる）`)
       }
     }
   }
@@ -794,7 +810,7 @@ function listDesignTableRows(markdown, specHeaders) {
 
 /**
  * テスト設計の振る舞いの章から、一覧表の行（結果の列を持つ表）と、表の下の「- 仕様 <ID>: <文>」を照合のキーにする。
- * 組み合わせの章の行・引用は、仕様に無い行を見つけるためだけに読む（仕様の文を満たす行には数えない。onlyCheck）。
+ * 組み合わせの章の行・引用は、仕様の文を満たす行には数えない（onlyCheck）。節と結果が、それぞれ仕様のどれかの文にあることだけを確かめる。
  */
 function listDesignRows(markdown) {
   const { tables, bullets } = parseMarkdown(markdown)
@@ -813,7 +829,7 @@ function listDesignRows(markdown) {
         if (keyword && value) value.split(' → ').forEach((text) => clauses.push({ keyword, text: text.trim() }))
       })
       const result = normalizeSentence(cells[resultColumn] || '').replace(PATH_REFERENCE_PATTERN, '').trim()
-      rows.push({ id: stripCode(cells[0] || ''), line: table.line, key: earsKey(clauses, result), onlyCheck: table.h2 === COMBINATION_HEADING })
+      rows.push({ id: stripCode(cells[0] || ''), line: table.line, clauses, result, key: earsKey(clauses, result), onlyCheck: table.h2 === COMBINATION_HEADING })
     }
   }
   for (const bullet of bullets) {
@@ -821,7 +837,7 @@ function listDesignRows(markdown) {
     const quote = parseMark(bullet.text)
     if (!quote || quote.label !== QUOTE_LABEL) continue
     const { clauses, result } = splitEars(normalizeSentence(quote.body))
-    rows.push({ id: quote.id, line: bullet.line, key: earsKey(clauses, result), onlyCheck: bullet.h2 === COMBINATION_HEADING })
+    rows.push({ id: quote.id, line: bullet.line, clauses, result, key: earsKey(clauses, result), onlyCheck: bullet.h2 === COMBINATION_HEADING })
   }
   return rows
 }
@@ -838,18 +854,22 @@ function checkSentences(designs, specSources, designSources) {
     const designRows = listDesignRows(designSources[row.file])
     const designKeys = new Set(designRows.filter((designRow) => !designRow.onlyCheck).map((designRow) => designRow.key))
     const specKeys = new Set(sentences.map((sentence) => sentence.key))
-    const reported = new Set()
+    // 組み合わせの行は節をまたいで条件を重ねるので、文 1 つとは一致しない。節と結果がそれぞれ仕様のどれかの文にあることを確かめる
+    const specClauses = new Set(sentences.flatMap((sentence) => sentence.clauses.map((clause) => `${clause.keyword} ${clause.text}`)))
+    const specResults = new Set(sentences.map((sentence) => sentence.result))
 
+    // EARS の節に分けられない文は checkEarsSplit が知らせる
     for (const sentence of sentences) {
-      for (const text of sentence.unsplittable) {
-        if (reported.has(text)) continue
-        reported.add(text)
-        errors.push(`EARS の節に分けられない仕様の文: ${text}（${row.file}。キーワードとつなぎの語を記載ルールに合わせる）`)
-      }
       if (sentence.isLeaf && !designKeys.has(sentence.key)) errors.push(`仕様の文に当たる行が無い: ${sentence.text}（${row.file}）`)
     }
     for (const designRow of designRows) {
-      if (!specKeys.has(designRow.key)) errors.push(`仕様に無い行: ${designRow.id}（${row.file}:${designRow.line}。節と結果が仕様の文と一致しない）`)
+      if (!designRow.onlyCheck) {
+        if (!specKeys.has(designRow.key)) errors.push(`仕様に無い行: ${designRow.id}（${row.file}:${designRow.line}。節と結果が仕様の文と一致しない）`)
+        continue
+      }
+      const strayClauses = designRow.clauses.filter((clause) => !specClauses.has(`${clause.keyword} ${clause.text}`))
+      for (const clause of strayClauses) errors.push(`組み合わせの行の節が仕様に無い: ${designRow.id}（${row.file}:${designRow.line}。${clause.keyword} ${clause.text}）`)
+      if (!specResults.has(designRow.result)) errors.push(`組み合わせの行の結果が仕様に無い: ${designRow.id}（${row.file}:${designRow.line}。${designRow.result}）`)
     }
 
     // 仕様の表は、同じ列の表をテスト設計に写す。行ごとに照らす
