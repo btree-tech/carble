@@ -12,6 +12,6 @@
     "auth:generate": "pnpm dlx @better-auth/cli@latest generate --output ./packages/db/lib/schema/auth.ts"
   },
   "devDependencies": {
-    "better-auth": "^1.4.7"
+    "better-auth": "^1.7.25"
   }
 }
