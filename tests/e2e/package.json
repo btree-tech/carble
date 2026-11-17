@@ -6,7 +6,7 @@
   "scripts": {
     "test": "playwright test",
     "typecheck": "tsc --noEmit",
-    "coverage:spec": "node scripts/check-spec-coverage.mjs"
+    "check:test-design": "node scripts/check-test-design.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
