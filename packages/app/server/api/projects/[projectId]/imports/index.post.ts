@@ -57,6 +57,32 @@ async function getRequestFileStream(writeStream: WriteStream) {
   })
 }
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['imports'],
+    summary: 'インポートの登録',
+    // 入力: [場所, 名前, 型, 必須, 内容]
+    'x-input': [
+      ['パス', 'projectId', '整数', '必須', 'プロジェクトの ID'],
+      ['本文（multipart）', 'file', 'zip・CSV・エクセルのファイル', '必須', 'インポートするファイル'],
+      ['本文（multipart）', 'update', 'true・false', '任意', 'true なら同じ ID のカードを上書きする'],
+    ],
+    // 処理: [条件, 処理]
+    'x-process': [
+      ['（常に）', 'ファイルを保存し、インポートを取り込み待ち（OPEN）として登録する（取り込みはインポート・エクスポートの仕様）'],
+      ['update が true', '同じ ID のカードを上書きするインポートにする'],
+    ],
+    // 出力: [状態, 条件, 本文]
+    'x-output': [
+      ['200', '（常に）', '登録したインポート'],
+    ],
+    // エラー: [状態, 条件]（ログイン・メンバー・ロールによるものは docs/product-spec/features/roles.md）
+    'x-errors': [
+      ['422', 'file が無いか、zip・CSV・エクセルのファイルでない'],
+    ],
+  },
+})
+
 export default defineEventHandler(async () => {
   const sessionUser = await useSessionUser()
   const project = await findProject({

@@ -1,0 +1,5 @@
+# runner イメージに要るのは package.json・pnpm-lock.yaml・pnpm-workspace.yaml だけ
+node_modules
+playwright-report
+test-results
+compose-logs

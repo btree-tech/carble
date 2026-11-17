@@ -1,6 +1,29 @@
 import { createReadStream, existsSync } from 'node:fs'
 import z from 'zod'
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['images'],
+    summary: '画像のファイル',
+    // 入力: [場所, 名前, 型, 必須, 内容]
+    'x-input': [
+      ['パス', 'filename', '文字列', '必須', '画像のファイル名'],
+    ],
+    // 処理: [条件, 処理]
+    'x-process': [
+      ['（常に）', '画像のファイルを読む'],
+    ],
+    // 出力: [状態, 条件, 本文]
+    'x-output': [
+      ['200', '（常に）', '画像のファイル'],
+    ],
+    // エラー: [状態, 条件]（ログイン・メンバー・ロールによるものは docs/product-spec/features/roles.md）
+    'x-errors': [
+      ['404', 'filename のファイルが無い'],
+    ],
+  },
+})
+
 export default defineEventHandler(async (event) => {
   const { filename } = await getValidatedRouterParams(
     event,

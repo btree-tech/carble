@@ -3,6 +3,43 @@ import { createId } from '@paralleldrive/cuid2'
 import { eq, max, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['cards'],
+    summary: 'カードの追加',
+    // 入力: [場所, 名前, 型, 必須, 内容]
+    'x-input': [
+      ['パス', 'projectId', '整数', '必須', 'プロジェクトの ID'],
+      ['本文（JSON）', 'nextToId', '整数', '任意', 'このカードのすぐ下に追加する'],
+      ['本文（multipart）', 'image', '画像のファイル', '任意', '追加するカードに付ける画像'],
+    ],
+    // 処理: [条件, 処理]
+    'x-process': [
+      ['（常に）', 'カードの ID を、プロジェクトの中でいちばん大きい ID の次にする'],
+      ['nextToId が無い', '並び順の末尾に追加する'],
+      ['nextToId がある', 'そのカードのすぐ下に追加し、プロジェクトのカードの並び順を 1 から振り直す'],
+      ['image がある', '画像を保存し、カードに付ける'],
+      ['（常に）', 'プロジェクトの最終更新日時を更新する'],
+    ],
+    // 出力: [状態, 条件, 本文]
+    'x-output': [
+      ['200', 'nextToId が無い', '追加したカード。画像（images）を付ける'],
+      ['204', 'nextToId がある', 'なし'],
+    ],
+    // エラー: [状態, 条件]（ログイン・メンバー・ロールによるものは docs/product-spec/features/roles.md）
+    'x-errors': [
+      ['400', '本文が入力の形に合わない'],
+      ['400', 'nextToId のカードがプロジェクトに無い'],
+      ['400', 'image が画像のファイルでない'],
+      ['409', 'プロジェクトに取り込み待ち・取り込み中のインポートがある'],
+    ],
+    // 実装との乖離
+    'x-implementation-gap': [
+      ['画像を付けずに追加すると、プロジェクトの最終更新日時を更新しない（[ISSUES.md](../../ISSUES.md#カードを追加しても最終更新日時が変わらない)）'],
+    ],
+  },
+})
+
 export default defineEventHandler(async (event) => {
   const project = await findProject()
   const data = getRequestHeader(event, 'content-type')?.startsWith('multipart/form-data')

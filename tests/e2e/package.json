@@ -1,0 +1,17 @@
+{
+  "name": "carble-e2e",
+  "private": true,
+  "description": "画面の E2E テスト（Playwright）。製品の依存と分けるため、runner コンテナの中だけでインストールする",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "check:test-design": "node scripts/check-test-design.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.10.1",
+    "monocart-coverage-reports": "2.13.2",
+    "typescript": "5.9.3"
+  }
+}

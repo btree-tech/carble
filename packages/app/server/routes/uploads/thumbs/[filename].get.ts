@@ -3,6 +3,30 @@ import { basename } from 'node:path'
 import sharp from 'sharp'
 import z from 'zod'
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['images'],
+    summary: '縮小した画像のファイル',
+    // 入力: [場所, 名前, 型, 必須, 内容]
+    'x-input': [
+      ['パス', 'filename', '文字列', '必須', '画像のファイル名に .webp を付けたもの'],
+    ],
+    // 処理: [条件, 処理]
+    'x-process': [
+      ['縮小した画像がまだ無い', '長辺 640px 以内に縮小した画像（WebP）を作る。元の画像より大きくはしない'],
+      ['縮小した画像がある', '作った縮小した画像を使う'],
+    ],
+    // 出力: [状態, 条件, 本文]
+    'x-output': [
+      ['200', '（常に）', '縮小した画像のファイル（WebP）'],
+    ],
+    // エラー: [状態, 条件]（ログイン・メンバー・ロールによるものは docs/product-spec/features/roles.md）
+    'x-errors': [
+      ['404', '元の画像のファイルが無い'],
+    ],
+  },
+})
+
 export default defineEventHandler(async (event) => {
   const { filename } = await getValidatedRouterParams(
     event,

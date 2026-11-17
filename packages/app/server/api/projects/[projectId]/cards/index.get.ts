@@ -2,6 +2,39 @@ import { cards, contents } from '@carble/db/schema'
 import { and, asc, desc, eq, getTableColumns, isNull, like } from 'drizzle-orm'
 import { z } from 'zod'
 
+defineRouteMeta({
+  openAPI: {
+    tags: ['cards'],
+    summary: 'カードの一覧',
+    // 入力: [場所, 名前, 型, 必須, 内容]
+    'x-input': [
+      ['パス', 'projectId', '整数', '必須', 'プロジェクトの ID'],
+      ['クエリ', 'q', '文字列', '任意', '値で絞り込む文字列'],
+      ['クエリ', 'sort', 'id・order・項目の ID', '任意', '並べる基準（既定は id）'],
+      ['クエリ', 'direction', 'asc・desc', '任意', '並べる向き（既定は asc）'],
+    ],
+    // 処理: [条件, 処理]
+    'x-process': [
+      ['（常に）', 'プロジェクトのカードを取得する'],
+      ['q がある', '値に q を含むカードだけにする'],
+      ['sort が無いか id', 'ID の順に並べる'],
+      ['sort が order', '並び順の順に並べ、並び順が同じなら ID の順にする'],
+      ['sort が項目の ID', 'その項目の値の順に並べ、値が同じなら ID の順にする'],
+      ['direction が無いか asc', '昇順に並べる'],
+      ['direction が desc', '降順に並べる'],
+    ],
+    // 出力: [状態, 条件, 本文]
+    'x-output': [
+      ['200', '（常に）', 'カードの配列（items）と、プロジェクトのカードの総数（total。q で絞り込む前の数）。各カードに、値（contents）・画像（images。追加した順）・複製元のカード（original）・複製先のカード（duplicates。複製先のプロジェクトの名前つき）を付ける'],
+    ],
+    // エラー: [状態, 条件]（ログイン・メンバー・ロールによるものは docs/product-spec/features/roles.md）
+    'x-errors': [
+      ['400', 'sort・direction が入力の形に合わない'],
+      ['409', 'プロジェクトに取り込み待ち・取り込み中のインポートがある'],
+    ],
+  },
+})
+
 export default defineEventHandler(async (event) => {
   const project = await findProject()
   const data = await getValidatedQuery(
