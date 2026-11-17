@@ -44,6 +44,14 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm --no-deps runner pnpm run check:test-design
 ```
 
+### GitHub Actions
+
+[.github/workflows/e2e.yml](../../.github/workflows/e2e.yml) が、プルリクエストと `master`・`develop` への push のたびに、型の検査・テスト設計の検査・全テストを流す（手動でも動かせる）。手元と同じく `docker-compose.e2e.yml` と `scripts/run.sh` を使う。
+
+- `CI=true` で流すので、失敗したテストは 2 回までやり直し、`test.only` が残っていると失敗にする（`playwright.config.ts`）
+- 結果（`playwright-report/`・`test-results/`・`compose-logs/`）は、実行のページの artifact `e2e-report` に 14 日残す
+- ランナーは x64 なので、app は模倣せずに動く。全体の時間は、インポートのテストの待ちでほぼ決まる
+
 ## 構成
 
 | 場所 | 内容 |

@@ -1,0 +1,57 @@
+# 画面の E2E テスト（tests/e2e）を流す
+# 手元と同じく Docker Compose（docker-compose.e2e.yml）で app と runner を動かす。動かし方は tests/e2e/README.md
+name: E2E
+
+on:
+  push:
+    # CESCHI-251 は E2E を入れる作業のブランチ。プルリクエストを作る前に Actions で確かめるため（マージする前に外す）
+    branches: [master, develop, CESCHI-251]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同じブランチ・プルリクエストで新しく動いたら、前の実行は止める
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    # 全体で 20〜30 分ほど（インポートのテストが毎分 0 秒の取り込みを順に待つ）
+    timeout-minutes: 60
+    env:
+      # playwright.config.ts が見る（リトライ・test.only の禁止・レポートの形）
+      CI: "true"
+      COMPOSE: docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: イメージを作る
+        run: $COMPOSE build runner app
+
+      - name: 型の検査
+        run: $COMPOSE run --rm --no-deps runner pnpm run typecheck
+
+      # 外部仕様 → テスト設計 → テストの対応（docs/test-design/README.md の「検査」）
+      - name: テスト設計の検査
+        run: $COMPOSE run --rm --no-deps runner pnpm run check:test-design
+
+      - name: E2E テスト
+        run: bash tests/e2e/scripts/run.sh
+        env:
+          E2E_SKIP_BUILD: "1"
+
+      - name: 結果を残す
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            tests/e2e/playwright-report/
+            tests/e2e/test-results/
+            tests/e2e/compose-logs/
+          if-no-files-found: ignore
+          retention-days: 14
