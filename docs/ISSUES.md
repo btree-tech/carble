@@ -2,7 +2,7 @@
 
 仕様書（[docs/product-spec/](product-spec/README.md)）に書かない、実装の不具合や制約。仕様書の「実装との乖離」からリンクする。
 
-セキュリティの指摘は [plans/security-review/report.md](plans/security-review/report.md)（2026-10-13）にまとめてあり、ここには重ねて書かない。
+セキュリティの脆弱性は、ここにも仕様書にも書かず、課題管理で別に扱う。
 
 ## 直すときの手順
 
