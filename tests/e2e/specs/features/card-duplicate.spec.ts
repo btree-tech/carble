@@ -194,6 +194,21 @@ test.describe('別のプロジェクトへの複製', () => {
     await expect(option).toBeDisabled()
   })
 
+  test('「新しいプロジェクト」を選ぶと、「無題のプロジェクト」という名前のプロジェクトを作り、そこに複製する', { tag: ['@TC-FT-DUP-OTHR6'] }, async ({ ownerPage, ownerApi, project }) => {
+    await ownerApi.addCard(project.id, { みだし: 'x' })
+    const tv = new TableViewPage(ownerPage)
+    await tv.open(project.id)
+    await new CardMenu(ownerPage, tv.cardMenuButton(1)).choose('別プロジェクトに複製')
+    await DuplicateTargets.dialog(ownerPage).newProject.click()
+    await expect(tv.toast('複製しました')).toBeVisible()
+    // 遷移した先は開けない（既知の問題）ので、複製元のカードの複製先から、作ったプロジェクトとカードを確かめる
+    await expect(ownerPage).toHaveURL((url) => /^\/projects\/\d+$/.test(url.pathname) && url.pathname !== `/projects/${project.id}`)
+
+    await tv.open(project.id)
+    await new CardMenu(ownerPage, tv.cardMenuButton(1)).choose('複製先カードを表示')
+    await expect(new DuplicatesDialog(ownerPage).links).toHaveText(['無題のプロジェクト - ID: 1'])
+  })
+
   test('【既知の問題】「新しいプロジェクト」を選ぶと「無題のプロジェクト」を作って複製するが、遷移した先のテーブルビューが何も表示しない（あるべき: 作ったプロジェクトのテーブルビューを表示する）', { annotation: [knownIssue('docs/ISSUES.md', '新しいプロジェクトに複製するとプロジェクトを開けない'), knownIssue(SPEC, '「新しいプロジェクト」に複製すると、作ったプロジェクトにオーナーが設定されない')] }, async ({ ownerPage, ownerApi, project }) => {
     await ownerApi.addCard(project.id, { みだし: 'x' })
     const tv = new TableViewPage(ownerPage)

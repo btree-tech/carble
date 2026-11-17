@@ -141,7 +141,7 @@ test.describe('インポート', () => {
     await expect(settings.updateCheckbox).toBeChecked()
   })
 
-  test('【実装との乖離】アップロードに失敗しても（xlsx・csv・zip でないファイル）、メッセージを表示せず画面に留まる（あるべき: 失敗したことを表示する）', { annotation: [knownIssue('pages/project-settings.md', 'インポートのアップロードに失敗しても（ブラウザが送るファイルの種類が xlsx・csv・zip のどれとも判定されない場合など）、メッセージを表示しない')] }, async ({ ownerPage, project }) => {
+  test('【実装との乖離】アップロードに失敗しても（xlsx・csv・zip でないファイル）、メッセージを表示せず画面に留まる（あるべき: 何を表示するかは未定。テスト設計の「仕様の不足」）', { annotation: [knownIssue('pages/project-settings.md', 'インポートのアップロードに失敗しても（ブラウザが送るファイルの種類が xlsx・csv・zip のどれとも判定されない場合など）、メッセージを表示しない')] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
     // ファイルを選ぶ画面の種類の絞り込みを使わずに選んだ場合（setFiles は accept を見ない）

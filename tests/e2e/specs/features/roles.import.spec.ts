@@ -6,8 +6,10 @@ import { IMPORT_TIMEOUT } from '../../support/imports'
 
 // インポートは毎分 0 秒に動く定期の処理が 1 件ずつ取り込む。結果は画面で待つ（1 件あたり最大 1 分あまり）
 
+// ストーリー TC-FT-ROLES-US3 は、サーバー側でインポートをオーナーだけに限れていないため、テスト設計で対象外（乖離）にしている。
+// このテストは画面での操作のシナリオとして残し、サーバー側を直したら @story と @TC-FT-ROLES-US3 のタグを戻す
 test.describe('ユーザーストーリー', () => {
-  test('編集者の設定にはインポートが無く、オーナーだけが同じIDのカードを一括で上書きし、ファイルに無いカードの編集者の書き込みは残る', { tag: ['@story', '@TC-FT-ROLES-US3'] }, async ({ ownerPage, ownerApi, project, newAccount, apiAs, pageAs, tag }) => {
+  test('編集者の設定にはインポートが無く、オーナーだけが同じIDのカードを一括で上書きし、ファイルに無いカードの編集者の書き込みは残る', async ({ ownerPage, ownerApi, project, newAccount, apiAs, pageAs, tag }) => {
     const first = await ownerApi.addCard(project.id, { みだし: '採集時の記録' })
     const second = await ownerApi.addCard(project.id, { みだし: '編集者が直す前' })
     const editor = await newAccount({ suffix: 'editor' })
