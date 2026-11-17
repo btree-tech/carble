@@ -31,8 +31,8 @@ E2E_COVERAGE=1 pnpm test:e2e                   # 全テストを流し、tests/e
 E2E_COVERAGE=1 pnpm test:e2e specs/features/card-duplicate.spec.ts
 ```
 
-- `docker-compose.e2e.coverage.yml` を重ね、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にする。付けないときは、今までどおり本番と同じイメージで流す
-- GitHub Actions では、本番と同じイメージで流すジョブ（`e2e`）と並べて、カバレッジのジョブ（`coverage`）を流す（下の「GitHub Actions」）
+- `docker-compose.e2e.coverage.yml` を重ね、app をソースマップ付きの別のイメージ（`carble-e2e-app-coverage`）にする。付けないときは、本番と同じイメージで流す
+- GitHub Actions は、カバレッジを取って全テストを流す（下の「GitHub Actions」）。本番と同じイメージとの違いは、ビルドでソースマップを出すことと、カバレッジを書き出すための起動の仕方だけ
 - ブラウザ側は、fixture の `pageAs` で開いた画面ごとに Chromium のカバレッジを集める（`support/coverage.ts`）。サーバー側は app の `NODE_V8_COVERAGE` で集め、テストの後に app を止めて書き出させる
 - `scripts/coverage-report.mjs` が両方を合わせ、ソースマップで `packages/app` のファイルの行に対応づける（`lcov.info` も出す）
 - テストの中で別に開いたタブ（印刷の確認用など）は数えない
@@ -63,11 +63,12 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 
 ### GitHub Actions
 
-[.github/workflows/e2e.yml](../../.github/workflows/e2e.yml) が、プルリクエストと `master`・`develop` への push のたびに、型の検査・テスト設計の検査・全テストを流す（手動でも動かせる）。手元と同じく `docker-compose.e2e.yml` と `scripts/run.sh` を使う。
+[.github/workflows/e2e.yml](../../.github/workflows/e2e.yml) が、プルリクエストと `master`・`develop` への push のたびに、型の検査・テスト設計の検査・全テストを流す（手動でも動かせる）。手元と同じく `docker-compose.e2e.yml` と `scripts/run.sh` を使う。全テストは、カバレッジを取って流す（`E2E_COVERAGE=1`。上の「カバレッジ」）。
 
 - `CI=true` で流すので、失敗したテストは 2 回までやり直し、`test.only` が残っていると失敗にする（`playwright.config.ts`）
 - 結果（`playwright-report/`・`test-results/`・`compose-logs/`）は、実行のページの artifact `e2e-report` に 14 日残す
-- 並べて、カバレッジを取るジョブ（`coverage`）も流す。要約を実行のページの Summary に表で出し、レポート（`coverage/`）を artifact `e2e-coverage` に 14 日残す
+- カバレッジの要約を実行のページの Summary に表で出し、レポート（`coverage/`）を artifact `e2e-coverage` に 14 日残す
+- 別のジョブ（`openapi`）で、API の仕様（`docs/product-spec/api/`）がコードとずれていないかを確かめる（`pnpm openapi --check`）
 - ランナーは x64 なので、app は模倣せずに動く。全体の時間は、インポートのテストの待ちでほぼ決まる
 
 ## 構成
