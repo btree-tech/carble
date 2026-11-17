@@ -4,7 +4,6 @@ import { TableViewPage } from '../../pages/TableViewPage'
 import type { ProductApi } from '../../support/api'
 import { SESSION_COOKIE, type Account } from '../../support/db'
 import { IMPORT_TIMEOUT } from '../../support/imports'
-import { spec } from '../../support/spec'
 
 const SPEC = 'pages/table-view.md'
 
@@ -37,13 +36,7 @@ async function waitForImport(api: ProductApi, projectId: number, status: 'DONE' 
   }, { timeout: IMPORT_TIMEOUT, intervals: [5_000] }).toBe(status)
 }
 
-test('オーナーには、まだ知らせていないインポートのうち最も新しい 1 件の結果を表示して知らせたことにし、「詳細」でプロジェクト設定のインポートに遷移する', spec(SPEC,
-  'ヘッダー > WHERE オーナーの場合、まだ知らせていないインポートのうち',
-  'ヘッダー > WHERE オーナーの場合 > WHERE インポートが完了した場合',
-  'ヘッダー > WHERE オーナーの場合 > WHERE インポートが失敗した場合',
-  'ヘッダー > WHERE オーナーの場合 > どちらも「詳細」ボタンで',
-  'カードの一覧 > カードを並び順の昇順に表示する > 並び順は',
-), async ({ ownerPage, ownerApi, owner, project, newAccount, apiAs, pageAs }) => {
+test('オーナーには、まだ知らせていないインポートのうち最も新しい 1 件の結果を表示して知らせたことにし、「詳細」でプロジェクト設定のインポートに遷移する', { tag: ['@TC-PG-TABLE-HDR11', '@TC-PG-TABLE-HDR12', '@TC-PG-TABLE-HDR13', '@TC-PG-TABLE-HDR14', '@TC-PG-TABLE-LIST4'] }, async ({ ownerPage, ownerApi, owner, project, newAccount, apiAs, pageAs }) => {
   const editor = await newAccount({ suffix: 'editor' })
   await ownerApi.invite(project.id, editor.username!)
   await (await apiAs(editor)).accept(project.id, editor.id)

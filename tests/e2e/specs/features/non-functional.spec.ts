@@ -3,12 +3,8 @@ import { join } from 'node:path'
 import { expect, test } from '../../fixtures'
 import { addImage, fileOf, MIME, ProjectScreen } from '../../pages/ProjectSettingsPage'
 import { open } from '../../support/navigation'
-import { spec } from '../../support/spec'
 
-test('Docker で起動したサーバー（起動時にマイグレーションした、まっさらな DB）で、画面を開いてデータを読み書きできる', spec('features/non-functional.md',
-  '動作環境 > サーバーは Docker で動作する',
-  'サーバーの設定 > WHEN サーバーを起動すると（Docker の場合）、DB のマイグレーションを実行してからアプリを起動する',
-), async ({ ownerPage, ownerApi, project }) => {
+test('Docker で起動したサーバー（起動時にマイグレーションした、まっさらな DB）で、画面を開いてデータを読み書きできる', { tag: ['@TC-FT-NFR-ENV4', '@TC-FT-NFR-CONF2', '@story', '@TC-FT-NFR-US3'] }, async ({ ownerPage, ownerApi, project }) => {
   // E2E の app は本番と同じ Dockerfile のイメージで、毎回まっさらなボリュームから起動する（docker-compose.e2e.yml）
   await ownerApi.addCard(project.id, { みだし: '起動後に書いた値' })
 
@@ -19,9 +15,7 @@ test('Docker で起動したサーバー（起動時にマイグレーション�
   await expect(screen.values(screen.cardRows.first()).first()).toHaveValue('起動後に書いた値')
 })
 
-test('Basic 認証の設定が無い（既定値）と、Basic 認証をかけずに画面と API を開ける', spec('features/non-functional.md',
-  'Basic 認証 > 既定値は設定なし（Basic 認証をかけない）',
-), async ({ pageAs }) => {
+test('Basic 認証の設定が無い（既定値）と、Basic 認証をかけずに画面と API を開ける', { tag: ['@TC-FT-NFR-AUTH3'] }, async ({ pageAs }) => {
   // E2E の app は NUXT_BASIC_AUTH_USER・NUXT_BASIC_AUTH_PASSWORD を設定していない
   const page = await pageAs('guest')
   const response = await page.goto('/login')
@@ -34,9 +28,7 @@ test('Basic 認証の設定が無い（既定値）と、Basic 認証をかけ�
   expect(health.headers()['www-authenticate']).toBeUndefined()
 })
 
-test('入力した値は、入力が止まってから 1 秒後に保存する', spec('features/non-functional.md',
-  '自動保存 > 入力した値は、入力が止まってから 1 秒後に保存する',
-), async ({ ownerPage, ownerApi, project }) => {
+test('入力した値は、入力が止まってから 1 秒後に保存する', { tag: ['@TC-FT-NFR-AUTO1'] }, async ({ ownerPage, ownerApi, project }) => {
   const card = await ownerApi.addCard(project.id)
   const screen = new ProjectScreen(ownerPage, project.id)
   await screen.openCard(card.id)
@@ -71,9 +63,7 @@ test('入力した値は、入力が止まってから 1 秒後に保存する',
   await expect(ownerPage.getByRole('textbox', { name: 'みだし' })).toHaveValue('autosave')
 })
 
-test('画像は、元の画像とは別に、長辺 640px 以内に縮小した WebP を初めて表示するときに作って表示する。元より大きくはしない', spec('features/non-functional.md',
-  '画像の表示 > 画像は、元の画像とは別に、長辺 640px 以内に縮小した画像（WebP）を',
-), async ({ ownerPage, owner, ownerApi, project }) => {
+test('画像は、元の画像とは別に、長辺 640px 以内に縮小した WebP を初めて表示するときに作って表示する。元より大きくはしない', { tag: ['@TC-FT-NFR-IMG1'] }, async ({ ownerPage, owner, ownerApi, project }) => {
   const card = await ownerApi.addCard(project.id)
   const wide = await fileOf('wide.png', MIME.png) // 1000×500
   const small = await fileOf('small.png', MIME.png) // 100×50

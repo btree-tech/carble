@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { icon } from '../TableViewPage'
 
 export type CardMenuItem =
@@ -32,7 +32,11 @@ export class CardMenu {
   }
 
   async choose(name: CardMenuItem) {
-    await this.open()
-    await this.item(name).click()
+    // カード入力ビューで別のカードに移った直後は、画面の描き替えでメニューが閉じ、項目を押せないことがある。押せるまで開き直す
+    // （押せなかったときは何も起きていないので、やり直してよい）
+    await expect(async () => {
+      if (!await this.item(name).isVisible()) await this.open()
+      await this.item(name).click({ timeout: 2_000 })
+    }).toPass({ timeout: 15_000 })
   }
 }

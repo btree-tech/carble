@@ -3,16 +3,12 @@ import { CardMenu } from '../../pages/components/CardMenu'
 import { CardSelection, GridSelection } from '../../pages/components/CardSelection'
 import { DuplicateTargets } from '../../pages/components/DuplicateDialog'
 import { dragWithMouse, TableViewPage } from '../../pages/TableViewPage'
-import { knownIssue, spec, withIssue } from '../../support/spec'
+import { knownIssue } from '../../support/spec'
 
 const SPEC = 'features/card-selection.md'
 
 test.describe('選択', () => {
-  test('テーブルビューのカードごとと見出しに、グリッドビューのカードごとに、選択のチェックボックスを表示する', spec(SPEC,
-    '選択 > カードごとに選択のチェックボックスを表示する',
-    '選択 > テーブルビューの見出しに',
-    'pages/table-view.md > カードの一覧 > 選択のチェックボックスは',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('テーブルビューのカードごとと見出しに、グリッドビューのカードごとに、選択のチェックボックスを表示する', { tag: ['@TC-FT-SELECT-SEL1', '@TC-FT-SELECT-SEL2', '@TC-PG-TABLE-LIST10'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     await tv.open(project.id)
@@ -24,9 +20,7 @@ test.describe('選択', () => {
     for (const id of [1, 2, 3]) await expect(grid.checkbox(id)).not.toBeChecked()
   })
 
-  test('見出しのチェックボックスを選ぶと、表示しているすべてのカードを選ぶ', spec(SPEC,
-    '選択 > テーブルビューの見出しに > WHEN 見出しのチェックボックスを選ぶと',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('見出しのチェックボックスを選ぶと、表示しているすべてのカードを選ぶ', { tag: ['@TC-FT-SELECT-SEL3'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['apple', 'banana', 'apricot']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -41,10 +35,7 @@ test.describe('選択', () => {
     await expect(tv.headerCheckbox).toBeChecked({ indeterminate: false })
   })
 
-  test('一部のカードだけを選んでいる間は見出しを「一部選択」にし、見出しを押すと選択をすべて外す', spec(SPEC,
-    '選択 > テーブルビューの見出しに > WHILE 一部のカードだけを選んでいる間は',
-    '選択 > テーブルビューの見出しに > WHEN 1 件以上選んでいるときに見出しのチェックボックスを押すと',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('一部のカードだけを選んでいる間は見出しを「一部選択」にし、見出しを押すと選択をすべて外す', { tag: ['@TC-FT-SELECT-SEL5', '@TC-FT-SELECT-SEL4'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -65,9 +56,7 @@ test.describe('選択', () => {
     await expect(selection.countButton).toBeHidden()
   })
 
-  test('テーブルビューで別の画面に移るか、カードの一覧が変わる（追加・複製・削除・並び替え・検索）と、選択を外す', spec(SPEC,
-    '選択 > WHEN テーブルビューで別の画面に移るか',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('テーブルビューで別の画面に移るか、カードの一覧が変わる（追加・複製・削除・並び替え・検索）と、選択を外す', { tag: ['@TC-FT-SELECT-SEL6'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -122,9 +111,7 @@ test.describe('選択', () => {
     await expectCleared()
   })
 
-  test('グリッドビューでは、別の画面に移っても選択を保つ', spec(SPEC,
-    '選択 > グリッドビューでは、別の画面に移っても選択を保つ',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('グリッドビューでは、別の画面に移っても選択を保つ', { tag: ['@TC-FT-SELECT-SEL7'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const grid = new GridSelection(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -149,9 +136,7 @@ test.describe('選択', () => {
     await expect(grid.checkbox(3)).toBeChecked()
   })
 
-  test('グリッドビューでカードの一覧が変わると、一覧から無くなったカードだけを選択から外す', spec(SPEC,
-    '選択 > グリッドビューでは、別の画面に移っても選択を保つ > WHEN グリッドビューでカードの一覧が変わると',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('グリッドビューでカードの一覧が変わると、一覧から無くなったカードだけを選択から外す', { tag: ['@TC-FT-SELECT-SEL8'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const grid = new GridSelection(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -178,10 +163,7 @@ test.describe('選択', () => {
     await expect(grid.checkbox(2)).not.toBeChecked()
   })
 
-  test('【実装との乖離】グリッドビューで選んだカードをテーブルビューで削除して戻ると、無くなったカードが選択に残る（あるべき: 一覧から無くなったカードを選択から外す）', withIssue(
-    spec(SPEC, '選択 > グリッドビューでは、別の画面に移っても選択を保つ > WHEN グリッドビューでカードの一覧が変わると'),
-    knownIssue(SPEC, 'グリッドビューで選んだカードを、ほかの画面で削除してからグリッドビューに戻ると、削除したカードが選択に残ったままになる'),
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('【実装との乖離】グリッドビューで選んだカードをテーブルビューで削除して戻ると、無くなったカードが選択に残る（あるべき: 一覧から無くなったカードを選択から外す）', { annotation: [knownIssue(SPEC, 'グリッドビューで選んだカードを、ほかの画面で削除してからグリッドビューに戻ると、削除したカードが選択に残ったままになる')] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const grid = new GridSelection(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -206,10 +188,7 @@ test.describe('選択', () => {
 })
 
 test.describe('一括操作', () => {
-  test('1 件以上選んでいる間は「（件数）件選択中」「複製」「削除」を表示し、「（件数）件選択中」を押すと選択をすべて外す', spec(SPEC,
-    '一括操作 > WHILE 1 件以上選んでいる間は',
-    '一括操作 > WHILE 1 件以上選んでいる間は > WHEN 「（件数）件選択中」を押すと',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('1 件以上選んでいる間は「（件数）件選択中」「複製」「削除」を表示し、「（件数）件選択中」を押すと選択をすべて外す', { tag: ['@TC-FT-SELECT-BULK1', '@TC-FT-SELECT-BULK2'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -232,13 +211,7 @@ test.describe('一括操作', () => {
     await expect(selection.deleteButton).toBeHidden()
   })
 
-  test('「複製」で、今のプロジェクトを除いた複製先の一覧を開き、プロジェクトを選ぶと、選んだカードをその末尾に複製して「複製しました」と表示し、そのテーブルビューに遷移する', spec(SPEC,
-    '一括操作 > WHEN 「複製」を押すと',
-    '一括操作 > WHEN 「複製」を押すと > 今開いているプロジェクトは一覧に含めない',
-    '一括操作 > WHEN 「複製」を押すと > WHEN プロジェクトを選ぶと',
-    'features/card-duplicate.md > 複製の内容 > 別プロジェクトに複製、選択したカードの複製 | 複製先のプロジェクトの末尾',
-    'features/card-duplicate.md > 複製した後の画面 > 選択したカードの複製 | 既存のプロジェクト',
-  ), async ({ ownerPage, ownerApi, project, tag }) => {
+  test('「複製」で、今のプロジェクトを除いた複製先の一覧を開き、プロジェクトを選ぶと、選んだカードをその末尾に複製して「複製しました」と表示し、そのテーブルビューに遷移する', { tag: ['@TC-FT-SELECT-BULK3', '@TC-FT-SELECT-BULK4', '@TC-FT-SELECT-BULK5', '@TC-FT-DUP-CONT8', '@TC-FT-DUP-AFTR6'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     await ownerApi.addCard(project.id, { みだし: 'one' })
     await ownerApi.addCard(project.id, { みだし: 'two' })
     await ownerApi.addCard(project.id, { みだし: 'three' })
@@ -267,14 +240,12 @@ test.describe('一括操作', () => {
     await expect(await tv.cellInput(3, 'みだし')).toHaveValue('three')
   })
 
-  test('【既知の問題】「新しいプロジェクト」を選ぶと、遷移した先のカード入力ビューが何も表示しない（あるべき: 新しいプロジェクトに複製し、最初のカードのカード入力ビューを表示する）', withIssue(
-    spec(SPEC,
-      '一括操作 > WHEN 「複製」を押すと > WHEN 「新しいプロジェクト」を選ぶと',
-      'features/card-duplicate.md > 複製した後の画面 > 選択したカードの複製 | 新しいプロジェクト',
-    ),
-    knownIssue('docs/ISSUES.md', '新しいプロジェクトに複製するとプロジェクトを開けない'),
-    knownIssue(SPEC, '「新しいプロジェクト」に複製すると、作ったプロジェクトにオーナーが設定されず、遷移した先でプロジェクトを開けない'),
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('【既知の問題】「新しいプロジェクト」を選ぶと、遷移した先のカード入力ビューが何も表示しない（あるべき: 新しいプロジェクトに複製し、最初のカードのカード入力ビューを表示する）', {
+    annotation: [
+      knownIssue('docs/ISSUES.md', '新しいプロジェクトに複製するとプロジェクトを開けない'),
+      knownIssue(SPEC, '「新しいプロジェクト」に複製すると、作ったプロジェクトにオーナーが設定されず、遷移した先でプロジェクトを開けない'),
+    ],
+  }, async ({ ownerPage, ownerApi, project }) => {
     await ownerApi.addCard(project.id, { みだし: 'one' })
     await ownerApi.addCard(project.id, { みだし: 'two' })
     const tv = new TableViewPage(ownerPage)
@@ -300,10 +271,7 @@ test.describe('一括操作', () => {
     await expect(ownerPage.getByRole('dialog').getByRole('link', { name: '無題のプロジェクト - ID: 1' })).toBeVisible()
   })
 
-  test('「削除」で確認し、確認すると選んだカードすべてを削除する', spec(SPEC,
-    '一括操作 > WHEN 「削除」を押すと',
-    '一括操作 > WHEN 「削除」を押すと > WHEN 確認すると',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('「削除」で確認し、確認すると選んだカードすべてを削除する', { tag: ['@TC-FT-SELECT-BULK7', '@TC-FT-SELECT-BULK8'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -331,10 +299,7 @@ test.describe('一括操作', () => {
     expect(messages).toEqual(['削除してよろしいですか？', '削除してよろしいですか？'])
   })
 
-  test('【実装との乖離】一括削除では「削除しました」と表示しない（あるべき: 完了メッセージを表示する）', withIssue(
-    spec(SPEC, '一括操作 > WHEN 「削除」を押すと > WHEN 確認すると'),
-    knownIssue(SPEC, '一括削除では、完了メッセージ（「削除しました」）を表示しない'),
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('【実装との乖離】一括削除では「削除しました」と表示しない（あるべき: 完了メッセージを表示する）', { annotation: [knownIssue(SPEC, '一括削除では、完了メッセージ（「削除しました」）を表示しない')] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b']) await ownerApi.addCard(project.id, { みだし: v })
     const tv = new TableViewPage(ownerPage)
     const selection = new CardSelection(ownerPage)
@@ -345,5 +310,57 @@ test.describe('一括操作', () => {
     await selection.deleteButton.click()
     await expect(tv.idCells).toHaveText(['2'])
     await expect(tv.toast('削除しました')).toHaveCount(0)
+  })
+})
+
+test.describe('ユーザーストーリー', () => {
+  test('研究者が、絞り込んだカードをまとめて選んで別のプロジェクトへ複製し、元のプロジェクトでは不要なカードをまとめて選んで削除して、カード群を整理する', { tag: ['@story', '@TC-FT-SELECT-US1'] }, async ({ ownerPage, ownerApi, project, tag }) => {
+    await ownerApi.addCard(project.id, { みだし: 'A-土器', メモ: 'A区' })
+    await ownerApi.addCard(project.id, { みだし: 'B-石器', メモ: '不要' })
+    await ownerApi.addCard(project.id, { みだし: 'A-骨片', メモ: 'A区' })
+    await ownerApi.addCard(project.id, { みだし: 'B-土器', メモ: '不要' })
+    await ownerApi.addCard(project.id, { みだし: 'A-木片', メモ: 'A区' })
+    const target = await ownerApi.createProject(`A区のまとめ${tag}`)
+    await ownerApi.addCard(target.id, { みだし: '既存のカード' })
+
+    const tv = new TableViewPage(ownerPage)
+    const selection = new CardSelection(ownerPage)
+    await tv.open(project.id)
+
+    // 「A-」で絞り込み、見出しのチェックボックスで表示しているカードをまとめて選ぶ
+    await tv.search('A-')
+    await expect(tv.idCells).toHaveText(['1', '3', '5'])
+    await tv.headerCheckbox.check()
+    await expect(selection.countButton).toHaveText('3件選択中')
+
+    // まとめて別のプロジェクトへ複製する
+    await selection.duplicateButton.click()
+    await DuplicateTargets.popover(ownerPage).project(target.name).click()
+    await expect(tv.toast('複製しました')).toBeVisible()
+    await expect(ownerPage).toHaveURL(`/projects/${target.id}`)
+    await expect(tv.idCells).toHaveText(['1', '2', '3', '4'])
+    await expect(await tv.cellInput(2, 'みだし')).toHaveValue('A-土器')
+    await expect(await tv.cellInput(3, 'みだし')).toHaveValue('A-骨片')
+    await expect(await tv.cellInput(4, 'みだし')).toHaveValue('A-木片')
+
+    // 元のプロジェクトに戻り、不要なカードを 1 枚ずつ選んで、まとめて削除する
+    await tv.open(project.id)
+    await expect(tv.idCells).toHaveText(['1', '2', '3', '4', '5'])
+    await tv.checkbox(2).check()
+    await tv.checkbox(4).check()
+    await expect(selection.countButton).toHaveText('2件選択中')
+    ownerPage.once('dialog', (dialog) => void dialog.accept())
+    await selection.deleteButton.click()
+    await expect(tv.idCells).toHaveText(['1', '3', '5'])
+    await expect(selection.countButton).toBeHidden()
+
+    // 開き直しても、整理した結果が残っている
+    await tv.open(project.id)
+    await expect(tv.idCells).toHaveText(['1', '3', '5'])
+    await expect(tv.countText).toHaveText('全 3 件')
+    await tv.open(target.id)
+    await expect(tv.countText).toHaveText('全 4 件')
+    await expect(await tv.cellInput(1, 'みだし')).toHaveValue('既存のカード')
+    await expect(await tv.cellInput(4, 'メモ')).toHaveValue('A区')
   })
 })

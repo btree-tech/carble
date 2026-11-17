@@ -11,8 +11,11 @@ import {
   tokyoTimestamp,
   uploadImport,
 } from '../../pages/ProjectSettingsPage'
+import { CardViewPage } from '../../pages/CardViewPage'
+import { ProjectListPage } from '../../pages/ProjectListPage'
+import { TableViewPage } from '../../pages/TableViewPage'
 import { open } from '../../support/navigation'
-import { knownIssue, spec, withIssue } from '../../support/spec'
+import { knownIssue } from '../../support/spec'
 
 /** 時計が次の秒になるまで待つ（アップロードした日時は秒まで記録する） */
 async function nextSecond() {
@@ -21,10 +24,7 @@ async function nextSecond() {
 }
 
 test.describe('ヘッダー', () => {
-  test('オーナーには、プロジェクト名・「テーブルビュー」ボタンと、全般・インポート・ユーザー管理・プロジェクト削除のタブを表示する', spec('pages/project-settings.md',
-    'ヘッダー > プロジェクト名、「テーブルビュー」ボタン、タブを表示する',
-    'ヘッダー > タブは「全般」とする > WHERE オーナーの場合',
-  ), async ({ ownerPage, project }) => {
+  test('オーナーには、プロジェクト名・「テーブルビュー」ボタンと、全般・インポート・ユーザー管理・プロジェクト削除のタブを表示する', { tag: ['@TC-PG-PSET-HDR1', '@TC-PG-PSET-HDR5'] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open()
 
@@ -34,9 +34,7 @@ test.describe('ヘッダー', () => {
     await expect(settings.tabs).toHaveText([/全般$/, /インポート$/, /ユーザー管理$/, /プロジェクト削除$/])
   })
 
-  test('「テーブルビュー」を押すと、テーブルビューに遷移する', spec('pages/project-settings.md',
-    'ヘッダー > プロジェクト名、「テーブルビュー」ボタン、タブを表示する > WHEN 「テーブルビュー」を押すと',
-  ), async ({ ownerPage, project }) => {
+  test('「テーブルビュー」を押すと、テーブルビューに遷移する', { tag: ['@TC-PG-PSET-HDR2'] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open()
 
@@ -45,9 +43,7 @@ test.describe('ヘッダー', () => {
     await expect(ownerPage).toHaveURL(`/projects/${project.id}`)
   })
 
-  test('オーナー以外（編集者）には「全般」のタブだけを表示する', spec('pages/project-settings.md',
-    'ヘッダー > タブは「全般」とする',
-  ), async ({ ownerApi, project, newAccount, pageAs, apiAs }) => {
+  test('オーナー以外（編集者）には「全般」のタブだけを表示する', { tag: ['@TC-PG-PSET-HDR4'] }, async ({ ownerApi, project, newAccount, pageAs, apiAs }) => {
     const editor = await newAccount({ suffix: 'editor' })
     await ownerApi.invite(project.id, editor.username!)
     await (await apiAs(editor)).accept(project.id, editor.id)
@@ -59,10 +55,7 @@ test.describe('ヘッダー', () => {
     await expect(settings.exportButton).toBeVisible()
   })
 
-  test('【実装との乖離】オーナー以外も URL を直接開くとユーザー管理・プロジェクト削除の画面を表示し、招待は「存在しないIDです」、削除はメッセージなしで失敗する（あるべき: オーナー以外は開けない）', withIssue(
-    spec('pages/project-settings.md', 'ヘッダー > タブは「全般」とする > WHERE オーナーの場合'),
-    knownIssue('pages/project-settings.md', 'オーナー以外にはタブを表示しないが、URL を直接開くと「インポート」「ユーザー管理」「プロジェクト削除」の画面を表示する'),
-  ), async ({ ownerApi, project, newAccount, pageAs, apiAs }) => {
+  test('【実装との乖離】オーナー以外も URL を直接開くとユーザー管理・プロジェクト削除の画面を表示し、招待は「存在しないIDです」、削除はメッセージなしで失敗する（あるべき: オーナー以外は開けない）', { annotation: [knownIssue('pages/project-settings.md', 'オーナー以外にはタブを表示しないが、URL を直接開くと「インポート」「ユーザー管理」「プロジェクト削除」の画面を表示する')] }, async ({ ownerApi, project, newAccount, pageAs, apiAs }) => {
     const editor = await newAccount({ suffix: 'editor' })
     const other = await newAccount({ suffix: 'other' })
     await ownerApi.invite(project.id, editor.username!)
@@ -88,10 +81,7 @@ test.describe('ヘッダー', () => {
 })
 
 test.describe('全般', () => {
-  test('「エクスポート」ボタンを表示し、押すと「（プロジェクト名）-（端末の年月日時分秒）.zip」の名前でダウンロードを始める', spec('pages/project-settings.md',
-    '全般 > 「エクスポート」ボタンを表示する',
-    'features/import-export.md > エクスポート > プロジェクトのデータを zip ファイルでダウンロードする > ファイル名は「（プロジェクト名）-（年月日時分秒）.zip」とする',
-  ), async ({ ownerPage, project }) => {
+  test('「エクスポート」ボタンを表示し、押すと「（プロジェクト名）-（端末の年月日時分秒）.zip」の名前でダウンロードを始める', { tag: ['@TC-PG-PSET-GEN1', '@TC-FT-IMPEXP-EXP2'] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open()
     await expect(settings.exportButton).toBeVisible()
@@ -110,12 +100,7 @@ test.describe('全般', () => {
 })
 
 test.describe('インポート', () => {
-  test('ファイルの選択・「同じIDのカードを上書きする」・「インポート」と案内を表示し、ファイルを選ぶまで「インポート」を押せない', spec('pages/project-settings.md',
-    'インポート > ファイルの選択、「同じIDのカードを上書きする」チェック、「インポート」ボタンを表示する',
-    'インポート > ファイルの選択、 > 「xlsx,csv,zipファイルのいずれか（600MBまで）を選択してください」',
-    'インポート > ファイルの選択、 > WHEN 「ファイルを選択」を押すと',
-    'インポート > ファイルの選択、 > WHILE ファイルを選んでいない間は',
-  ), async ({ ownerPage, project }) => {
+  test('ファイルの選択・「同じIDのカードを上書きする」・「インポート」と案内を表示し、ファイルを選ぶまで「インポート」を押せない', { tag: ['@TC-PG-PSET-IMP1', '@TC-PG-PSET-IMP2', '@TC-PG-PSET-IMP3', '@TC-PG-PSET-IMP4'] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
 
@@ -139,12 +124,7 @@ test.describe('インポート', () => {
     await expect(settings.importButton).toBeEnabled()
   })
 
-  test('「同じIDのカードを上書きする」をチェックすると、上書きとバックアップの案内のダイアログを表示し、「OK」で閉じる', spec('pages/project-settings.md',
-    'インポート > WHEN 「同じIDのカードを上書きする」をチェックすると',
-    'インポート > WHEN 「同じIDのカードを上書きする」をチェックすると > 「ID列に入力された数値と同IDのカードが存在する場合',
-    'インポート > WHEN 「同じIDのカードを上書きする」をチェックすると > 「これからデータの更新を行います。',
-    'インポート > WHEN 「同じIDのカードを上書きする」をチェックすると > WHEN 「OK」を押すと',
-  ), async ({ ownerPage, project }) => {
+  test('「同じIDのカードを上書きする」をチェックすると、上書きとバックアップの案内のダイアログを表示し、「OK」で閉じる', { tag: ['@TC-PG-PSET-IMP5', '@TC-PG-PSET-IMP6', '@TC-PG-PSET-IMP7', '@TC-PG-PSET-IMP8'] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
 
@@ -161,10 +141,7 @@ test.describe('インポート', () => {
     await expect(settings.updateCheckbox).toBeChecked()
   })
 
-  test('【実装との乖離】アップロードに失敗しても（xlsx・csv・zip でないファイル）、メッセージを表示せず画面に留まる（あるべき: 失敗したことを表示する）', withIssue(
-    spec('pages/project-settings.md', 'インポート > WHEN 「インポート」を押すと > IF アップロードに失敗した場合'),
-    knownIssue('pages/project-settings.md', 'インポートのアップロードに失敗しても（ブラウザが送るファイルの種類が xlsx・csv・zip のどれとも判定されない場合など）、メッセージを表示しない'),
-  ), async ({ ownerPage, project }) => {
+  test('【実装との乖離】アップロードに失敗しても（xlsx・csv・zip でないファイル）、メッセージを表示せず画面に留まる（あるべき: 失敗したことを表示する）', { annotation: [knownIssue('pages/project-settings.md', 'インポートのアップロードに失敗しても（ブラウザが送るファイルの種類が xlsx・csv・zip のどれとも判定されない場合など）、メッセージを表示しない')] }, async ({ ownerPage, project }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
     // ファイルを選ぶ画面の種類の絞り込みを使わずに選んだ場合（setFiles は accept を見ない）
@@ -181,15 +158,17 @@ test.describe('インポート', () => {
     await expect(settings.historyRows).toHaveText(['No items.'])
   })
 
-  test('インポート履歴を新しい順に 10 件ずつ「インポート日時」「ファイル名」「結果」で表示し、下にページを切り替えるボタンを表示する', spec('pages/project-settings.md',
-    'インポート > 「インポート履歴」に、このプロジェクトのインポートを新しい順に 10 件ずつ表示する',
-    'インポート > 「インポート履歴」に > 列は「インポート日時」「ファイル名」「結果」とする',
-    'インポート > 「インポート履歴」に > 列は「インポート日時」 > 「インポート日時」は、ファイルをアップロードした日時とする',
-    'インポート > 「インポート履歴」に > 履歴の下に、ページを切り替えるボタンを表示する',
-    'インポート > 「インポート履歴」に > WHERE インポートの履歴が無い場合、「No items.」と表示する',
-    'インポート > 「インポート履歴」に > 結果は次のとおり表示する',
-    'インポート > インポートを待っている | 未処理',
-  ), async ({ ownerPage, owner, ownerApi, project, tag }) => {
+  test('インポート履歴を新しい順に 10 件ずつ「インポート日時」「ファイル名」「結果」で表示し、下にページを切り替えるボタンを表示する', {
+    tag: [
+      '@TC-PG-PSET-IMP13',
+      '@TC-PG-PSET-IMP14',
+      '@TC-PG-PSET-IMP15',
+      '@TC-PG-PSET-IMP17',
+      '@TC-PG-PSET-IMP18',
+      '@TC-PG-PSET-IMP19',
+      '@TC-PG-PSET-IMP21',
+    ],
+  }, async ({ ownerPage, owner, ownerApi, project, tag }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     // インポートを待っている間はプロジェクトの画面を開けないので、先に開いておき、画面の中の遷移で読み直す
     await settings.open('インポート')
@@ -238,13 +217,7 @@ test.describe('インポート', () => {
 })
 
 test.describe('ユーザー管理', () => {
-  test('ユーザーを加えた順に、ユーザーID・権限（オーナーは「管理者」）・ステータス（招待中）と、オーナー以外の行に「削除」を表示する', spec('pages/project-settings.md',
-    'ユーザー管理 > プロジェクトのユーザーを、プロジェクトに加えた順に一覧する',
-    'ユーザー管理 > プロジェクトのユーザーを > 列は「ユーザーID」「権限」「ステータス」と削除ボタンとする',
-    'ユーザー管理 > プロジェクトのユーザーを > オーナーの「権限」は「管理者」と表示する',
-    'ユーザー管理 > プロジェクトのユーザーを > 招待中のユーザーの「ステータス」に「招待中」と表示する',
-    'ユーザー管理 > プロジェクトのユーザーを > WHERE オーナー以外の行の場合、「削除」ボタンを表示する',
-  ), async ({ ownerPage, owner, ownerApi, project, newAccount, apiAs }) => {
+  test('ユーザーを加えた順に、ユーザーID・権限（オーナーは「管理者」）・ステータス（招待中）と、オーナー以外の行に「削除」を表示する', { tag: ['@TC-PG-PSET-USER1', '@TC-PG-PSET-USER2', '@TC-PG-PSET-USER3', '@TC-PG-PSET-USER4', '@TC-PG-PSET-USER5'] }, async ({ ownerPage, owner, ownerApi, project, newAccount, apiAs }) => {
     const editor = await newAccount({ suffix: 'editor' })
     const invited = await newAccount({ suffix: 'invited' })
     await ownerApi.invite(project.id, editor.username!)
@@ -272,10 +245,7 @@ test.describe('ユーザー管理', () => {
     await expect(settings.userRows.nth(2).getByRole('button', { name: '削除' })).toBeVisible()
   })
 
-  test('「削除」を押すと「削除してよろしいですか？」と確認し、確認するとプロジェクトから外して一覧から消す', spec('pages/project-settings.md',
-    'ユーザー管理 > WHEN 「削除」を押すと、「削除してよろしいですか？」と確認する',
-    'ユーザー管理 > WHEN 「削除」を押すと > WHEN 確認すると',
-  ), async ({ ownerPage, ownerApi, project, newAccount, apiAs, pageAs }) => {
+  test('「削除」を押すと「削除してよろしいですか？」と確認し、確認するとプロジェクトから外して一覧から消す', { tag: ['@TC-PG-PSET-USER7', '@TC-PG-PSET-USER8'] }, async ({ ownerPage, ownerApi, project, newAccount, apiAs, pageAs }) => {
     const editor = await newAccount({ suffix: 'editor' })
     await ownerApi.invite(project.id, editor.username!)
     await (await apiAs(editor)).accept(project.id, editor.id)
@@ -303,12 +273,7 @@ test.describe('ユーザー管理', () => {
     await expect(editorPage.getByRole('cell', { name: project.name })).toHaveCount(0)
   })
 
-  test('ユーザーIDを入れて「招待」を押すと、招待中として一覧に加えて入力欄を空にし、招待されたユーザーに通知する', spec('pages/project-settings.md',
-    'ユーザー管理 > 「ユーザーIDを入力して招待」の入力欄と「招待」ボタンを表示する',
-    'ユーザー管理 > 「ユーザーIDを入力して招待」 > 「これから他のメンバーを招待して共同編集を行えるようにします。」',
-    'ユーザー管理 > 「ユーザーIDを入力して招待」 > WHEN ユーザーIDを入れて「招待」を押すと',
-    'ユーザー管理 > 「ユーザーIDを入力して招待」 > WHEN ユーザーIDを入れて「招待」を押すと > 招待されたユーザーのプロジェクト一覧に招待の通知を表示する',
-  ), async ({ ownerPage, project, newAccount, pageAs }) => {
+  test('ユーザーIDを入れて「招待」を押すと、招待中として一覧に加えて入力欄を空にし、招待されたユーザーに通知する', { tag: ['@TC-PG-PSET-USER9', '@TC-PG-PSET-USER10', '@TC-PG-PSET-USER11', '@TC-PG-PSET-USER12'] }, async ({ ownerPage, project, newAccount, pageAs }) => {
     const invited = await newAccount({ suffix: 'invited' })
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('ユーザー管理')
@@ -328,9 +293,7 @@ test.describe('ユーザー管理', () => {
     await expect(invitedPage.getByText(`「${project.name}」に招待されています`)).toBeVisible()
   })
 
-  test('存在しないユーザーIDで招待すると「存在しないIDです」と表示し、招待しない', spec('pages/project-settings.md',
-    'ユーザー管理 > 「ユーザーIDを入力して招待」 > IF 存在しないユーザーIDの場合',
-  ), async ({ ownerPage, project, tag }) => {
+  test('存在しないユーザーIDで招待すると「存在しないIDです」と表示し、招待しない', { tag: ['@TC-PG-PSET-USER13'] }, async ({ ownerPage, project, tag }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('ユーザー管理')
 
@@ -340,9 +303,7 @@ test.describe('ユーザー管理', () => {
     await expect(settings.userRows).toHaveCount(1)
   })
 
-  test('ユーザーIDが 3 文字未満・30 文字を超えると、メッセージを表示せず、招待しない', spec('pages/project-settings.md',
-    'ユーザー管理 > 「ユーザーIDを入力して招待」 > IF ユーザーIDが 3 文字未満または 30 文字を超える場合',
-  ), async ({ ownerPage, project, newAccount }) => {
+  test('ユーザーIDが 3 文字未満・30 文字を超えると、メッセージを表示せず、招待しない', { tag: ['@TC-PG-PSET-USER14'] }, async ({ ownerPage, project, newAccount }) => {
     // 長さのほかは招待できるユーザー（ユーザーIDは 2 文字と 31 文字）
     const short = await newAccount({ username: `${Math.random().toString(36).slice(2, 4)}` })
     const long = await newAccount({ username: `${short.username}${'x'.repeat(29)}` })
@@ -362,10 +323,7 @@ test.describe('ユーザー管理', () => {
     expect(posted).toEqual([])
   })
 
-  test('【既知の問題】既にメンバー・招待中のユーザー（自分を含む）のユーザーIDで招待すると「存在しないIDです」と表示する（あるべき: 既に加わっていることを表示する）', withIssue(
-    spec('pages/project-settings.md', 'ユーザー管理 > 「ユーザーIDを入力して招待」 > IF 存在しないユーザーIDの場合'),
-    knownIssue('docs/ISSUES.md', '招待済みのユーザーを招待すると「存在しないIDです」と表示する'),
-  ), async ({ ownerPage, owner, ownerApi, project, newAccount }) => {
+  test('【既知の問題】既にメンバー・招待中のユーザー（自分を含む）のユーザーIDで招待すると「存在しないIDです」と表示する（あるべき: 既に加わっていることを表示する）', { annotation: [knownIssue('docs/ISSUES.md', '招待済みのユーザーを招待すると「存在しないIDです」と表示する')] }, async ({ ownerPage, owner, ownerApi, project, newAccount }) => {
     const invited = await newAccount({ suffix: 'invited' })
     await ownerApi.invite(project.id, invited.username!)
     const settings = new ProjectSettingsPage(ownerPage, project.id)
@@ -381,11 +339,7 @@ test.describe('ユーザー管理', () => {
 })
 
 test.describe('プロジェクト削除', () => {
-  test('「プロジェクトを削除する」を押して確認すると、プロジェクトと関係・画像のファイルを削除し、「プロジェクトを削除しました」と表示して一覧に遷移する', spec('pages/project-settings.md',
-    'プロジェクト削除 > 「プロジェクトを削除する」ボタンを表示する',
-    'プロジェクト削除 > WHEN 「プロジェクトを削除する」を押すと、「削除してよろしいですか？」と確認する',
-    'プロジェクト削除 > WHEN 「プロジェクトを削除する」を押すと > WHEN 確認すると',
-  ), async ({ ownerPage, owner, ownerApi, project, newAccount, apiAs, pageAs }) => {
+  test('「プロジェクトを削除する」を押して確認すると、プロジェクトと関係・画像のファイルを削除し、「プロジェクトを削除しました」と表示して一覧に遷移する', { tag: ['@TC-PG-PSET-DEL1', '@TC-PG-PSET-DEL2', '@TC-PG-PSET-DEL3'] }, async ({ ownerPage, owner, ownerApi, project, newAccount, apiAs, pageAs }) => {
     const editor = await newAccount({ suffix: 'editor' })
     const invited = await newAccount({ suffix: 'invited' })
     await ownerApi.invite(project.id, editor.username!)
@@ -428,5 +382,52 @@ test.describe('プロジェクト削除', () => {
     await expect(invitedPage.getByText(`「${project.name}」に招待されています`)).toHaveCount(0)
     // カード・項目も残らない（プロジェクトを開けない）
     await expect(ownerApi.call('get', `/api/projects/${project.id}/cards`)).rejects.toThrow(/404/)
+  })
+})
+
+test.describe('ユーザーストーリー', () => {
+  test('オーナーが、バックアップの勧めを読んでからユーザーIDで招待し、招待を承認したユーザーがカードを直すと、オーナーもその内容を見て共同で編集できる', { tag: ['@story', '@TC-PG-PSET-US3'] }, async ({ ownerPage, ownerApi, project, newAccount, pageAs }) => {
+    const card = await ownerApi.addCard(project.id, { みだし: '共同編集の前の値' })
+    const collaborator = await newAccount({ suffix: 'collaborator' })
+
+    // オーナーが「ユーザー管理」を開き、招待の前にバックアップの勧めを読む
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open()
+    await settings.tab('ユーザー管理').click()
+    await expect(settings.inviteInput).toBeVisible()
+    await expect(ownerPage.getByText('これから他のメンバーを招待して共同編集を行えるようにします。')).toBeVisible()
+    await expect(ownerPage.getByText('現状のプロジェクトの状態を残しておきたい場合はバックアップを残しておくこと（プロジェクトデータの「エクスポート」）をお勧めします。')).toBeVisible()
+    // 勧められたバックアップの手段（「全般」の「エクスポート」）がある。押すとサーバーのエラーで失敗するので押さない（docs/ISSUES.md「エクスポートが失敗する」）
+    await settings.tab('全般').click()
+    await expect(settings.exportButton).toBeVisible()
+    await settings.tab('ユーザー管理').click()
+
+    // ユーザーIDを入れて招待する
+    await settings.invite(collaborator.username!)
+    await expect(settings.userRow(collaborator.username!).getByRole('cell').nth(2)).toHaveText('招待中')
+    await expect(settings.inviteInput).toHaveValue('')
+
+    // 招待されたユーザーが、プロジェクト一覧で承認し、プロジェクトを開いてカードを直す
+    const collaboratorPage = await pageAs(collaborator)
+    const list = new ProjectListPage(collaboratorPage)
+    await list.open()
+    await list.acceptButton(project.name).click()
+    await expect(list.row(project.name)).toBeVisible()
+    await list.detailButton(project.name).click()
+    await expect(collaboratorPage).toHaveURL(`/projects/${project.id}`)
+    const tableView = new TableViewPage(collaboratorPage)
+    await tableView.cardInputLink(card.id).click()
+    await expect(collaboratorPage).toHaveURL(new RegExp(`/projects/${project.id}/cards/${card.id}(\\?|$)`))
+    const cardView = new CardViewPage(collaboratorPage)
+    const saved = collaboratorPage.waitForResponse((r) => r.request().method() === 'PUT' && r.url().includes(`/api/projects/${project.id}/cards/${card.id}/fields/`) && r.ok())
+    await cardView.field('みだし').fill('共同編集者が直した値')
+    await saved
+
+    // オーナーの画面では、招待したユーザーがメンバー（招待中でない）になり、直した内容が見える
+    await settings.open('ユーザー管理')
+    await expect(settings.userRow(collaborator.username!).getByRole('cell').nth(2)).toHaveText('')
+    const ownerCardView = new CardViewPage(ownerPage)
+    await ownerCardView.open(project.id, card.id)
+    await expect(ownerCardView.field('みだし')).toHaveValue('共同編集者が直した値')
   })
 })

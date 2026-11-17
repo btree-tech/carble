@@ -1,12 +1,9 @@
 import { expect, test } from '../../fixtures'
 import { TableViewPage } from '../../pages/TableViewPage'
-import { spec } from '../../support/spec'
 
 const SPEC = 'pages/table-view.md'
 
-test('スマホ幅では「ホーム」「グリッドビュー」「カード印刷ビュー」「プロジェクト設定」「カード入力」「追加」の文言を省いてアイコンだけにする', spec(SPEC,
-  'ヘッダー > WHERE スマホ幅の場合',
-), async ({ ownerPage, ownerApi, project }) => {
+test('スマホ幅では「ホーム」「グリッドビュー」「カード印刷ビュー」「プロジェクト設定」「カード入力」「追加」の文言を省いてアイコンだけにする', { tag: ['@TC-PG-TABLE-HDR10'] }, async ({ ownerPage, ownerApi, project }) => {
   await ownerApi.addCard(project.id, { みだし: 'a' })
   const tv = new TableViewPage(ownerPage)
   await tv.open(project.id)
@@ -25,9 +22,7 @@ test('スマホ幅では「ホーム」「グリッドビュー」「カード�
   }
 })
 
-test('スマホ幅では件数を表示しない', spec(SPEC,
-  'カードの一覧 > カードの件数を「全 N 件」と表示する > WHERE スマホ幅の場合',
-), async ({ ownerPage, ownerApi, project }) => {
+test('スマホ幅では件数を表示しない', { tag: ['@TC-PG-TABLE-LIST9'] }, async ({ ownerPage, ownerApi, project }) => {
   await ownerApi.addCard(project.id, { みだし: 'apple' })
   await ownerApi.addCard(project.id, { みだし: 'banana' })
   const tv = new TableViewPage(ownerPage)

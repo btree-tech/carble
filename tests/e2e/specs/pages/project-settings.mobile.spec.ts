@@ -1,10 +1,8 @@
 import { expect, test } from '../../fixtures'
 import { fileOf, MIME, ProjectSettingsPage, uploadImport } from '../../pages/ProjectSettingsPage'
-import { knownIssue, spec, withIssue } from '../../support/spec'
+import { knownIssue } from '../../support/spec'
 
-test('スマホ幅では、「テーブルビュー」ボタンを文言なしのアイコンだけにする', spec('pages/project-settings.md',
-  'ヘッダー > プロジェクト名、「テーブルビュー」ボタン、タブを表示する > WHERE スマホ幅の場合',
-), async ({ ownerPage, project }) => {
+test('スマホ幅では、「テーブルビュー」ボタンを文言なしのアイコンだけにする', { tag: ['@TC-PG-PSET-HDR3'] }, async ({ ownerPage, project }) => {
   const settings = new ProjectSettingsPage(ownerPage, project.id)
   await settings.open()
 
@@ -15,11 +13,12 @@ test('スマホ幅では、「テーブルビュー」ボタンを文言なし�
   await expect(ownerPage).toHaveURL(`/projects/${project.id}`)
 })
 
-test('【実装との乖離】スマホ幅では、インポート履歴の「結果」の見出しは表示しないが、各行の結果は表示する（あるべき: 「結果」の列を表示しない）', withIssue(
-  spec('pages/project-settings.md', 'インポート > 「インポート履歴」に > WHERE スマホ幅の場合、「結果」を表示しない'),
-  // 列の class（hidden md:table-cell）は Nuxt UI の UTable では見出しのセルにしか付かない
-  knownIssue('pages/project-settings.md', 'スマホ幅では、インポート履歴の「結果」の見出しは表示しないが、各行の結果は表示する'),
-), async ({ ownerPage, owner, ownerApi, project, tag }) => {
+test('【実装との乖離】スマホ幅では、インポート履歴の「結果」の見出しは表示しないが、各行の結果は表示する（あるべき: 「結果」の列を表示しない）', {
+  annotation: [
+    // 列の class（hidden md:table-cell）は Nuxt UI の UTable では見出しのセルにしか付かない
+    knownIssue('pages/project-settings.md', 'スマホ幅では、インポート履歴の「結果」の見出しは表示しないが、各行の結果は表示する'),
+  ],
+}, async ({ ownerPage, owner, ownerApi, project, tag }) => {
   const settings = new ProjectSettingsPage(ownerPage, project.id)
   // インポートを待っている間はプロジェクトの画面を開けないので、先に開いておき、画面の中の遷移で読み直す
   await settings.open('インポート')
@@ -43,9 +42,7 @@ test('【実装との乖離】スマホ幅では、インポート履歴の「�
   }
 })
 
-test('スマホ幅では、ユーザー管理の「削除」ボタンを文言なしのアイコンだけにする', spec('pages/project-settings.md',
-  'ユーザー管理 > プロジェクトのユーザーを > WHERE オーナー以外の行の場合 > WHERE スマホ幅の場合',
-), async ({ ownerPage, ownerApi, project, newAccount }) => {
+test('スマホ幅では、ユーザー管理の「削除」ボタンを文言なしのアイコンだけにする', { tag: ['@TC-PG-PSET-USER6'] }, async ({ ownerPage, ownerApi, project, newAccount }) => {
   const invited = await newAccount({ suffix: 'invited' })
   await ownerApi.invite(project.id, invited.username!)
   const settings = new ProjectSettingsPage(ownerPage, project.id)

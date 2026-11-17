@@ -2,8 +2,11 @@ import { createDeflateRaw, crc32, deflateRawSync } from 'node:zlib'
 import type { Page } from '@playwright/test'
 import { expect, test } from '../../fixtures'
 import { IMPORT_TIMEOUT } from '../../support/imports'
+import { CardViewPage } from '../../pages/CardViewPage'
+import { GridViewPage } from '../../pages/GridViewPage'
 import {
   addImage,
+  bomCsv,
   fileOf,
   MIME,
   ProjectScreen,
@@ -11,7 +14,8 @@ import {
   uploadImport,
   type ImportFile,
 } from '../../pages/ProjectSettingsPage'
-import { knownIssue, spec, withIssue } from '../../support/spec'
+import { TableViewPage } from '../../pages/TableViewPage'
+import { knownIssue } from '../../support/spec'
 
 // インポートは毎分 0 秒に動く定期の処理が 1 件ずつ取り込む。結果は画面で待つ（1 件あたり最大 1 分あまり）
 
@@ -126,27 +130,29 @@ async function slowZip(csv: string, zeroBytes = 1024 * 1024 * 1024): Promise<Buf
 }
 
 test.describe('インポート', () => {
-  test('CSV を上書きせずに取り込むと、すべての行を新しいカードとして末尾に追加し、ID を振り直す。待っている間はダイアログを表示し、終わると自動で閉じてオーナーに完了を表示する', spec('features/import-export.md',
-    'インポート > インポートできるのは、エクセル（xlsx）、CSV（UTF-8）、zip のファイルとする',
-    'インポート > WHERE エクセル・CSV の場合、最初のシートの表を取り込む > 1 行目を項目名、2 行目以降をカードとする',
-    'インポート > WHERE エクセル・CSV の場合 > 表の途中の空の行も、値が空のカードとして取り込む',
-    'インポート > WHERE エクセル・CSV の場合 > WHERE 項目名がプロジェクトに無い場合、その項目を末尾に追加する',
-    'インポート > WHERE エクセル・CSV の場合 > WHERE プロジェクトにある項目がファイルに無い場合',
-    'インポート > WHERE エクセル・CSV の場合 > 「ID」の列は項目にせず',
-    'インポート > WHERE エクセル・CSV の場合 > 「画像ファイル」の列は項目にしない',
-    'インポート > WHERE エクセル・CSV の場合 > 新しいカードは、ファイルの行の順に、プロジェクトの末尾に置く',
-    'インポート > 「ID」の列は、「同じIDのカードを上書きする」のチェックで扱いが変わる',
-    'インポート > しない | どれでも | 新しいカードを作る',
-    'インポート > 新しく振るカードの ID は',
-    'インポート > 結果はプロジェクト設定のインポート履歴と、オーナーのテーブルビューに表示する',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間・取り込んでいる間は',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間 > 30 秒ごとに',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間 > WHEN インポートが終わると',
-    'pages/project-settings.md > インポート > WHEN 「インポート」を押すと、ファイルをアップロードしてインポートを始め',
-    'pages/project-settings.md > インポート > WHEN 「インポート」を押すと > 取り込みの内容は',
-    'pages/project-settings.md > インポート > WHEN 「インポート」を押すと > WHILE 「同じIDのカードを上書きする」をチェックしている間は',
-    'pages/project-settings.md > インポート > 取り込みが終わった | インポート済（緑）',
-  ), async ({ ownerPage, ownerApi, project, newAccount, apiAs, pageAs }) => {
+  test('CSV を上書きせずに取り込むと、すべての行を新しいカードとして末尾に追加し、ID を振り直す。待っている間はダイアログを表示し、終わると自動で閉じてオーナーに完了を表示する', {
+    tag: [
+      '@TC-FT-IMPEXP-IMP1',
+      '@TC-FT-IMPEXP-IMP5',
+      '@TC-FT-IMPEXP-IMP6',
+      '@TC-FT-IMPEXP-IMP7',
+      '@TC-FT-IMPEXP-IMP8',
+      '@TC-FT-IMPEXP-IMP9',
+      '@TC-FT-IMPEXP-IMP10',
+      '@TC-FT-IMPEXP-IMP11',
+      '@TC-FT-IMPEXP-IMP19',
+      '@TC-FT-IMPEXP-IMP25',
+      '@TC-FT-IMPEXP-IMP20',
+      '@TC-FT-IMPEXP-IMP24',
+      '@TC-FT-IMPEXP-WAIT1',
+      '@TC-FT-IMPEXP-WAIT4',
+      '@TC-FT-IMPEXP-WAIT5',
+      '@TC-PG-PSET-IMP9',
+      '@TC-PG-PSET-IMP10',
+      '@TC-PG-PSET-IMP11',
+      '@TC-PG-PSET-IMP23',
+    ],
+  }, async ({ ownerPage, ownerApi, project, newAccount, apiAs, pageAs }) => {
     await ownerApi.addCard(project.id, { みだし: '既存1', メモ: 'メモ1' })
     await ownerApi.addCard(project.id, { みだし: '既存2', メモ: 'メモ2' })
     const editor = await newAccount({ suffix: 'editor' })
@@ -198,19 +204,21 @@ test.describe('インポート', () => {
     await expect(settings.expandButton(row)).toBeHidden()
   })
 
-  test('zip（エクセル・画像）を上書きして取り込むと、同じ ID のカードの値と画像を置き換え、無い ID・空の ID は新しいカードにする', spec('features/import-export.md',
-    'インポート > WHERE zip の場合、中のエクセルまたは CSV のファイル 1 つを、上と同じように取り込む',
-    'インポート > WHERE zip の場合 > エクセル・CSV のファイルは、名前が .xlsx・.csv（小文字）で終わるものを探す',
-    'インポート > WHERE zip の場合 > WHERE 「画像ファイル」の列がある場合',
-    'インポート > WHERE zip の場合 > WHERE 「画像ファイル」の列がある場合 > ファイル名は、zip のいちばん上からのパスで書く',
-    'インポート > WHERE zip の場合 > WHERE 「画像ファイル」の列がある場合 > ファイル名は、空白または改行で区切って複数書ける',
-    'インポート > WHERE zip の場合 > WHERE 「画像ファイル」の列がある場合 > WHERE 列が空の場合、そのカードの画像を消す',
-    'インポート > する | 空 | 新しいカードを作る',
-    'インポート > する | 数字で、その ID のカードがある',
-    'インポート > する | 数字で、その ID のカードが無い',
-    'インポート > 新しく振るカードの ID は',
-    'pages/project-settings.md > インポート > WHEN 「インポート」を押すと > WHILE 「同じIDのカードを上書きする」をチェックしている間は',
-  ), async ({ ownerPage, owner, ownerApi, project }) => {
+  test('zip（エクセル・画像）を上書きして取り込むと、同じ ID のカードの値と画像を置き換え、無い ID・空の ID は新しいカードにする', {
+    tag: [
+      '@TC-FT-IMPEXP-IMP12',
+      '@TC-FT-IMPEXP-IMP13',
+      '@TC-FT-IMPEXP-IMP14',
+      '@TC-FT-IMPEXP-IMP15',
+      '@TC-FT-IMPEXP-IMP16',
+      '@TC-FT-IMPEXP-IMP17',
+      '@TC-FT-IMPEXP-IMP26',
+      '@TC-FT-IMPEXP-IMP27',
+      '@TC-FT-IMPEXP-IMP28',
+      '@TC-FT-IMPEXP-IMP20',
+      '@TC-PG-PSET-IMP11',
+    ],
+  }, async ({ ownerPage, owner, ownerApi, project }) => {
     const wide = await fileOf('wide.png', MIME.png)
     const small = await fileOf('small.png', MIME.png)
     const cards = [
@@ -263,13 +271,11 @@ test.describe('インポート', () => {
     }
   })
 
-  test('【実装との乖離】オーナー以外（編集者）も URL を直接開いて取り込める。「画像ファイル」の列が無い zip は、上書きしても画像を変えない（あるべき: オーナーだけがインポートできる）', withIssue(
-    spec('features/import-export.md',
-      'インポート > WHERE zip の場合 > WHERE 「画像ファイル」の列が無い場合、画像は変えない',
-      'インポート > WHERE zip の場合、中のエクセルまたは CSV のファイル 1 つを、上と同じように取り込む',
-    ),
-    knownIssue('pages/project-settings.md', 'オーナー以外にはタブを表示しないが、URL を直接開くと「インポート」「ユーザー管理」「プロジェクト削除」の画面を表示する。（略）インポートはサーバー側のオーナー判定が効いておらず、取り込めてしまう'),
-  ), async ({ owner, ownerApi, project, newAccount, apiAs, pageAs }) => {
+  test('【実装との乖離】オーナー以外（編集者）も URL を直接開いて取り込める。「画像ファイル」の列が無い zip は、上書きしても画像を変えない（あるべき: オーナーだけがインポートできる）', {
+    annotation: [
+      knownIssue('pages/project-settings.md', 'オーナー以外にはタブを表示しないが、URL を直接開くと「インポート」「ユーザー管理」「プロジェクト削除」の画面を表示する。（略）インポートはサーバー側のオーナー判定が効いておらず、取り込めてしまう'),
+    ],
+  }, async ({ owner, ownerApi, project, newAccount, apiAs, pageAs }) => {
     const card = await ownerApi.addCard(project.id, { みだし: '元の値' })
     await addImage(owner, project.id, card.id, await fileOf('small.png', MIME.png))
     const editor = await newAccount({ suffix: 'editor' })
@@ -294,21 +300,23 @@ test.describe('インポート', () => {
     expect(await imageSizes(editorPage)).toEqual([[100, 50]])
   })
 
-  test('ファイルに誤りがあると、何も取り込まずフォーマットエラー（赤）とし、行を開くと記録した内容を表示する。インポートは毎分 0 秒に、アップロードの古い順に 1 件ずつ取り込む', spec('features/import-export.md',
-    'インポート > アップロードしたファイルは、すぐには取り込まず、毎分 0 秒に動く処理が順に取り込む',
-    'インポート > アップロードしたファイルは > 取り込むのは、すべてのプロジェクトを通じて、アップロードの古い順に 1 件ずつとする',
-    'インポート > IF ファイルに次の誤りがある場合、何も取り込まず',
-    'インポート > ID が数字でない行がある（上書きしない場合も確かめる）',
-    'インポート > 「画像ファイル」の列に書いた画像が zip に無い',
-    'インポート > zip を展開できない',
-    'インポート > zip にエクセル・CSV が 2 つ以上ある',
-    'インポート > 行ごとの誤り（ID・画像ファイル）は、すべての行を確かめ',
-    'インポート > 結果はプロジェクト設定のインポート履歴と、オーナーのテーブルビューに表示する',
-    'features/non-functional.md > インポートの処理 > インポートは、毎分 0 秒に動く処理が',
-    'pages/project-settings.md > インポート > インポートを待っている | 未処理',
-    'pages/project-settings.md > インポート > ファイルの形式・内容に誤りがあった | フォーマットエラー（赤）',
-    'pages/project-settings.md > インポート > WHERE 結果がフォーマットエラー・システムエラーの場合',
-  ), async ({ ownerPage, owner, ownerApi, project, tag }) => {
+  test('ファイルに誤りがあると、何も取り込まずフォーマットエラー（赤）とし、行を開くと記録した内容を表示する。インポートは毎分 0 秒に、アップロードの古い順に 1 件ずつ取り込む', {
+    tag: [
+      '@TC-FT-IMPEXP-IMP2',
+      '@TC-FT-IMPEXP-IMP3',
+      '@TC-FT-IMPEXP-IMP21',
+      '@TC-FT-IMPEXP-IMP29',
+      '@TC-FT-IMPEXP-IMP30',
+      '@TC-FT-IMPEXP-IMP31',
+      '@TC-FT-IMPEXP-IMP33',
+      '@TC-FT-IMPEXP-IMP22',
+      '@TC-FT-IMPEXP-IMP24',
+      '@TC-FT-NFR-IMP1',
+      '@TC-PG-PSET-IMP21',
+      '@TC-PG-PSET-IMP24',
+      '@TC-PG-PSET-IMP20',
+    ],
+  }, async ({ ownerPage, owner, ownerApi, project, tag }) => {
     test.setTimeout(8 * 60_000)
     await ownerApi.addCard(project.id, { みだし: '元のカード' })
     const settings = new ProjectSettingsPage(ownerPage, project.id)
@@ -363,14 +371,16 @@ test.describe('インポート', () => {
     await expectCards(screen, [{ order: '1', id: '1', values: ['元のカード', ''] }])
   })
 
-  test('表に行が無い・見出しだけ・zip にエクセル/CSV が無い（__MACOSX の中と、拡張子が大文字のものは数えない）とフォーマットエラーにし、エクセルは最初のシートを取り込む', spec('features/import-export.md',
-    'インポート > インポートできるのは、エクセル（xlsx）、CSV（UTF-8）、zip のファイルとする',
-    'インポート > WHERE エクセル・CSV の場合、最初のシートの表を取り込む',
-    'インポート > WHERE zip の場合 > エクセル・CSV のファイルは、名前が .xlsx・.csv（小文字）で終わるものを探す',
-    'インポート > zip にエクセル・CSV が無い',
-    'インポート > 表に行が無い',
-    'インポート > 表に見出しの行しか無い',
-  ), async ({ ownerPage, owner, project, tag }) => {
+  test('表に行が無い・見出しだけ・zip にエクセル/CSV が無い（__MACOSX の中と、拡張子が大文字のものは数えない）とフォーマットエラーにし、エクセルは最初のシートを取り込む', {
+    tag: [
+      '@TC-FT-IMPEXP-IMP1',
+      '@TC-FT-IMPEXP-IMP4',
+      '@TC-FT-IMPEXP-IMP13',
+      '@TC-FT-IMPEXP-IMP32',
+      '@TC-FT-IMPEXP-IMP34',
+      '@TC-FT-IMPEXP-IMP35',
+    ],
+  }, async ({ ownerPage, owner, project, tag }) => {
     test.setTimeout(8 * 60_000)
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
@@ -403,14 +413,12 @@ test.describe('インポート', () => {
     await expectCards(screen, [{ order: '1', id: '2', values: ['エクセルの行', ''] }])
   })
 
-  test('【既知の問題】BOM の無い UTF-8 の CSV は日本語が文字化けして取り込まれ、0 バイトの CSV は「データが存在していません」になる（あるべき: UTF-8 として取り込む・「行が存在していません」とする）', withIssue(
-    spec('features/import-export.md',
-      'インポート > インポートできるのは、エクセル（xlsx）、CSV（UTF-8）、zip のファイルとする',
-      'インポート > 表に行が無い',
-    ),
-    knownIssue('docs/ISSUES.md', 'BOM の無い UTF-8 の CSV は文字化けする'),
-    knownIssue('features/import-export.md', '0 バイトの CSV は、「行が存在していません」ではなく「エクセル/CSVファイルにデータが存在していません」になる'),
-  ), async ({ ownerPage, owner, project, tag }) => {
+  test('【既知の問題】BOM の無い UTF-8 の CSV は日本語が文字化けして取り込まれ、0 バイトの CSV は「データが存在していません」になる（あるべき: UTF-8 として取り込む・「行が存在していません」とする）', {
+    annotation: [
+      knownIssue('docs/ISSUES.md', 'BOM の無い UTF-8 の CSV は文字化けする'),
+      knownIssue('features/import-export.md', '0 バイトの CSV は、「行が存在していません」ではなく「エクセル/CSVファイルにデータが存在していません」になる'),
+    ],
+  }, async ({ ownerPage, owner, project, tag }) => {
     test.setTimeout(8 * 60_000)
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
@@ -436,15 +444,7 @@ test.describe('インポート', () => {
     await expect(screen.values(screen.cardRows.first()).nth(2)).not.toHaveValue('')
   })
 
-  test('【既知の問題】「画像ファイル」の列で空白が 2 つ続くとシステムエラー（赤）になり、それまでに取り込んだ項目・カード・値は残る（あるべき: 空白を区切りとして取り込む）', withIssue(
-    spec('features/import-export.md',
-      'インポート > IF 取り込みの途中で予期しないエラーが起きた場合',
-      'インポート > WHERE zip の場合 > WHERE 「画像ファイル」の列がある場合 > ファイル名は、空白または改行で区切って複数書ける',
-      'pages/project-settings.md > インポート > 取り込みの途中で予期しないエラーが起きた | システムエラー（赤）',
-      'pages/project-settings.md > インポート > WHERE 結果がフォーマットエラー・システムエラーの場合',
-    ),
-    knownIssue('docs/ISSUES.md', '画像ファイルの列で空白が続くとシステムエラーになり、途中まで取り込まれる'),
-  ), async ({ ownerPage, owner, project, tag }) => {
+  test('【既知の問題】「画像ファイル」の列で空白が 2 つ続くとシステムエラー（赤）になり、それまでに取り込んだ項目・カード・値は残る（あるべき: 空白を区切りとして取り込む）', { annotation: [knownIssue('docs/ISSUES.md', '画像ファイルの列で空白が続くとシステムエラーになり、途中まで取り込まれる')] }, async ({ ownerPage, owner, project, tag }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
 
@@ -468,10 +468,7 @@ test.describe('インポート', () => {
     ])
   })
 
-  test('取り込んでいる間は結果を「インポート中」と表示し、終わってから「再読み込み」を押すとダイアログを閉じる', spec('pages/project-settings.md',
-    'インポート > 取り込んでいる | インポート中',
-    'features/import-export.md > インポート中の画面 > WHILE プロジェクトのインポートを待っている間 > 「再読み込み」ボタンで',
-  ), async ({ ownerPage, owner, project, tag, pageAs }) => {
+  test('取り込んでいる間は結果を「インポート中」と表示し、終わってから「再読み込み」を押すとダイアログを閉じる', { tag: ['@TC-PG-PSET-IMP22', '@TC-FT-IMPEXP-WAIT3'] }, async ({ ownerPage, owner, project, tag, pageAs }) => {
     const settings = new ProjectSettingsPage(ownerPage, project.id)
     await settings.open('インポート')
 
@@ -496,5 +493,189 @@ test.describe('インポート', () => {
     await screen.reloadButton.click()
     await expect(screen.importingDialog).toBeHidden({ timeout: 5_000 })
     await expect(screen.values(screen.cardRows.first()).first()).toHaveValue('時間のかかるインポート')
+  })
+})
+
+test.describe('ユーザーストーリー', () => {
+  test('研究者が、エクスポートと同じ形式（ID・項目・「画像ファイル」の列のエクセルと画像のファイル）の zip を取り込み、表計算ソフトのデータと画像をまとめてプロジェクトに移す', { tag: ['@story', '@TC-FT-IMPEXP-US1'] }, async ({ ownerPage, project }) => {
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open('インポート')
+
+    // エクスポートの zip と同じく、エクセル 1 つ（ID・項目・画像ファイルの列）と画像のファイルを入れたもの。
+    // エクスポートは今は失敗する（docs/ISSUES.md「エクスポートが失敗する」）ので、同じ形式のファイルを使う
+    // data.xlsx: ID,みだし,メモ,画像ファイル
+    //   1,一改,(空),"img/wide.png⏎small.jpeg" / 2,二改,メモ二改,(空) / (空),新規,(空),"img/wide.png small.jpeg" / 50,五十,(空),(空)
+    await settings.chooseFile(await fileOf('update.zip', MIME.zip))
+    await settings.startImport()
+
+    const screen = new ProjectScreen(ownerPage, project.id)
+    await expect(ownerPage).toHaveURL(`/projects/${project.id}`)
+    await expect(screen.importingDialog).toBeVisible()
+    await screen.waitForImportDone()
+
+    await expect(screen.importedAlert).toBeVisible()
+    await expectHeaders(screen, ['並び順', 'ID', 'みだし', 'メモ'])
+    // 上書きしないので、ID はファイルの ID の列のいちばん大きい数字（50）の次から振り直し、ファイルの行の順に並べる
+    await expectCards(screen, [
+      { order: '1', id: '51', values: ['一改', ''] },
+      { order: '2', id: '52', values: ['二改', 'メモ二改'] },
+      { order: '3', id: '53', values: ['新規', ''] },
+      { order: '4', id: '54', values: ['五十', ''] },
+    ])
+
+    // 画像も、各行のカードに取り込まれている（改行区切り・空白区切り、フォルダの中の画像を含む）
+    const expected: [number, [number, number][]][] = [
+      [51, [[640, 320], [100, 50]]],
+      [52, []],
+      [53, [[640, 320], [100, 50]]],
+      [54, []],
+    ]
+    for (const [cardId, sizes] of expected) {
+      await screen.openCard(cardId)
+      await expect(ownerPage.getByRole('button', { name: '画像を追加' })).toBeVisible()
+      await expect(ownerPage.getByRole('img'), `カード ${cardId} の画像`).toHaveCount(sizes.length)
+      expect(await imageSizes(ownerPage), `カード ${cardId} の画像`).toEqual(sizes)
+    }
+  })
+
+  test('研究者が、大きなファイル（展開すると 100MB を超える zip に 1,000 行の表）を取り込むと、アップロードはすぐに終わってテーブルビューに移り、取り込みが後から終わってすべての行がカードになる', { tag: ['@story', '@TC-FT-IMPEXP-US2'] }, async ({ ownerPage, project, tag }) => {
+    const rows = Array.from({ length: 1000 }, (_, i) => `,資料${i + 1},メモ${i + 1}`)
+    const name = `${tag}-large.zip`
+    // 展開に時間のかかる大きさにする。1GB にすると、x64 の模倣で動く Mac では取り込みが待つ時間の上限を超える
+    const buffer = await slowZip(`\ufeffID,みだし,メモ\n${rows.join('\n')}\n`, 100 * 1024 * 1024)
+
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open('インポート')
+    await settings.chooseFile({ name, mimeType: MIME.zip, buffer })
+    const uploaded = ownerPage.waitForResponse((r) => r.request().method() === 'POST' && r.url().endsWith(`/api/projects/${project.id}/imports`))
+    await settings.startImport()
+
+    // アップロードは取り込みを待たずに終わり、テーブルビューで取り込みを待つ
+    expect((await uploaded).ok()).toBe(true)
+    const screen = new ProjectScreen(ownerPage, project.id)
+    await expect(ownerPage).toHaveURL(`/projects/${project.id}`)
+    await expect(screen.importingDialog).toBeVisible()
+    await screen.waitForImportDone()
+
+    await expect(screen.importedAlert).toBeVisible()
+    await expect(new TableViewPage(ownerPage).countText).toHaveText('全 1000 件')
+    await expect(screen.cardRows).toHaveCount(1000)
+    // 最初と最後の行（ID はファイルの行の順に 1 から振る）
+    for (const [row, n] of [[screen.cardRows.first(), 1], [screen.cardRows.last(), 1000]] as const) {
+      await expect(screen.orderCell(row)).toHaveText(String(n))
+      await expect(screen.idCell(row)).toHaveText(String(n))
+      await expect(screen.values(row).nth(0)).toHaveValue(`資料${n}`)
+      await expect(screen.values(row).nth(1)).toHaveValue(`メモ${n}`)
+    }
+  })
+
+  test('研究者が、インポートを始めた後、「再読み込み」も画面の読み込み直しもせずに待つと、ダイアログが自動で閉じ、完了の表示と取り込んだカードで終わったことを知る', { tag: ['@story', '@TC-FT-IMPEXP-US3'] }, async ({ ownerPage, project, tag }) => {
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open('インポート')
+    const file = bomCsv(`${tag}-wait.csv`, [
+      ['ID', 'みだし'],
+      ['', '取り込みを待つカード1'],
+      ['', '取り込みを待つカード2'],
+    ])
+    await settings.chooseFile(file)
+    await settings.startImport()
+
+    const screen = new ProjectScreen(ownerPage, project.id)
+    await expect(ownerPage).toHaveURL(`/projects/${project.id}`)
+    await expect(screen.importingDialog).toBeVisible()
+    await expect(screen.table).toHaveCount(0)
+
+    // ここからは何も操作せずに待つ。画面を読み込み直していないことを、読み込んだ回数で確かめる
+    let loads = 0
+    ownerPage.on('load', () => { loads++ })
+    await expect(screen.importingDialog).toBeHidden({ timeout: IMPORT_TIMEOUT })
+
+    await expect(screen.importedAlert).toBeVisible()
+    await expectCards(screen, [
+      { order: '1', id: '1', values: ['取り込みを待つカード1', ''] },
+      { order: '2', id: '2', values: ['取り込みを待つカード2', ''] },
+    ])
+    expect(loads, '画面を読み込み直した回数').toBe(0)
+
+    // 完了の表示の「詳細」から、インポート履歴で結果を確かめる
+    await ownerPage.getByRole('link', { name: '詳細' }).click()
+    await expect(ownerPage).toHaveURL(`/projects/${project.id}/settings/import`)
+    await expect(settings.historyCell(settings.historyRow(file.name), '結果')).toHaveText('インポート済')
+  })
+
+  test('オーナーが、上書きを選ばずに、既存のカードと同じ ID の行を含むファイルを取り込むと、既存のカードの内容は変わらず、ファイルの行は新しいカードとして加わる', { tag: ['@story', '@TC-FT-IMPEXP-US4'] }, async ({ ownerPage, ownerApi, project, tag }) => {
+    await ownerApi.addCard(project.id, { みだし: '手で書いた記録', メモ: '大事なメモ' })
+    await ownerApi.addCard(project.id, { みだし: '二枚目の記録', メモ: '二枚目のメモ' })
+
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open('インポート')
+    const file = bomCsv(`${tag}-same-id.csv`, [
+      ['ID', 'みだし', 'メモ'],
+      ['1', '表計算の値1', ''],
+      ['2', '表計算の値2', ''],
+    ])
+    await settings.chooseFile(file)
+    // 上書きは、明示的に選ばない限りしない
+    await expect(settings.updateCheckbox).not.toBeChecked()
+    await settings.startImport()
+
+    const screen = new ProjectScreen(ownerPage, project.id)
+    await expect(screen.importingDialog).toBeVisible()
+    await screen.waitForImportDone()
+
+    await expect(screen.importedAlert).toBeVisible()
+    await expectCards(screen, [
+      { order: '1', id: '1', values: ['手で書いた記録', '大事なメモ'] },
+      { order: '2', id: '2', values: ['二枚目の記録', '二枚目のメモ'] },
+      // ファイルの行は、プロジェクトとファイルの ID のいちばん大きい数字（2）の次の ID で末尾に加わる
+      { order: '3', id: '3', values: ['表計算の値1', ''] },
+      { order: '4', id: '4', values: ['表計算の値2', ''] },
+    ])
+
+    // カード入力ビューで開いても、元の内容が残っている
+    const cardView = new CardViewPage(ownerPage)
+    await cardView.open(project.id, 1)
+    await expect(cardView.field('みだし')).toHaveValue('手で書いた記録')
+    await expect(cardView.field('メモ')).toHaveValue('大事なメモ')
+  })
+
+  test('研究者が、資料の順に行を並べたファイル（ID は順不同）を取り込むと、ID の順ではなくファイルの行の順に並び順が振られ、テーブルビューとグリッドビューで資料の順に並ぶ', { tag: ['@story', '@TC-FT-IMPEXP-US6'] }, async ({ ownerPage, ownerApi, project, tag }) => {
+    await ownerApi.addCard(project.id, { みだし: '既存の一' })
+    await ownerApi.addCard(project.id, { みだし: '既存の二' })
+
+    // ID を指定して取り込む（上書きを選ぶと、無い ID はその ID で新しいカードを作る）。ID の順と資料の順が違う
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open('インポート')
+    await settings.chooseFile(bomCsv(`${tag}-order.csv`, [
+      ['ID', 'みだし'],
+      ['30', '資料の1枚目'],
+      ['10', '資料の2枚目'],
+      ['20', '資料の3枚目'],
+    ]))
+    await settings.checkUpdate()
+    await settings.startImport()
+
+    const screen = new ProjectScreen(ownerPage, project.id)
+    await expect(screen.importingDialog).toBeVisible()
+    await screen.waitForImportDone()
+
+    await expect(screen.importedAlert).toBeVisible()
+    // テーブルビューは並び順の昇順。既存のカードの後に、ファイルの行の順に並ぶ
+    await expectCards(screen, [
+      { order: '1', id: '1', values: ['既存の一', ''] },
+      { order: '2', id: '2', values: ['既存の二', ''] },
+      { order: '3', id: '30', values: ['資料の1枚目', ''] },
+      { order: '4', id: '10', values: ['資料の2枚目', ''] },
+      { order: '5', id: '20', values: ['資料の3枚目', ''] },
+    ])
+
+    // グリッドビューでも同じ順に並ぶ（タイルには「ID: N」を表示する）
+    const grid = new GridViewPage(ownerPage)
+    await grid.open(project.id)
+    const ids = [1, 2, 30, 10, 20]
+    await expect(grid.tiles).toHaveCount(ids.length)
+    for (const [i, id] of ids.entries()) {
+      await expect(grid.tile(i), `${i + 1} 枚目のタイル`).toContainText(new RegExp(`ID: ${id}(?!\\d)`))
+    }
   })
 })

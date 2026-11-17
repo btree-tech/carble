@@ -2,11 +2,8 @@ import { expect, test } from '../../fixtures'
 import { LoginPage } from '../../pages/LoginPage'
 import { ProjectListPage } from '../../pages/ProjectListPage'
 import { UserFormPage } from '../../pages/UserFormPage'
-import { spec } from '../../support/spec'
 
-test('ロゴと「Googleでログイン」ボタンを表示する', spec('pages/login.md',
-  'ロゴと「Googleでログイン」ボタンを表示する',
-), async ({ pageAs }) => {
+test('ロゴと「Googleでログイン」ボタンを表示する', { tag: ['@TC-PG-LOGIN-GEN1'] }, async ({ pageAs }) => {
   const login = new LoginPage(await pageAs('guest'))
   await login.open()
 
@@ -14,9 +11,7 @@ test('ロゴと「Googleでログイン」ボタンを表示する', spec('pages
   await expect(login.googleButton).toBeVisible()
 })
 
-test('「Googleでログイン」を押すと、Google のログイン画面に遷移する', spec('pages/login.md',
-  '**WHEN** 「Googleでログイン」を押すと',
-), async ({ pageAs }) => {
+test('「Googleでログイン」を押すと、Google のログイン画面に遷移する', { tag: ['@TC-PG-LOGIN-GEN2'] }, async ({ pageAs }) => {
   const login = new LoginPage(await pageAs('guest'))
   await login.open()
 
@@ -31,9 +26,7 @@ test('「Googleでログイン」を押すと、Google のログイン画面に�
   expect(google.isNavigationRequest()).toBe(true)
 })
 
-test('初めてログインすると、ユーザー登録に遷移する', spec('pages/login.md',
-  '**WHEN** 「Googleでログイン」を押すと > **WHEN** 初めてログインすると',
-), async ({ pageAs, newAccount }) => {
+test('初めてログインすると、ユーザー登録に遷移する', { tag: ['@TC-PG-LOGIN-GEN3'] }, async ({ pageAs, newAccount }) => {
   // Google から戻る先として、初めてのユーザーにはユーザー登録を指定している
   const login = new LoginPage(await pageAs('guest'))
   await login.open()
@@ -49,9 +42,7 @@ test('初めてログインすると、ユーザー登録に遷移する', spec(
   await expect(form.username).toBeVisible()
 })
 
-test('登録済みのユーザーがログインすると、プロジェクト一覧に遷移する', spec('pages/login.md',
-  '**WHEN** 「Googleでログイン」を押すと > **WHEN** 登録済みのユーザーがログインすると',
-), async ({ pageAs, owner, project }) => {
+test('登録済みのユーザーがログインすると、プロジェクト一覧に遷移する', { tag: ['@TC-PG-LOGIN-GEN4'] }, async ({ pageAs, owner, project }) => {
   const login = new LoginPage(await pageAs('guest'))
   await login.open()
   const { signIn } = await login.signInWithGoogle()
@@ -64,10 +55,7 @@ test('登録済みのユーザーがログインすると、プロジェクト�
   await expect(list.row(project.name)).toBeVisible()
 })
 
-test('ユーザーIDを登録していないユーザーがログインすると、ユーザー登録に遷移する', spec('pages/login.md',
-  '**WHEN** 「Googleでログイン」を押すと > **WHEN** 登録済みのユーザーがログインすると > **WHERE** ユーザーID をまだ登録していない場合',
-  'features/roles.md > ログイン > **WHERE** ログインしているがユーザーIDを登録していない場合',
-), async ({ pageAs, newAccount }) => {
+test('ユーザーIDを登録していないユーザーがログインすると、ユーザー登録に遷移する', { tag: ['@TC-PG-LOGIN-GEN5', '@TC-FT-ROLES-LOGI3'] }, async ({ pageAs, newAccount }) => {
   // ログインした後の戻り先（/）を、ユーザーID 未登録のユーザーで開く
   const page = await pageAs(await newAccount({ username: null }))
   await page.goto('/')
@@ -76,9 +64,7 @@ test('ユーザーIDを登録していないユーザーがログインすると
   await expect(new UserFormPage(page).username).toBeVisible()
 })
 
-test('ログインしている場合も、ログイン画面を表示する', spec('pages/login.md',
-  '**WHERE** ログインしている場合も',
-), async ({ ownerPage }) => {
+test('ログインしている場合も、ログイン画面を表示する', { tag: ['@TC-PG-LOGIN-GEN6'] }, async ({ ownerPage }) => {
   const login = new LoginPage(ownerPage)
   await login.open()
 
@@ -86,10 +72,7 @@ test('ログインしている場合も、ログイン画面を表示する', sp
   await expect(login.googleButton).toBeVisible()
 })
 
-test('ユーザーメニューで「ログアウト」を選ぶと、ログアウトしてログイン画面に戻る', spec('pages/login.md',
-  '**WHEN** プロジェクト一覧のユーザーメニューで「ログアウト」を選ぶと',
-  'pages/project-list.md > ヘッダー > **WHEN** 名前のボタンを押すと > **WHEN** 「ログアウト」を選ぶと',
-), async ({ ownerPage, owner }) => {
+test('ユーザーメニューで「ログアウト」を選ぶと、ログアウトしてログイン画面に戻る', { tag: ['@TC-PG-LOGIN-GEN7', '@TC-PG-PLIST-HDR4'] }, async ({ ownerPage, owner }) => {
   const list = new ProjectListPage(ownerPage)
   await list.open()
 

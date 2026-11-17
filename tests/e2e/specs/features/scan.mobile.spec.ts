@@ -2,11 +2,8 @@ import { expect, test } from '../../fixtures'
 import { CardViewPage } from '../../pages/CardViewPage'
 import { ScanButton } from '../../pages/components/ScanButton'
 import { open } from '../../support/navigation'
-import { spec } from '../../support/spec'
 
-test('スマホ幅の場合、「スキャン」の文言を省いてアイコンだけにする', spec('features/scan.md',
-  '「スキャン」ボタンを表示する > WHERE スマホ幅の場合',
-), async ({ ownerPage, ownerApi, project }) => {
+test('スマホ幅の場合、「スキャン」の文言を省いてアイコンだけにする', { tag: ['@TC-FT-SCAN-GEN2'] }, async ({ ownerPage, ownerApi, project }) => {
   const card = await ownerApi.addCard(project.id)
   const scan = new ScanButton(ownerPage)
 

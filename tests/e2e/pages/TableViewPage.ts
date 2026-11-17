@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { open } from '../support/navigation'
 
 /**
@@ -157,14 +157,49 @@ export class TableViewPage {
 
   /** カードの、ある項目のセル（1 行の入力欄） */
   async cellInput(cardId: number, fieldName: string) {
+    // 画面を開いた直後は見出しがまだ描画されていないので、項目の列が出るまで読み直す（次に進める状態を待つ）
+    await expect.poll(() => this.fieldNames(), { message: `項目「${fieldName}」の列がありません` }).toContain(fieldName)
     const index = (await this.fieldNames()).indexOf(fieldName)
-    if (index < 0) throw new Error(`項目「${fieldName}」の列がありません`)
     return this.row(cardId).locator(':scope > td').nth(4 + index).getByRole('textbox')
   }
 
   /** セルを押すと開く、複数行の入力欄（textarea。1 行の入力欄と役割が同じなので CSS で指す） */
   get cellEditor() {
     return this.page.locator('textarea')
+  }
+
+  /**
+   * セルを押して複数行の入力欄を開き、値を入れ、保存の要求の応答を待つ
+   * 保存は入力が止まってから 1 秒後なので、応答を待ってから次の操作（画面の移動など）に進む
+   */
+  async editCell(cardId: number, fieldName: string, value: string) {
+    const saved = this.page.waitForResponse((r) => r.request().method() === 'PUT'
+      && new RegExp(`/cards/${cardId}/fields/\\d+$`).test(new URL(r.url()).pathname))
+    await (await this.cellInput(cardId, fieldName)).click()
+    await this.cellEditor.fill(value)
+    return await saved
+  }
+
+  /**
+   * いま入力している、セルの複数行の入力欄（フォーカスのある textarea）
+   * 別のセルへ移ると、閉じかけの入力欄と開いた入力欄が一瞬並ぶため、フォーカスのあるものに絞る（やむを得ず CSS）
+   */
+  get activeCellEditor() {
+    return this.page.locator('textarea:focus')
+  }
+
+  /** セルを押して入力欄を開き、キーボードで 1 文字ずつ打ち込む */
+  async typeInCell(cardId: number, fieldName: string, text: string) {
+    await (await this.cellInput(cardId, fieldName)).click()
+    await this.activeCellEditor.waitFor()
+    await this.page.keyboard.type(text, { delay: 50 })
+  }
+
+  /** セルの値の保存（PUT）が、body の値で終わるのを待つ。保存を待つ前に呼んでおく */
+  waitForCellSave(cardId: number, fieldId: number, body: string) {
+    return this.page.waitForResponse((r) => r.request().method() === 'PUT'
+      && new URL(r.url()).pathname.endsWith(`/cards/${cardId}/fields/${fieldId}`)
+      && (r.request().postDataJSON() as { body?: string } | null)?.body === body)
   }
 
   /** 各行の「…」 */

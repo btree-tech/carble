@@ -1,11 +1,7 @@
 import { expect, test } from '../../fixtures'
 import { ProjectListPage } from '../../pages/ProjectListPage'
-import { spec } from '../../support/spec'
 
-test('スマホ幅では、最終更新日時を表示せず、「詳細」ボタンはアイコンだけにする', spec('pages/project-list.md',
-  'プロジェクトの一覧 > 「プロジェクト名」「オーナー」「最終更新日時」の列と > **WHERE** スマホ幅の場合',
-  'features/common-layout.md > 画面 > **WHERE** スマホ幅の場合',
-), async ({ ownerPage, owner, project }) => {
+test('スマホ幅では、最終更新日時を表示せず、「詳細」ボタンはアイコンだけにする', { tag: ['@TC-PG-PLIST-LIST6', '@TC-FT-LAYOUT-SCR2'] }, async ({ ownerPage, owner, project }) => {
   const list = new ProjectListPage(ownerPage)
   await list.open()
 
@@ -23,10 +19,7 @@ test('スマホ幅では、最終更新日時を表示せず、「詳細」ボ�
   await expect(ownerPage).toHaveURL(`/projects/${project.id}`)
 })
 
-test('スマホ幅では、「新規プロジェクト」ボタンは文言を省いてメニューを開く矢印のアイコンだけにする', spec('pages/project-list.md',
-  '新規プロジェクト > 「新規プロジェクト」ボタンを表示する > **WHERE** スマホ幅の場合',
-  'features/common-layout.md > 画面 > **WHERE** スマホ幅の場合',
-), async ({ ownerPage }) => {
+test('スマホ幅では、「新規プロジェクト」ボタンは文言を省いてメニューを開く矢印のアイコンだけにする', { tag: ['@TC-PG-PLIST-NEW2', '@TC-FT-LAYOUT-SCR2'] }, async ({ ownerPage }) => {
   const list = new ProjectListPage(ownerPage)
   await list.open()
 

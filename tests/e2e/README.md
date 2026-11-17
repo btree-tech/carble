@@ -41,7 +41,7 @@ runner（Playwright）─→ app（本番と同じ Dockerfile の app ステー�
 
 ```bash
 docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm --no-deps runner pnpm run typecheck
-docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm --no-deps runner pnpm run coverage:spec
+docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm --no-deps runner pnpm run check:test-design
 ```
 
 ## 構成
@@ -55,11 +55,11 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 | `support/db.ts` | ログインの仕込み（DB にユーザーとセッションを作り、Better Auth と同じ方式で署名した Cookie を返す） |
 | `support/api.ts` | 製品の API を呼ぶ（前提データの作成） |
 | `support/navigation.ts` | 画面を開き、ハイドレーションを待つ |
-| `support/spec.ts` | 仕様書の項目との対応（`spec()`）、既知の問題の注記（`knownIssue()`） |
+| `support/spec.ts` | 既知の問題の注記（`knownIssue()`） |
+| `support/imports.ts` | インポートの取り込みを待つ時間の上限 |
 | `fixtures/index.ts` | テスト専用のユーザー・ログイン済みの画面・オーナーとプロジェクト |
 | `files/` | インポートなどで使うファイル |
-| `spec-out-of-scope.mjs`、`out-of-scope/*.mjs` | 画面のテストで確かめない仕様書の項目と、その理由（仕様書のまとまりごとに `out-of-scope/` に書く） |
-| `scripts/check-spec-coverage.mjs` | 仕様書の項目とテストの対応を確かめる |
+| `scripts/check-test-design.mjs` | 外部仕様・テスト設計・テストの対応を確かめる（[docs/test-design/README.md](../../docs/test-design/README.md) の「検査」） |
 
 ## テストの書き方
 
@@ -74,37 +74,34 @@ docker compose -p carble-e2e -f docker-compose.e2e.yml --profile runner run --rm
 - 前提データは、ログイン（`support/db.ts`）だけ DB に直接書く。それ以外は画面か製品の API（`support/api.ts`）で作る
 - テストごとにユーザー・プロジェクトを作る（fixture の `owner`・`project`・`newAccount`）。データには fixture の `tag` を入れ、並列で動く他のテストと混ざらないようにする
 
-### 仕様書との対応
+### テスト設計との対応
 
-テストには、確かめる仕様書の項目を `spec()` で付ける。
+テストは、テスト設計（[docs/test-design](../../docs/test-design/README.md)）のルールの ID をタグで付ける。決まりは docs/test-design/README.md の「テストとの対応」。
 
 ```ts
-test('項目名の見出しを押すと…', spec('pages/table-view.md',
-  '並び替え > **WHEN** 項目名の見出しを押す',
-), async ({ ownerPage }) => { … })
+test('「テーブルビュー」を押すと、テーブルビューに遷移し、並び替えと検索の条件を引き継ぐ', { tag: ['@TC-PG-CARD-HDR3'] }, async ({ ownerPage }) => { … })
+test('研究者が前後のカードへ移りながら入力を続ける', { tag: ['@story', '@TC-PG-CARD-US2'] }, async ({ ownerPage }) => { … })
 ```
 
-- 「節の見出し > 項目 > 入れ子の項目」の形で、各段は文言の書き出しでよい（兄弟の項目と区別できる長さ）
-- 表の行は、セルを「 | 」でつないだ文言の書き出しで指す
-- 別の仕様書の項目も同じテストで確かめるときは、`features/roles.md > …` の形で書く
-- 仕様書を変えたら `pnpm run coverage:spec` を流す。未対応の項目は、そのまま `spec()` に貼れる形で出る
-- 画面で確かめられない項目は、`out-of-scope/*.mjs` に区分と理由を書く。画面から見える部分は対象外にしない
+- ユーザーストーリー（ID の種別が `US`）のテストには `@story` も付ける。ストーリーのテストは、利用者の目的に沿った一連の操作で確かめる
+- 仕様書を変えたら、同じパスのテスト設計を直し、`pnpm run check:test-design` を流す。ルールにテストが無い・対象外の理由が無いものなどを知らせる
+- 画面で確かめられないルールは、テスト設計に `対象外` と種類・理由を書く
 
 ### 既知の問題・実装との乖離
 
 今の挙動を期待値にする。テスト名に「【既知の問題】」（`docs/ISSUES.md` の問題）または「【実装との乖離】」（仕様書の「実装との乖離」）と、あるべき挙動を書き、`knownIssue()` を付ける。
 
 ```ts
-test('【既知の問題】項目名の見出しを押しても並び替わらない（あるべき: その項目で並び替わる）', withIssue(
-  spec('pages/table-view.md', '並び替え > …'),
-  knownIssue('docs/ISSUES.md', '項目名で並び替えられない'),
-), async () => { … })
+test('【既知の問題】項目名の見出しを押しても並び替わらない（あるべき: その項目で並び替わる）', {
+  annotation: [knownIssue('docs/ISSUES.md', '項目名で並び替えられない')],
+}, async () => { … })
 ```
 
-- `knownIssue('docs/ISSUES.md', '<見出し>')` の見出しは、ISSUES.md の見出しと一字一句同じにする（`coverage:spec` が確かめる）
+- このテストには、テスト設計のルールのタグを付けない。そのルールはテスト設計で `対象外` `乖離` にする
+- `knownIssue('docs/ISSUES.md', '<見出し>')` の見出しは、ISSUES.md の見出しと一字一句同じにする（`check:test-design` が確かめる）
 - 仕様書の「実装との乖離」だけに書いてあるものは `knownIssue('pages/xxx.md', '<内容>')` とする
 
-直すときは `docs/ISSUES.md` の「直すときの手順」に従い、テストの期待値を先に変えて失敗することを確かめる。
+直すときは `docs/ISSUES.md` の「直すときの手順」に従い、テストの期待値を先に変えて失敗することを確かめる。直したら、テストにルールのタグを付け、テスト設計の `対象外` の行を消す。
 
 ## このテストで確かめられないこと
 

@@ -352,6 +352,16 @@ export async function addImage(account: Account, projectId: number, cardId: numb
   }
 }
 
+/**
+ * 表計算ソフトで作った CSV（Excel の「CSV UTF-8」と同じ BOM 付き）をアップロードする形で作る
+ * BOM の無い UTF-8 は日本語が文字化けする（docs/ISSUES.md「BOM の無い UTF-8 の CSV は文字化けする」）ので、必ず BOM を付ける
+ * セルに「,」「"」・改行を含めない（エスケープしない）
+ */
+export function bomCsv(name: string, rows: string[][]): ImportFile {
+  const text = rows.map((row) => row.join(',')).join('\n') + '\n'
+  return { name, mimeType: MIME.csv, buffer: Buffer.from(`﻿${text}`) }
+}
+
 /** 端末（ブラウザ）の日時を「年月日時分秒」にする。ブラウザは Asia/Tokyo（playwright.config.ts） */
 export function tokyoTimestamp(date: Date) {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {

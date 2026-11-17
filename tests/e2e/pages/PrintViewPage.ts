@@ -107,4 +107,34 @@ export class PrintViewPage {
   get sheets() {
     return this.page.locator('.print-view-card-adjuster')
   }
+
+  /**
+   * 印刷したカードを撮った写真の代わりに、カードの QR コードを画像にする（スキャンに使う）
+   * QR コードは余白なしで描かれ、そのままでは読み取れないことがあるので、白い余白を付けて大きく写す。
+   * material に色を渡すと、QR コードの横に資料の代わりの色の四角を並べて写す（カードと資料を一緒に撮った写真）
+   * 別のタブで描くので、開いている画面（印刷用のメディアの切り替えなど）には触れない
+   */
+  async photoOfCard(card: Locator, material?: string) {
+    const src = await this.qrCode(card).first().getAttribute('src')
+    if (!src) throw new Error('QR コードがありません')
+    const materialHtml = material ? `<div style="width:200px;height:300px;background:${material}"></div>` : ''
+    const canvas = await this.page.context().newPage()
+    try {
+      await canvas.setContent(`<div id="photo" style="display:inline-flex;align-items:center;gap:60px;padding:60px;background:#fff">${materialHtml}<img src="${src}" style="display:block;width:300px;height:300px;image-rendering:pixelated"></div>`)
+      return await canvas.locator('#photo').screenshot()
+    } finally {
+      await canvas.close()
+    }
+  }
+
+  /** 印刷を PDF にしたときのページ数と、各ページの大きさ（pt。[幅, 高さ]） */
+  async printedPdf() {
+    const pdf = (await this.page.pdf({ preferCSSPageSize: true })).toString('latin1')
+    const pageCount = [...pdf.matchAll(/\/Type\s*\/Page(?![s\w])/g)].length
+    const sizes = (pdf.match(/\/MediaBox\s*\[[^\]]*\]/g) ?? []).map((mediaBox) => {
+      const [, , w, h] = mediaBox.replace(/.*\[/, '').replace(']', '').trim().split(/\s+/).map(Number)
+      return [Math.round(w), Math.round(h)]
+    })
+    return { pageCount, sizes }
+  }
 }

@@ -1,10 +1,7 @@
 import { expect, test } from '../../fixtures'
 import { ProjectScreens } from '../../pages/ProjectScreens'
-import { spec } from '../../support/spec'
 
-test('スマホ幅では、テーブルビューのヘッダーのボタンは文言を省いてアイコンだけにする', spec('features/common-layout.md',
-  '画面 > **WHERE** スマホ幅の場合',
-), async ({ ownerPage, project }) => {
+test('スマホ幅では、テーブルビューのヘッダーのボタンは文言を省いてアイコンだけにする', { tag: ['@TC-FT-LAYOUT-SCR2'] }, async ({ ownerPage, project }) => {
   const screens = new ProjectScreens(ownerPage)
   const paths = ProjectScreens.paths(project.id)
   await screens.open(paths.table)

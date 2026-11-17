@@ -3,26 +3,10 @@ import { join } from 'node:path'
 import { expect, test } from '../../fixtures'
 import { addImage, fileOf, MIME, ProjectScreen, ProjectSettingsPage, uploadImport } from '../../pages/ProjectSettingsPage'
 import { open } from '../../support/navigation'
-import { knownIssue, spec, withIssue } from '../../support/spec'
+import { knownIssue } from '../../support/spec'
 
 test.describe('エクスポート', () => {
-  test('【既知の問題】「エクスポート」を押しても、サーバーがエラー（500）を返してダウンロードが失敗する（あるべき: エクセルと画像を入れた zip をダウンロードする）', withIssue(
-    spec('features/import-export.md',
-      'エクスポート > プロジェクトのデータを zip ファイルでダウンロードする',
-      'エクスポート > zip には、エクセルのファイル 1 つと、カードの画像のファイルを入れる',
-      'エクスポート > エクセルのファイル名は「（プロジェクト名）.xlsx」とする',
-      'エクスポート > エクセルのファイル名は > プロジェクト名にファイル名に使えない文字',
-      'エクスポート > エクセルの 1 行目は見出しとし',
-      'エクスポート > 2 行目以降に、カードを並び順の順に 1 行ずつ書く',
-      'エクスポート > 2 行目以降に > 「画像ファイル」の列には',
-      'エクスポート > 画像のファイル名は「（カードの ID）-（画像の番号）.（拡張子）」とする',
-      'エクスポート > 画像のファイル名は > 画像の番号はシステム全体で',
-      'エクスポート > 画像のファイル名は > 拡張子は、画面から添えた画像は画像の形式による',
-      'エクスポート > 画像のファイル名は > 画像はフォルダに分けず',
-      'pages/project-settings.md > 全般 > WHEN 「エクスポート」を押すと',
-    ),
-    knownIssue('docs/ISSUES.md', 'エクスポートが失敗する'),
-  ), async ({ ownerPage, owner, ownerApi, project }) => {
+  test('【既知の問題】「エクスポート」を押しても、サーバーがエラー（500）を返してダウンロードが失敗する（あるべき: エクセルと画像を入れた zip をダウンロードする）', { annotation: [knownIssue('docs/ISSUES.md', 'エクスポートが失敗する')] }, async ({ ownerPage, owner, ownerApi, project }) => {
     // 項目（非表示の項目を含む）・並び順を変えたカード・画像のあるプロジェクト
     const hidden = await ownerApi.addField(project.id, '非表示の項目')
     await ownerApi.setFieldVisible(project.id, hidden.id, false)
@@ -38,11 +22,12 @@ test.describe('エクスポート', () => {
     await expect(ownerApi.call('get', `/api/projects/${project.id}/export`)).rejects.toThrow(/: 500 /)
   })
 
-  test('【既知の問題】画像のファイルがサーバーに無い画像があっても、エクスポートは（ダウンロードが終わらないのではなく）失敗で終わる（あるべき: その画像を除いた zip をダウンロードする）', withIssue(
-    spec('features/import-export.md', 'エクスポート > IF 画像のファイルがサーバーに無い場合'),
-    // ISSUES.md の「ダウンロードが終わらない」は、画像を書き出す前にエクスポートが失敗する（上のテスト）ため、今は現れない
-    knownIssue('docs/ISSUES.md', '画像のファイルが無いとエクスポートが終わらない'),
-  ), async ({ ownerPage, owner, ownerApi, project }) => {
+  test('【既知の問題】画像のファイルがサーバーに無い画像があっても、エクスポートは（ダウンロードが終わらないのではなく）失敗で終わる（あるべき: その画像を除いた zip をダウンロードする）', {
+    annotation: [
+      // ISSUES.md の「ダウンロードが終わらない」は、画像を書き出す前にエクスポートが失敗する（上のテスト）ため、今は現れない
+      knownIssue('docs/ISSUES.md', '画像のファイルが無いとエクスポートが終わらない'),
+    ],
+  }, async ({ ownerPage, owner, ownerApi, project }) => {
     const card = await ownerApi.addCard(project.id, { みだし: '画像のファイルが無いカード' })
     const image = await addImage(owner, project.id, card.id, await fileOf('small.png', MIME.png))
     // 画像のファイルが無い状態は画面からは作れないので、app と共有のボリュームから消す（この既知の問題のテストだけ）
@@ -58,12 +43,7 @@ test.describe('エクスポート', () => {
 })
 
 test.describe('インポート中の画面', () => {
-  test('インポートを待っている間は「インポート中です」のダイアログでアップロードの日時とファイル名を表示し、カードを表示しない。「ホームに戻る」でプロジェクト一覧に遷移する', spec('features/import-export.md',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間・取り込んでいる間は',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間 > 「現在、（アップロードした日時） にアップロードされた',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間 > 「再読み込み」ボタンで',
-    'インポート中の画面 > WHILE プロジェクトのインポートを待っている間 > 「ホームに戻る」ボタンで',
-  ), async ({ ownerPage, owner, ownerApi, project, tag }) => {
+  test('インポートを待っている間は「インポート中です」のダイアログでアップロードの日時とファイル名を表示し、カードを表示しない。「ホームに戻る」でプロジェクト一覧に遷移する', { tag: ['@TC-FT-IMPEXP-WAIT1', '@TC-FT-IMPEXP-WAIT2', '@TC-FT-IMPEXP-WAIT3', '@TC-FT-IMPEXP-WAIT6'] }, async ({ ownerPage, owner, ownerApi, project, tag }) => {
     await ownerApi.addCard(project.id, { みだし: '隠れるカード' })
     const file = await fileOf('header-only.csv', MIME.csv)
     try {
@@ -103,9 +83,7 @@ test.describe('インポート中の画面', () => {
     }
   })
 
-  test('インポート中のプロジェクトは、カードの複製先に「インポート中」と表示し、選べない', spec('features/import-export.md',
-    'インポート中の画面 > WHILE インポート中は、そのプロジェクトを複製先に選べない',
-  ), async ({ ownerPage, owner, ownerApi, project, tag }) => {
+  test('インポート中のプロジェクトは、カードの複製先に「インポート中」と表示し、選べない', { tag: ['@TC-FT-IMPEXP-WAIT7'] }, async ({ ownerPage, owner, ownerApi, project, tag }) => {
     const other = await ownerApi.createProject(`複製元${tag}`)
     await ownerApi.addCard(other.id, { みだし: '複製するカード' })
     const file = await fileOf('header-only.csv', MIME.csv)
@@ -127,10 +105,7 @@ test.describe('インポート中の画面', () => {
     }
   })
 
-  test('【既知の問題】インポート中に、設定などテーブルビュー以外のプロジェクトの画面を直接開くと、エラー画面（409）になる（あるべき: 「インポート中です」のダイアログを表示する）', withIssue(
-    spec('features/import-export.md', 'インポート中の画面 > WHILE プロジェクトのインポートを待っている間・取り込んでいる間は'),
-    knownIssue('docs/ISSUES.md', 'インポート中にプロジェクトの画面を直接開くとエラー画面になる'),
-  ), async ({ ownerPage, owner, ownerApi, project, tag }) => {
+  test('【既知の問題】インポート中に、設定などテーブルビュー以外のプロジェクトの画面を直接開くと、エラー画面（409）になる（あるべき: 「インポート中です」のダイアログを表示する）', { annotation: [knownIssue('docs/ISSUES.md', 'インポート中にプロジェクトの画面を直接開くとエラー画面になる')] }, async ({ ownerPage, owner, ownerApi, project, tag }) => {
     const file = await fileOf('header-only.csv', MIME.csv)
     try {
       await uploadImport(owner, project.id, { ...file, name: `${tag}-1.csv` })

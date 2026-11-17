@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { open } from '../support/navigation'
 
 /** tests/e2e/files/card/ のファイル */
@@ -92,8 +92,12 @@ export class CardViewPage {
   }
 
   async openMenu() {
-    await this.menuButton.click()
-    await this.menuItem('削除').waitFor()
+    // 別のプロジェクトのカード入力ビューから移った直後は、移る前のメニューの開閉の状態が残り、1 回押しても開かないことがある
+    // （docs/ISSUES.md「別のプロジェクトのカード入力ビューから移ると、カードのメニューが移る前のカードのままになる」）ので、開くまで押し直す
+    await expect(async () => {
+      await this.menuButton.click()
+      await expect(this.menuItem('削除')).toBeVisible({ timeout: 1_000 })
+    }).toPass({ timeout: 10_000 })
   }
 
   /** 「ID」「並び順」など、入力欄の無い項目の値。ラベルに入力欄が結び付いていないため、UFormGroup の構造で探す（やむを得ず XPath） */

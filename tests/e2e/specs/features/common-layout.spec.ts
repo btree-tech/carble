@@ -4,7 +4,6 @@ import { LoginPage } from '../../pages/LoginPage'
 import { ProjectListPage } from '../../pages/ProjectListPage'
 import { ProjectScreens } from '../../pages/ProjectScreens'
 import { UserFormPage } from '../../pages/UserFormPage'
-import { spec } from '../../support/spec'
 
 /** 確認のダイアログ（window.confirm）に「OK」で答えるようにしておく */
 function acceptNextDialog(page: Page) {
@@ -12,9 +11,7 @@ function acceptNextDialog(page: Page) {
 }
 
 test.describe('画面', () => {
-  test('ブラウザのタイトルは「Carble」とする', spec('features/common-layout.md',
-    '画面 > ブラウザのタイトルは「Carble」とする',
-  ), async ({ ownerPage, pageAs, project, ownerApi }) => {
+  test('ブラウザのタイトルは「Carble」とする', { tag: ['@TC-FT-LAYOUT-SCR1'] }, async ({ ownerPage, pageAs, project, ownerApi }) => {
     const card = await ownerApi.addCard(project.id)
     const login = new LoginPage(await pageAs('guest'))
     await login.open()
@@ -30,9 +27,7 @@ test.describe('画面', () => {
 })
 
 test.describe('保存状態のアイコン', () => {
-  test('プロジェクトの画面で入力した値は、保存ボタンを押さずに自動で保存する', spec('features/common-layout.md',
-    '保存状態のアイコン > プロジェクトの画面で入力した値',
-  ), async ({ ownerPage, ownerApi, project, tag }) => {
+  test('プロジェクトの画面で入力した値は、保存ボタンを押さずに自動で保存する', { tag: ['@TC-FT-LAYOUT-SAVE1'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     const card = await ownerApi.addCard(project.id)
     const screens = new ProjectScreens(ownerPage)
 
@@ -54,9 +49,7 @@ test.describe('保存状態のアイコン', () => {
     await expect(screens.text(`自動で保存${tag}`)).toBeVisible()
   })
 
-  test('ユーザーIDと名前は自動で保存せず、「保存」ボタンで保存する', spec('features/common-layout.md',
-    '保存状態のアイコン > プロジェクトの画面で入力した値 > ユーザーIDと名前は自動で保存せず',
-  ), async ({ ownerPage, owner, tag }) => {
+  test('ユーザーIDと名前は自動で保存せず、「保存」ボタンで保存する', { tag: ['@TC-FT-LAYOUT-SAVE2'] }, async ({ ownerPage, owner, tag }) => {
     const form = new UserFormPage(ownerPage)
     await form.openEdit()
 
@@ -70,11 +63,7 @@ test.describe('保存状態のアイコン', () => {
     await expect(form.name).toHaveValue(owner.name)
   })
 
-  test('テーブルビューのヘッダーに、保存中は回転するアイコン、保存が終わるとチェックのアイコンを表示する', spec('features/common-layout.md',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **WHILE** 保存中は',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **WHEN** 保存が終わると',
-  ), async ({ ownerPage, project, tag }) => {
+  test('テーブルビューのヘッダーに、保存中は回転するアイコン、保存が終わるとチェックのアイコンを表示する', { tag: ['@TC-FT-LAYOUT-SAVE3', '@TC-FT-LAYOUT-SAVE4', '@TC-FT-LAYOUT-SAVE5'] }, async ({ ownerPage, project, tag }) => {
     const screens = new ProjectScreens(ownerPage)
     await screens.open(ProjectScreens.paths(project.id).table)
     // 保存する前は、チェックのアイコンは透明
@@ -90,10 +79,7 @@ test.describe('保存状態のアイコン', () => {
     expect(await spinnerSeen()).toBe(true)
   })
 
-  test('カード入力ビューのヘッダーに、保存中は回転するアイコン、保存が終わるとチェックのアイコンを表示する', spec('features/common-layout.md',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **WHILE** 保存中は',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **WHEN** 保存が終わると',
-  ), async ({ ownerPage, ownerApi, project, tag }) => {
+  test('カード入力ビューのヘッダーに、保存中は回転するアイコン、保存が終わるとチェックのアイコンを表示する', { tag: ['@TC-FT-LAYOUT-SAVE4', '@TC-FT-LAYOUT-SAVE5'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     const card = await ownerApi.addCard(project.id)
     const screens = new ProjectScreens(ownerPage)
     await screens.open(ProjectScreens.paths(project.id, card.id).card)
@@ -110,10 +96,7 @@ test.describe('保存状態のアイコン', () => {
     expect(await spinnerSeen()).toBe(true)
   })
 
-  test('グリッドビューのヘッダーに、並び替えの保存中は回転するアイコン、保存が終わるとチェックのアイコンを表示する', spec('features/common-layout.md',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **WHILE** 保存中は',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **WHEN** 保存が終わると',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('グリッドビューのヘッダーに、並び替えの保存中は回転するアイコン、保存が終わるとチェックのアイコンを表示する', { tag: ['@TC-FT-LAYOUT-SAVE4', '@TC-FT-LAYOUT-SAVE5'] }, async ({ ownerPage, ownerApi, project }) => {
     await ownerApi.addCard(project.id, { みだし: '一枚目' })
     await ownerApi.addCard(project.id, { みだし: '二枚目' })
     const screens = new ProjectScreens(ownerPage)
@@ -133,9 +116,7 @@ test.describe('保存状態のアイコン', () => {
     await expect(screens.gridCards.first()).toContainText('ID: 2')
   })
 
-  test('保存に失敗すると、テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに赤いエラーのアイコンを表示する', spec('features/common-layout.md',
-    '保存状態のアイコン > テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに > **IF** 保存に失敗した場合',
-  ), async ({ ownerPage, ownerApi, project, tag }) => {
+  test('保存に失敗すると、テーブルビュー・カード入力ビュー・グリッドビューのヘッダーに赤いエラーのアイコンを表示する', { tag: ['@TC-FT-LAYOUT-SAVE6'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     const screens = new ProjectScreens(ownerPage)
 
     // カード入力ビュー: 開いている間にカードが消えた（別の画面で削除した）
@@ -166,10 +147,7 @@ test.describe('保存状態のアイコン', () => {
 })
 
 test.describe('完了メッセージ', () => {
-  test('カードを追加すると「追加しました」と表示する', spec('features/common-layout.md',
-    '完了メッセージ > **WHEN** 次の操作が完了すると',
-    '完了メッセージ > **WHEN** 次の操作が完了すると > カードの追加 | 「追加しました」',
-  ), async ({ ownerPage, project }) => {
+  test('カードを追加すると「追加しました」と表示する', { tag: ['@TC-FT-LAYOUT-MSG1', '@TC-FT-LAYOUT-MSG3'] }, async ({ ownerPage, project }) => {
     const screens = new ProjectScreens(ownerPage)
     await screens.open(ProjectScreens.paths(project.id).table)
 
@@ -179,9 +157,7 @@ test.describe('完了メッセージ', () => {
     await expect(screens.tableRows).toHaveCount(1)
   })
 
-  test('カードを複製すると、1 件ずつでも選択したカードでも「複製しました」と表示する', spec('features/common-layout.md',
-    '完了メッセージ > **WHEN** 次の操作が完了すると > カードの複製（選択したカードの複製を含む） | 「複製しました」',
-  ), async ({ ownerPage, ownerApi, project, tag }) => {
+  test('カードを複製すると、1 件ずつでも選択したカードでも「複製しました」と表示する', { tag: ['@TC-FT-LAYOUT-MSG4'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     const card = await ownerApi.addCard(project.id)
     const other = await ownerApi.createProject(`複製先${tag}`)
     const screens = new ProjectScreens(ownerPage)
@@ -202,9 +178,7 @@ test.describe('完了メッセージ', () => {
     await expect(screens.layout.toast('複製しました')).toBeVisible()
   })
 
-  test('カードを 1 件ずつ削除すると「削除しました」と表示する', spec('features/common-layout.md',
-    '完了メッセージ > **WHEN** 次の操作が完了すると > カードの削除（1 件ずつの削除） | 「削除しました」',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('カードを 1 件ずつ削除すると「削除しました」と表示する', { tag: ['@TC-FT-LAYOUT-MSG5'] }, async ({ ownerPage, ownerApi, project }) => {
     const card = await ownerApi.addCard(project.id)
     const screens = new ProjectScreens(ownerPage)
     await screens.open(ProjectScreens.paths(project.id).table)
@@ -217,9 +191,7 @@ test.describe('完了メッセージ', () => {
     await expect(screens.tableRows).toHaveCount(0)
   })
 
-  test('スキャンで既存のカードに画像を追加すると「スキャン完了」「ID: （ID）のカードに画像を追加しました」と表示する', spec('features/common-layout.md',
-    '完了メッセージ > **WHEN** 次の操作が完了すると > スキャン（既存のカードに画像を追加） | 「スキャン完了」',
-  ), async ({ ownerPage, ownerApi, project }) => {
+  test('スキャンで既存のカードに画像を追加すると「スキャン完了」「ID: （ID）のカードに画像を追加しました」と表示する', { tag: ['@TC-FT-LAYOUT-MSG6'] }, async ({ ownerPage, ownerApi, project }) => {
     const card = await ownerApi.addCard(project.id)
     const screens = new ProjectScreens(ownerPage)
     const qrCode = await screens.captureQrCode(project.id, card.id)
@@ -233,9 +205,7 @@ test.describe('完了メッセージ', () => {
     await expect(ownerPage).toHaveURL(`/projects/${project.id}/cards/${card.id}`)
   })
 
-  test('スキャンで新しいカードを追加すると「スキャン完了」「新しいカードを追加しました」と表示する', spec('features/common-layout.md',
-    '完了メッセージ > **WHEN** 次の操作が完了すると > スキャン（新しいカードを追加） | 「スキャン完了」',
-  ), async ({ ownerPage, project }) => {
+  test('スキャンで新しいカードを追加すると「スキャン完了」「新しいカードを追加しました」と表示する', { tag: ['@TC-FT-LAYOUT-MSG7'] }, async ({ ownerPage, project }) => {
     const screens = new ProjectScreens(ownerPage)
     const image = await screens.plainImage()
     await screens.open(ProjectScreens.paths(project.id).table)
@@ -248,9 +218,7 @@ test.describe('完了メッセージ', () => {
     await expect(ownerPage).toHaveURL(new RegExp(`/projects/${project.id}/cards/\\d+$`))
   })
 
-  test('プロジェクトを削除すると「プロジェクトを削除しました」と表示する', spec('features/common-layout.md',
-    '完了メッセージ > **WHEN** 次の操作が完了すると > プロジェクトの削除 | 「プロジェクトを削除しました」',
-  ), async ({ ownerPage, project }) => {
+  test('プロジェクトを削除すると「プロジェクトを削除しました」と表示する', { tag: ['@TC-FT-LAYOUT-MSG8'] }, async ({ ownerPage, project }) => {
     const screens = new ProjectScreens(ownerPage)
     await screens.open(ProjectScreens.paths(project.id).settingsDelete)
 
@@ -261,9 +229,7 @@ test.describe('完了メッセージ', () => {
     await expect(screens.layout.toast('プロジェクトを削除しました')).toBeVisible()
   })
 
-  test('選択したカードの一括削除・項目の追加・画像の削除では、完了メッセージを表示しない', spec('features/common-layout.md',
-    '完了メッセージ > 選択したカードの一括削除・項目の追加・画像の削除など',
-  ), async ({ ownerPage, ownerApi, project, tag }) => {
+  test('選択したカードの一括削除・項目の追加・画像の削除では、完了メッセージを表示しない', { tag: ['@TC-FT-LAYOUT-MSG2'] }, async ({ ownerPage, ownerApi, project, tag }) => {
     const first = await ownerApi.addCard(project.id)
     const second = await ownerApi.addCard(project.id)
     const screens = new ProjectScreens(ownerPage)
@@ -297,9 +263,7 @@ test.describe('完了メッセージ', () => {
 })
 
 test.describe('エラー画面', () => {
-  test('存在しない画面を開くと、エラーの番号（404）を表示するエラー画面を表示する', spec('features/common-layout.md',
-    'エラー画面 > **IF** 存在しない画面・権限のない画面を開いた場合',
-  ), async ({ ownerPage, project }) => {
+  test('存在しない画面を開くと、エラーの番号（404）を表示するエラー画面を表示する', { tag: ['@TC-FT-LAYOUT-ERR1'] }, async ({ ownerPage, project }) => {
     const screens = new ProjectScreens(ownerPage)
 
     for (const path of ['/no-such-page', `/projects/${project.id + 100000}`]) {
@@ -307,5 +271,85 @@ test.describe('エラー画面', () => {
       expect(response?.status(), path).toBe(404)
       await expect(screens.layout.errorCode(404), path).toBeVisible()
     }
+  })
+})
+
+test.describe('ユーザーストーリー', () => {
+  test('研究者が、カード入力ビューで保存ボタンを押さずに項目を入力し、保存中・保存済みのアイコンで残ったことを確かめ、開き直しても内容が残っている。別のメンバーが消したカードへの入力は、赤いエラーのアイコンで残らなかったと分かる', { tag: ['@story', '@TC-FT-LAYOUT-US1'] }, async ({ ownerPage, ownerApi, project, newAccount, apiAs, tag }) => {
+    const card = await ownerApi.addCard(project.id)
+    const other = await ownerApi.addCard(project.id)
+    const member = await newAccount({ suffix: 'member' })
+    await ownerApi.invite(project.id, member.username!)
+    const memberApi = await apiAs(member)
+    await memberApi.accept(project.id, member.id)
+    const fields = await ownerApi.fields(project.id)
+    const screens = new ProjectScreens(ownerPage)
+
+    // 保存ボタンは無い。入力するだけで、保存中（回転）→ 保存済み（チェック）のアイコンに変わる
+    await screens.open(ProjectScreens.paths(project.id, card.id).card)
+    await expect(ownerPage.getByRole('button', { name: '保存', exact: true })).toHaveCount(0)
+    await expect(screens.layout.savedIcon).toHaveCSS('opacity', '0')
+    const spinnerSeen = await screens.layout.watchSpinner()
+    // 2 つの項目の保存が両方終わるのを待つ（カード入力ビューの裏に隠れたテーブルビューも同じ保存を送ることがあるので、項目ごとに 1 つ待つ）
+    const saves = ['みだし', 'メモ'].map((name) => {
+      const field = fields.find((f) => f.name === name)!
+      const path = `/api/projects/${project.id}/cards/${card.id}/fields/${field.id}`
+      return ownerPage.waitForResponse((r) => new URL(r.url()).pathname === path && r.request().method() === 'PUT' && r.ok())
+    })
+    await screens.cardField('みだし').fill(`資料の題${tag}`)
+    await screens.cardField('メモ').fill(`資料のメモ${tag}`)
+    await Promise.all(saves)
+
+    await expect(screens.layout.savedIcon).toHaveCSS('opacity', '1')
+    await expect(screens.layout.savingIcon).toBeHidden()
+    await expect(screens.layout.saveErrorIcon).toBeHidden()
+    expect(await spinnerSeen()).toBe(true)
+
+    // テーブルビューで開き直しても、カード入力ビューで開き直しても、入力した内容が残っている
+    await screens.open(ProjectScreens.paths(project.id).table)
+    await expect(screens.tableCell(card.id, 0)).toHaveValue(`資料の題${tag}`)
+    await expect(screens.tableCell(card.id, 1)).toHaveValue(`資料のメモ${tag}`)
+    await screens.open(ProjectScreens.paths(project.id, card.id).card)
+    await expect(screens.cardField('みだし')).toHaveValue(`資料の題${tag}`)
+    await expect(screens.cardField('メモ')).toHaveValue(`資料のメモ${tag}`)
+
+    // 開いている間に、別のメンバーがそのカードを削除した。入力しても保存に失敗し、赤いエラーのアイコンで分かる
+    await screens.open(ProjectScreens.paths(project.id, other.id).card)
+    await expect(screens.layout.saveErrorIcon).toBeHidden()
+    await memberApi.call('delete', `/api/projects/${project.id}/cards/${other.id}`)
+    await screens.cardField('みだし').fill(`残らない入力${tag}`)
+    await expect(screens.layout.saveErrorIcon).toBeVisible()
+  })
+
+  test('研究者が、テーブルビューでカードを追加・複製・削除し、最後にプロジェクトを削除するまで、操作ごとに画面の隅の完了メッセージで終わったことを確かめる', { tag: ['@story', '@TC-FT-LAYOUT-US2'] }, async ({ ownerPage, project }) => {
+    const screens = new ProjectScreens(ownerPage)
+    await screens.open(ProjectScreens.paths(project.id).table)
+
+    // カードを追加する（まっさらなプロジェクトなので ID は 1）
+    await screens.addCardButton.click()
+    await expect(screens.layout.toast('追加しました')).toBeVisible()
+    await expect(screens.tableRows).toHaveCount(1)
+
+    // 追加したカードを直下に複製する（ID は 2）
+    await screens.cardMenuButton(1).click()
+    await screens.menuItem('直下に複製').click()
+    await expect(screens.layout.toast('複製しました')).toBeVisible()
+    await expect(screens.tableRows).toHaveCount(2)
+
+    // 複製したカードを削除する
+    await screens.cardMenuButton(2).click()
+    acceptNextDialog(ownerPage)
+    await screens.menuItem('削除').click()
+    await expect(screens.layout.toast('削除しました')).toBeVisible()
+    await expect(screens.tableRows).toHaveCount(1)
+    await expect(screens.tableRow(2)).toHaveCount(0)
+
+    // 使い終わったプロジェクトを削除する
+    await screens.open(ProjectScreens.paths(project.id).settingsDelete)
+    acceptNextDialog(ownerPage)
+    await screens.deleteProjectButton.click()
+    await expect(ownerPage).toHaveURL('/')
+    await expect(screens.layout.toast('プロジェクトを削除しました')).toBeVisible()
+    await expect(ownerPage.getByRole('cell', { name: project.name })).toHaveCount(0)
   })
 })
