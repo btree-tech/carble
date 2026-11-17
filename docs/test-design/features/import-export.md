@@ -77,7 +77,6 @@
 | TC-FT-IMPEXP-IMP23 |  | 取り込みの途中で予期しないエラーが起きた場合 | 結果をシステムエラーとし、エラーの内容を記録する（実装との乖離） | ブラウザ E2E |
 | TC-FT-IMPEXP-IMP24 |  |  | 結果はプロジェクト設定のインポート履歴と、オーナーのテーブルビューに表示する | ブラウザ E2E |
 
-- `対象外` `乖離` TC-FT-IMPEXP-IMP18: pages/project-settings.md「オーナー以外にはタブを表示しないが、URL を直接開くと「インポート」「ユーザー管理」「プロジェクト削除」の画面を表示する。（略）インポートはサーバー側のオーナー判定が効いておらず、取り込めてしまう」。今の挙動は tests/e2e/specs/features/import-export.import.spec.ts の【既知の問題】【実装との乖離】のテストで確かめる
 - `対象外` `乖離` TC-FT-IMPEXP-IMP23: docs/ISSUES.md「画像ファイルの列で空白が続くとシステムエラーになり、途中まで取り込まれる」。今の挙動は tests/e2e/specs/features/import-export.import.spec.ts の【既知の問題】【実装との乖離】のテストで確かめる
 
 | ID | 上書き | ID の値 | 取り込み方 | 層 |

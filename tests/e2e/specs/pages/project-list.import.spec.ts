@@ -27,6 +27,8 @@ test('ファイルを選んで「インポート」を押すと、ファイル�
   const screens = new ProjectScreens(ownerPage)
   const importing = ownerPage.getByText('インポート中です')
   // 取り込みを待っている間は「インポート中です」を表示する。毎分 0 秒の取り込みが終わるまで「再読み込み」で確かめる
+  // 画面を描き終える（「インポート中です」か、取り込み済みの表のどちらかが出る）まで待ってから確かめる
+  await expect(importing.or(screens.tableColumnNames.first())).toBeVisible()
   await expect(async () => {
     if (await importing.isVisible()) await ownerPage.getByRole('button', { name: '再読み込み' }).click()
     await expect(importing).toBeHidden({ timeout: 1_000 })

@@ -300,6 +300,27 @@ test.describe('インポート', () => {
     expect(await imageSizes(editorPage)).toEqual([[100, 50]])
   })
 
+  test('zip に「画像ファイル」の列が無いと、上書きしても画像を変えない', { tag: ['@TC-FT-IMPEXP-IMP18'] }, async ({ ownerPage, owner, ownerApi, project }) => {
+    const card = await ownerApi.addCard(project.id, { みだし: '元の値' })
+    await addImage(owner, project.id, card.id, await fileOf('small.png', MIME.png))
+
+    // cards.csv: ID,みだし / 1,編集者が上書き
+    const settings = new ProjectSettingsPage(ownerPage, project.id)
+    await settings.open('インポート')
+    await settings.chooseFile(await fileOf('no-image-column.zip', MIME.zip))
+    await settings.checkUpdate()
+    await settings.startImport()
+
+    const screen = new ProjectScreen(ownerPage, project.id)
+    await expect(screen.importingDialog).toBeVisible()
+    await screen.waitForImportDone()
+
+    await expectCards(screen, [{ order: '1', id: '1', values: ['編集者が上書き', ''] }])
+    await screen.openCard(1)
+    await expect(ownerPage.getByRole('img')).toHaveCount(1)
+    expect(await imageSizes(ownerPage)).toEqual([[100, 50]])
+  })
+
   test('ファイルに誤りがあると、何も取り込まずフォーマットエラー（赤）とし、行を開くと記録した内容を表示する。インポートは毎分 0 秒に、アップロードの古い順に 1 件ずつ取り込む', {
     tag: [
       '@TC-FT-IMPEXP-IMP2',

@@ -62,6 +62,7 @@
 | TC-PG-TABLE-SORT6 |  | 今の検索の条件を引き継ぐ | ブラウザ E2E |
 | TC-PG-TABLE-SORT7 |  | 並び替えている列の見出しに、向き（昇順・降順）を示す矢印を表示する。ほかの列の見出しには上下の矢印を表示する | ブラウザ E2E |
 
+- `対象外` `乖離` TC-PG-TABLE-SORT1: docs/ISSUES.md「項目名で並び替えられない」・knownIssue(SPEC, '項目名の見出しを押しても、その項目では並び替わらない')。並び順・ID の見出しで並び替わることは tests/e2e/specs/pages/table-view.spec.ts の並び替えのテストで、今の挙動は同じファイルの【既知の問題】【実装との乖離】のテストで確かめる
 - `対象外` `乖離` TC-PG-TABLE-SORT5: docs/ISSUES.md「項目名で並び替えられない」・knownIssue(SPEC, '項目名の見出しを押しても、その項目では並び替わらない')。今の挙動は tests/e2e/specs/pages/table-view.spec.ts の【既知の問題】【実装との乖離】のテストで確かめる
 
 ### 検索

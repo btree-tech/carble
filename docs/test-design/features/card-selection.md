@@ -36,4 +36,4 @@
 | TC-FT-SELECT-BULK7 |  | 「削除」を押すと | 「削除してよろしいですか？」と確認する | ブラウザ E2E |
 | TC-FT-SELECT-BULK8 |  | 「削除」を押すと → 確認すると | 選んだカードすべてを削除する | ブラウザ E2E |
 
-- `対象外` `乖離` TC-FT-SELECT-BULK6: docs/ISSUES.md「新しいプロジェクトに複製するとプロジェクトを開けない」・knownIssue(SPEC, '「新しいプロジェクト」に複製すると、作ったプロジェクトにオーナーが設定されず、遷移した先でプロジェクトを開けない')。今の挙動は tests/e2e/specs/features/card-selection.spec.ts の【既知の問題】【実装との乖離】のテストで確かめる
+- `対象外` `乖離` TC-FT-SELECT-BULK6: docs/ISSUES.md「新しいプロジェクトに複製するとプロジェクトを開けない」・knownIssue(SPEC, '「新しいプロジェクト」に複製すると、作ったプロジェクトにオーナーが設定されず、遷移した先は空の画面になる（エラー画面は表示しない）')。今の挙動は tests/e2e/specs/features/card-selection.spec.ts の【既知の問題】【実装との乖離】のテストで確かめる

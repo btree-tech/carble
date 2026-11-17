@@ -17,7 +17,7 @@ async function avoidImportTask() {
   }, { timeout: 60_000, intervals: [1000] }).toBe(true)
 }
 
-test('画像は uploads/public/images/、縮小した画像は uploads/public/thumbs/、インポートのファイルは uploads/imports/ に置く', { tag: ['@TC-FT-NFR-DATA3'] }, async ({ ownerPage, owner, ownerApi, project }) => {
+test('画像とインポートのファイルは storage/uploads/ に置く。画像は public/images/、縮小した画像は public/thumbs/、インポートのファイルは imports/ に置く', { tag: ['@TC-FT-NFR-DATA2', '@TC-FT-NFR-DATA3'] }, async ({ ownerPage, owner, ownerApi, project }) => {
   const card = await ownerApi.addCard(project.id)
   const image = await addImage(owner, project.id, card.id, await fileOf('small.png', MIME.png))
   expect(uploaded('public/images', image.filename)).toBe(true)

@@ -215,7 +215,7 @@ test.describe('カードの一覧', () => {
 })
 
 test.describe('並び替え', () => {
-  test('ID の見出しを押すと昇順、もう一度で降順、さらにもう一度で昇順に並び替え、向きの矢印を表示する', { tag: ['@TC-PG-TABLE-SORT1', '@TC-PG-TABLE-SORT2', '@TC-PG-TABLE-SORT3', '@TC-PG-TABLE-SORT4', '@TC-PG-TABLE-SORT7'] }, async ({ ownerPage, ownerApi, project }) => {
+  test('ID の見出しを押すと昇順、もう一度で降順、さらにもう一度で昇順に並び替え、向きの矢印を表示する', { tag: ['@TC-PG-TABLE-SORT2', '@TC-PG-TABLE-SORT3', '@TC-PG-TABLE-SORT4', '@TC-PG-TABLE-SORT7'] }, async ({ ownerPage, ownerApi, project }) => {
     for (const v of ['a', 'b', 'c']) await ownerApi.addCard(project.id, { みだし: v })
     await ownerApi.call('put', `/api/projects/${project.id}/cards`, [{ id: 1, order: 2 }, { id: 2, order: 3 }, { id: 3, order: 1 }])
     const tv = new TableViewPage(ownerPage)

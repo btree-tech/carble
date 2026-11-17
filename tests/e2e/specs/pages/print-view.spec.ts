@@ -415,7 +415,6 @@ test.describe('印刷', () => {
     // PDF にすると A4 縦（595×842pt）の 2 ページになる
     const pdf = (await ownerPage.pdf({ preferCSSPageSize: true })).toString('latin1')
     const pages = [...pdf.matchAll(/\/Type\s*\/Page(?![s\w])/g)]
-    console.log('PDF', pages.length, pdf.match(/\/MediaBox\s*\[[^\]]*\]/g))
     expect(pages).toHaveLength(2)
     for (const mediaBox of pdf.match(/\/MediaBox\s*\[[^\]]*\]/g) ?? []) {
       const [, , w, h] = mediaBox.replace(/.*\[/, '').replace(']', '').trim().split(/\s+/).map(Number)

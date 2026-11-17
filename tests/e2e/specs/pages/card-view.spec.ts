@@ -470,7 +470,7 @@ test.describe('カードのメニュー', () => {
     await expect(ownerPage).toHaveURL(new RegExp(`/projects/${other.id}/cards/${duplicated.id}$`))
   })
 
-  test('「削除」で確認するとカードを削除して「削除しました」と表示する。次のカードが無ければ（カードが無くなれば）テーブルビューに遷移する', { tag: ['@TC-PG-CARD-MENU7'] }, async ({ ownerPage, ownerApi, project }) => {
+  test('「削除」で確認するとカードを削除して「削除しました」と表示する。次のカードが無ければ（カードが無くなれば）テーブルビューに遷移する', async ({ ownerPage, ownerApi, project }) => {
     const card = await ownerApi.addCard(project.id)
     const view = new CardViewPage(ownerPage)
     await view.open(project.id, card.id)
