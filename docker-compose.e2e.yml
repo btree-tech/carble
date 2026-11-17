@@ -1,0 +1,62 @@
+# 画面の E2E テスト（tests/e2e）用の環境
+# pnpm test:e2e（tests/e2e/scripts/run.sh）から、プロジェクト名を分けて起動する。ホストにはポートを公開しない
+#
+#   runner（Playwright）─→ app（本番と同じ Dockerfile の app ステージ）
+#          └─ ログインの仕込みだけ、共有のボリュームの SQLite に直接書く
+
+services:
+  app:
+    # プロジェクト名（E2E_PROJECT）を分けて同時に動かしても、ビルドしたイメージを共有する
+    image: carble-e2e-app
+    # 本番と同じ x64 で動かす。arm64（Apple シリコンの Mac など）でビルドすると、libsql のネイティブモジュールを
+    # Nitro の依存の追跡が .output に入れず、起動時に落ちる（Mac では x64 の動作を模倣して動くので、ビルドと起動が遅くなる）
+    platform: linux/amd64
+    build:
+      context: .
+      target: app
+    environment:
+      NITRO_PORT: 3000
+      BETTER_AUTH_SECRET: e2e-better-auth-secret-0123456789abcdef
+      BETTER_AUTH_URL: http://carble:3000
+      # Google には接続しない（ログインは runner が DB にセッションを作る）
+      GOOGLE_CLIENT_ID: e2e-google-client-id
+      GOOGLE_CLIENT_SECRET: e2e-google-client-secret
+      # DB の接続を、ロックで失敗しないよう手を入れたものにする（packages/db/lib/e2e.ts。本番は使わない）
+      CARBLE_E2E: "1"
+    volumes:
+      - e2e-storage:/carble/storage
+    networks:
+      default:
+        # ブラウザからはこの名前で開く。サービス名の app は Chrome が .app の HSTS で https に切り替えてしまう
+        aliases:
+          - carble
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  runner:
+    image: carble-e2e-runner
+    build:
+      context: tests/e2e
+      dockerfile: docker/runner.Dockerfile
+    working_dir: /work/tests/e2e
+    volumes:
+      - .:/work
+      # イメージに入れた依存を使う
+      - /work/tests/e2e/node_modules
+      - e2e-storage:/storage
+    environment:
+      CI: ${CI:-}
+      BASE_URL: http://carble:3000
+      DB_PATH: /storage/prod.db
+      UPLOADS_PATH: /storage/uploads
+      BETTER_AUTH_SECRET: e2e-better-auth-secret-0123456789abcdef
+    depends_on:
+      app:
+        condition: service_healthy
+    profiles: ["runner"]
+
+volumes:
+  e2e-storage:
